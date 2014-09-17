@@ -1,12 +1,13 @@
 /**
  * @ngdoc directive
- * @name ldcApp.directive:ldResize
+ * @name directive:ldResize
  * @description
  * # resize directive to handle window resize
  * @param onResize - method called when window is resized
  */
 
-app.directive('ldResize', function ($window) {
+angular.module('ldAdminTools', [])
+.directive('ldResize', function ($window) {
 	return {
 		restrict: 'EA',
 		scope: {
@@ -39,7 +40,7 @@ app.directive('ldResize', function ($window) {
 
 			// bind to the window onResize event
 			w.bind('resize', function () {
-				// excute the updateSize withing in angular framework
+				// execute the updateSize withing in angular framework
 				scope.$apply(function () {
 					scope.updateSize();
 				});

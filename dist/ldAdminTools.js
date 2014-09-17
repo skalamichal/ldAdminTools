@@ -1,23 +1,14 @@
-;
- (function(angular,factory){
- 'use strict';
- if(typeof define === 'function' && define.amd){
- define(['angular'],function(angular){
- return factory(angular);});}
- else{
- return factory(angular);}}
- (angular||null,function(angular){
- 'use strict';
- var app=angular.module('ldAdminTools',[]);
+; (function(angular){'use strict';
 /**
  * @ngdoc directive
- * @name ldcApp.directive:ldResize
+ * @name directive:ldResize
  * @description
  * # resize directive to handle window resize
  * @param onResize - method called when window is resized
  */
 
-app.directive('ldResize', ['$window', function ($window) {
+angular.module('ldAdminTools', [])
+.directive('ldResize', ['$window', function ($window) {
 	return {
 		restrict: 'EA',
 		scope: {
@@ -50,7 +41,7 @@ app.directive('ldResize', ['$window', function ($window) {
 
 			// bind to the window onResize event
 			w.bind('resize', function () {
-				// excute the updateSize withing in angular framework
+				// execute the updateSize withing in angular framework
 				scope.$apply(function () {
 					scope.updateSize();
 				});
@@ -61,7 +52,12 @@ app.directive('ldResize', ['$window', function ($window) {
 		}
 	};
 }]);
-angular.module('ldAdminTools', []);
+angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
+  'use strict';
 
-return app;
- }));
+  $templateCache.put('partials/a.html',
+    "<div>miasjali</div>"
+  );
+
+}]);
+})(angular);

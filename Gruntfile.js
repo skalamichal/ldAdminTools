@@ -114,8 +114,8 @@ module.exports = function (grunt) {
 					'<%= yeoman.tmp %>/scripts/**/*.js'
 				],
 				options: {
-					banner: ';\n (function(angular,factory){\n \'use strict\';\n if(typeof define === \'function\' && define.amd){\n define([\'angular\'],function(angular){\n return factory(angular);});}\n else{\n return factory(angular);}}\n (angular||null,function(angular){\n \'use strict\';\n var app=angular.module(\'ldAdminTools\',[]);\n',
-					footer: 'return app;\n }));'
+					banner: '; (function(angular){\'use strict\';\r\n',
+					footer: '})(angular);'
 				},
 				dest: '<%= yeoman.dist %>/ldAdminTools.js'
 			}
@@ -137,16 +137,14 @@ module.exports = function (grunt) {
 			}
 		},
 
-		html2js: {
+		ngtemplates: {
 			'ldAdminTools': {
-				src: "<%= yeoman.app %>/partials/**/*.html",
+				cwd: "<%= yeoman.app %>",
+				src: "partials/**/*.html",
 				dest: "<%= yeoman.tmp %>/scripts/partials.js"
 			},
 			options: {
-				base: "<%= yeoman.app %>",
-				module: function () {
-					return grunt.task.current.target;
-				},
+				module: 'ldAdminTools',
 				htmlmin: {
 					collapseBooleanAttributes: true,
 					collapseWhitespace: true,
@@ -214,7 +212,7 @@ module.exports = function (grunt) {
 
 	grunt.registerTask('build', [
 		'clean',
-		'html2js',
+		'ngtemplates',
 		'concat',
 		'ngAnnotate',
 		'copy',
