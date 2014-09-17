@@ -6,7 +6,7 @@
  * @param onResize - method called when window is resized
  */
 
-angular.module('ldAdminTools', [])
+angular.module('ldAdminTools')
 .directive('ldResize', function ($window) {
 	return {
 		restrict: 'EA',

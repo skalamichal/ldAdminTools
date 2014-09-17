@@ -22,6 +22,18 @@ module.exports = function (grunt) {
 		dist: 'dist'
 	};
 
+	function getHeader() {
+		var fn = '; (function(angular){\n';
+		fn += '\'use strict\';\n';
+		fn += 'angular.module(\'ldAdminTools\', []); \n';
+
+		return fn;
+	};
+
+	function getFooter() {
+		return '})(angular);';
+	}
+
 	// Define the configuration for all the tasks
 	grunt.initConfig({
 
@@ -114,8 +126,8 @@ module.exports = function (grunt) {
 					'<%= yeoman.tmp %>/scripts/**/*.js'
 				],
 				options: {
-					banner: '; (function(angular){\'use strict\';\r\n',
-					footer: '})(angular);'
+					banner: getHeader(),
+					footer: getFooter()
 				},
 				dest: '<%= yeoman.dist %>/ldAdminTools.js'
 			}
