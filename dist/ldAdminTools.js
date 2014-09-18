@@ -1,6 +1,6 @@
 ; (function(angular){
 'use strict';
-angular.module('undefined', []); 
+angular.module('ldAdminTools', []); 
 'use strict';
 
 /**

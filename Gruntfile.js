@@ -27,7 +27,7 @@ module.exports = function (grunt) {
 	function getHeader() {
 		var fn = '; (function(angular){\n';
 		fn += '\'use strict\';\n';
-		fn += 'angular.module(\'' + libConfig.Name + '\', []); \n';
+		fn += 'angular.module(\'' + libConfig.name + '\', []); \n';
 
 		return fn;
 	};
@@ -78,7 +78,8 @@ module.exports = function (grunt) {
 			serve: {
 				options: {
 					open: true,
-					middleware: function (connect) {
+					middleware: function (connect)
+					{
 						return [
 							connect.static('examples'),
 							connect().use(
@@ -196,9 +197,7 @@ module.exports = function (grunt) {
 				dest: "<%= library.tmp %>/scripts/partials.js"
 			},
 			options: {
-				module: function () {
-					return library.name;
-				},
+				module: '<%= library.name %>',
 				htmlmin: {
 					collapseBooleanAttributes: true,
 					collapseWhitespace: true,
