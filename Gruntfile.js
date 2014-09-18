@@ -78,8 +78,7 @@ module.exports = function (grunt) {
 			serve: {
 				options: {
 					open: true,
-					middleware: function (connect)
-					{
+					middleware: function (connect) {
 						return [
 							connect.static('examples'),
 							connect().use(
@@ -197,7 +196,9 @@ module.exports = function (grunt) {
 				dest: "<%= library.tmp %>/scripts/partials.js"
 			},
 			options: {
-				module: '<%= library.name %>',
+				module: function () {
+					return library.name;
+				},
 				htmlmin: {
 					collapseBooleanAttributes: true,
 					collapseWhitespace: true,
