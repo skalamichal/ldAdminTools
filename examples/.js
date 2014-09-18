@@ -67,7 +67,7 @@ angular.module('ldAdminTools')
  */
 
 angular.module('ldAdminTools')
-.directive('ldResize', ['$window', function ($window) {
+.directive('ldResize', function ($window) {
 	return {
 		restrict: 'EA',
 		scope: {
@@ -110,7 +110,7 @@ angular.module('ldAdminTools')
 			scope.updateSize();
 		}
 	};
-}]);
+});
 angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 

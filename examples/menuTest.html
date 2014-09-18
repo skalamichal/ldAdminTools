@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Menu Test</title>
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="bower_components/font-awesome/css/font-awesome.css"/>
+    <link rel="stylesheet" type="text/css" href="ldAdminTools.css"/>
+</head>
+<body ng-app="demo">
+
+<div id="wrapper" ng-controller="demoCtrl">
+    <nav class="navbar navbar-default navbar-fixed-top">
+
+        <div ld-menu collapse="menuCollapsed" data="menu" menu-template="'partials/ldmenu-main.html'">
+
+        </div>
+
+    </nav>
+
+    <div id="page-wrapper">
+        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+        <a href="#" ng-click="menuCollapsed = !menuCollapsed">Show/Hide menu - {{ menuCollapsed }}</a>
+    </div>
+</div>
+
+</body>
+
+<script src="bower_components/angular/angular.js"></script>
+<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+<script src="ldAdminTools.js"></script>
+
+<script type="text/javascript">
+
+    var app = angular.module('demo', ['ui.bootstrap', 'ldAdminTools']);
+    app.controller('demoCtrl', function ($scope) {
+        $scope.menuCollapsed = false;
+
+        $scope.menu = [
+            {
+                'url': '#/dashboard',
+                'icon': 'fa-dashboard',
+                'text': 'Dashboard'
+            },
+            {
+                'url': '#/inbox',
+                'icon': 'fa-envelope',
+                'text': 'Inbox',
+                'badge': function(){
+                    return 1;
+                }
+            },
+            {
+                'url': '#/employee',
+                'icon': 'fa-user',
+                'text': 'Employees'
+            },
+            {
+                'url': '#/policy',
+                'icon': 'fa-check-square',
+                'text': 'Policies'
+            },
+            {
+                'url': '#/company',
+                'icon': 'fa-institution',
+                'text': 'Companies'
+            },
+            {
+                'url': '',
+                'icon': 'fa-table',
+                'text': 'Reports',
+                'submenu': [
+                    {
+                        'url': '#/reports/audit',
+                        'text': 'ICE Audit'
+                    },
+                    {
+                        'url': '#/reports/onboard',
+                        'text': 'Onboard Summary'
+                    },
+                    {
+                        'url': '#/reports/billing',
+                        'text': 'Billing Summary'
+                    }
+                ]
+            },
+            {
+                'url': '',
+                'icon': 'fa-gear',
+                'text': 'Options',
+                'submenu': [
+                    {
+                        'url': '#/options/users',
+                        'text': 'Users'
+                    },
+                    {
+                        'url': '#/options/empforms',
+                        'text': 'Employee Forms'
+                    },
+                    {
+                        'url': '#/options/compforms',
+                        'text': 'Company Forms'
+                    },
+                    {
+                        'url': '#/options/states',
+                        'text': 'States'
+                    },
+                    {
+                        'url': '#/options/doctypes',
+                        'text': 'Document Types'
+                    },
+                    {
+                        'url': '#/options/portals',
+                        'text': 'Portals'
+                    }
+                ]
+            },
+            {
+                'url': '#/help',
+                'icon': 'fa-question-circle',
+                'text': 'Help'
+            }
+        ];
+    });
+
+</script>
+
+</html>

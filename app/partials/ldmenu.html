@@ -1,0 +1,14 @@
+<ul class="nav" ng-class="menuLevelStyle">
+    <li ng-repeat="item in data" ng-init="isCollapsed=true">
+        <a ld-menuitem ng-href="{{item.url}}" ng-click="isCollapsed = !isCollapsed">
+            <i ng-if="item.icon.length > 0" class="fa fa-fw {{item.icon}}"></i>
+            {{ item.text }}
+            <span class="badge" ng-if="item.badge && item.badge() > 0">{{ item.badge() }}</span>
+            <span ng-if="item.submenu" class="fa ld-right" ng-class="isCollapsed? 'fa-angle-left' : 'fa-angle-down'"></span>
+        </a>
+
+        <div ng-if="item.submenu">
+            <div ld-menu collapse="isCollapsed" data="item.submenu" level="level + 1"></div>
+        </div>
+    </li>
+</ul>

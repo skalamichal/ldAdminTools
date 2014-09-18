@@ -1,13 +1,13 @@
 ; (function(angular){
 'use strict';
-angular.module('undefined', []); 
+angular.module('ldAdminTools', []); 
 'use strict';
 
 /**
  * @ngdoc directive
- * @name directive:ldMenu
+ * @name ldcApp.directive:menu
  * @description
- * # sidebar menu directive
+ * # components\menu
  */
 angular.module('ldAdminTools')
 	.directive('ldMenu', [function () {
@@ -113,6 +113,11 @@ angular.module('ldAdminTools')
 }]);
 angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
+
+  $templateCache.put('partials/ldmenu-main.html',
+    "<div class=\"navbar-default navbar-static-side sidebar-collapse\" role=navigation collapse=isCollapsed><ld-menu data=data></ld-menu></div>"
+  );
+
 
   $templateCache.put('partials/ldmenu.html',
     "<ul class=nav ng-class=menuLevelStyle><li ng-repeat=\"item in data\" ng-init=\"isCollapsed=true\"><a ld-menuitem ng-href={{item.url}} ng-click=\"isCollapsed = !isCollapsed\"><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span> <span ng-if=item.submenu class=\"fa ld-right\" ng-class=\"isCollapsed? 'fa-angle-left' : 'fa-angle-down'\"></span></a><div ng-if=item.submenu><div ld-menu collapse=isCollapsed data=item.submenu level=\"level + 1\"></div></div></li></ul>"

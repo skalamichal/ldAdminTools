@@ -1,34 +1,36 @@
 {
-	"name": "ld-admin-tools",
-	"description": "A collection of angular tools for admin sites",
-	"version": "0.0.1",
-	"main": [
-		"dist/ldAdminTools.js",
-		"dist/ldAdminTools.css"
-	],
-	"authors": [
-		{
-			"name": "Michal Skala",
-			"email": "michal@lincware.com"
-		}
-	],
-	"keywords": [
-		"angular",
-		"admin",
-		"ng",
-		"directive"
-	],
-	"dependencies": {
-		"angular": "1.2.16",
-		"bootstrap": "~3.2.0"
-	},
-	"ignore": [
-		"**/.*",
-		"node_modules",
-		"bower_components",
-		"Gruntfile.js",
-		"test",
-		"app"
-	],
-	"appPath": "app"
+  "name": "ld-admin-tools",
+  "description": "A collection of angular tools for admin sites",
+  "version": "0.0.1",
+  "main": [
+    "dist/ldAdminTools.js",
+    "dist/ldAdminTools.css"
+  ],
+  "authors": [
+    {
+      "name": "Michal Skala",
+      "email": "michal@lincware.com"
+    }
+  ],
+  "keywords": [
+    "angular",
+    "admin",
+    "ng",
+    "directive"
+  ],
+  "dependencies": {
+    "angular": "1.2.16",
+    "bootstrap": "~3.2.0",
+    "angular-bootstrap": "~0.11.0",
+    "font-awesome": "~4.2.0"
+  },
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "Gruntfile.js",
+    "test",
+    "app"
+  ],
+  "appPath": "app"
 }

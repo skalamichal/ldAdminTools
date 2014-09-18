@@ -16,16 +16,18 @@ module.exports = function (grunt) {
 	require('time-grunt')(grunt);
 
 	// Configurable paths for the application
-	var appConfig = {
+	var libConfig = {
 		app: require('./bower.json').appPath || 'app',
 		tmp: '.tmp',
-		dist: 'dist'
+		dist: 'dist',
+		examples: 'examples',
+		name: 'ldAdminTools'
 	};
 
 	function getHeader() {
 		var fn = '; (function(angular){\n';
 		fn += '\'use strict\';\n';
-		fn += 'angular.module(\'ldAdminTools\', []); \n';
+		fn += 'angular.module(\'' + libConfig.Name + '\', []); \n';
 
 		return fn;
 	};
@@ -38,27 +40,27 @@ module.exports = function (grunt) {
 	grunt.initConfig({
 
 		// Project settings
-		yeoman: appConfig,
+		library: libConfig,
 
 		// Watches files for changes and runs tasks based on the changed files
 		watch: {
 			js: {
-				files: ['<%= yeoman.app %>/scripts/{,*/}*.js'],
-				tasks: ['newer:jshint:all'],
+				files: ['<%= library.app %>/scripts/{,*/}*.js'],
+				tasks: ['newer:jshint:all', 'concat:serve', 'ngAnnotate:serve'],
 				options: {
 					livereload: '<%= connect.options.livereload %>'
 				}
 			},
 			styles: {
-				files: ['<%= yeoman.app %>/styles/{,*/}*.css'],
-				tasks: ['newer:copy:styles', 'autoprefixer'],
+				files: ['<%= library.app %>/styles/{,*/}*.css'],
+				tasks: ['newer:copy:serve'],
 				options: {
 					livereload: '<%= connect.options.livereload %>'
 				}
 			},
 			html: {
-				files: ['<%= yeoman.app %>/partials/{,*/}*.html'],
-				tasks: [],
+				files: ['<%= library.app %>/partials/{,*/}*.html', '<%= library.examples'],
+				tasks: ['ngtemplates', 'concat:serve', 'ngAnnotate:serve'],
 				options: {
 					livereload: '<%= connect.options.livereload %>'
 				}
@@ -74,6 +76,21 @@ module.exports = function (grunt) {
 				livereload: 35729
 			},
 			serve: {
+				options: {
+					open: true,
+					middleware: function (connect)
+					{
+						return [
+							connect.static('examples'),
+							connect().use(
+								'/bower_components',
+								connect.static('./bower_components')
+							)
+						];
+					}
+				}
+			},
+			test: {
 				options: {
 					middleware: function (connect) {
 						return [
@@ -92,7 +109,7 @@ module.exports = function (grunt) {
 			},
 			all: {
 				src: [
-					'<%= yeoman.app %>/scripts/{,*/}*.js'
+					'<%= library.app %>/scripts/{,*/}*.js'
 				]
 			},
 			test: {
@@ -110,9 +127,9 @@ module.exports = function (grunt) {
 					{
 						dot: true,
 						src: [
-							'<%= yeoman.tmp %>',
-							'<%= yeoman.dist %>/{,*/}*',
-							'!<%= yeoman.dist %>/.git*'
+							'<%= library.tmp %>',
+							'<%= library.dist %>/{,*/}*',
+							'!<%= library.dist %>/.git*'
 						]
 					}
 				]
@@ -122,14 +139,25 @@ module.exports = function (grunt) {
 		concat: {
 			js: {
 				src: [
-					'<%= yeoman.app %>/scripts/**/*.js',
-					'<%= yeoman.tmp %>/scripts/**/*.js'
+					'<%= library.app %>/scripts/**/*.js',
+					'<%= library.tmp %>/scripts/**/*.js'
 				],
 				options: {
 					banner: getHeader(),
 					footer: getFooter()
 				},
-				dest: '<%= yeoman.dist %>/ldAdminTools.js'
+				dest: '<%= library.dist %>/<%= library.name %>.js'
+			},
+			serve: {
+				src: [
+					'<%= library.app %>/scripts/**/*.js',
+					'<%= library.tmp %>/scripts/**/*.js'
+				],
+				options: {
+					banner: getHeader(),
+					footer: getFooter()
+				},
+				dest: '<%= library.examples %>/<% library.name %>.js'
 			}
 		},
 
@@ -141,9 +169,22 @@ module.exports = function (grunt) {
 				files: [
 					{
 						expand: true,
-						cwd: '<%= yeoman.dist %>',
+						cwd: '<%= library.dist %>',
 						src: '*.js',
-						dest: '<%= yeoman.dist %>'
+						dest: '<%= library.dist %>'
+					}
+				]
+			},
+			serve: {
+				options: {
+					singleQuotes: true
+				},
+				files: [
+					{
+						expand: true,
+						cwd: '<%= library.examples %>',
+						src: '*.js',
+						dest: '<%= library.examples %>'
 					}
 				]
 			}
@@ -151,12 +192,12 @@ module.exports = function (grunt) {
 
 		ngtemplates: {
 			'ldAdminTools': {
-				cwd: "<%= yeoman.app %>",
+				cwd: "<%= library.app %>",
 				src: "partials/**/*.html",
-				dest: "<%= yeoman.tmp %>/scripts/partials.js"
+				dest: "<%= library.tmp %>/scripts/partials.js"
 			},
 			options: {
-				module: 'ldAdminTools',
+				module: '<%= library.name %>',
 				htmlmin: {
 					collapseBooleanAttributes: true,
 					collapseWhitespace: true,
@@ -172,10 +213,16 @@ module.exports = function (grunt) {
 
 		// Copies remaining files to places other tasks can use
 		copy: {
-			styles: {
+			dist: {
 				expand: true,
-				cwd: '<%= yeoman.app %>/styles',
-				dest: '<%= yeoman.dist %>',
+				cwd: '<%= library.app %>/styles',
+				dest: '<%= library.dist %>',
+				src: '{,*/}*.css'
+			},
+			serve: {
+				expand: true,
+				cwd: '<%= library.app %>/styles',
+				dest: '<%= library.examples %>',
 				src: '{,*/}*.css'
 			}
 		},
@@ -183,15 +230,15 @@ module.exports = function (grunt) {
 		cssmin: {
 			css: {
 				files: {
-					'<%= yeoman.dist %>/ldAdminTools.min.css': '<%= yeoman.dist %>/ldAdminTools.css'
+					'<%= library.dist %>/ldAdminTools.min.css': '<%= library.dist %>/<%= library.name %>.css'
 				}
 			}
 		},
 
 		uglify: {
 			js: {
-				src: '<%= yeoman.dist %>/ldAdminTools.js',
-				dest: '<%= yeoman.dist %>/ldAdminTools.min.js',
+				src: '<%= library.dist %>/<%= library.name %>.js',
+				dest: '<%= library.dist %>/<%= library.name %>.min.js',
 				options: {
 					sourceMap: function (fileName) {
 						return fileName.replace(/\.min\.js$/, '.map');
@@ -211,6 +258,10 @@ module.exports = function (grunt) {
 
 	grunt.registerTask('serve', 'Watch changes', function (target) {
 		grunt.task.run([
+			'ngtemplates',
+			'concat:serve',
+			'ngAnnotate:serve',
+			'copy:serve',
 			'connect:serve',
 			'watch'
 		]);
@@ -218,16 +269,16 @@ module.exports = function (grunt) {
 
 	grunt.registerTask('test', [
 		'clean',
-		'connect:serve',
+		'connect:test',
 		'karma'
 	]);
 
 	grunt.registerTask('build', [
 		'clean',
 		'ngtemplates',
-		'concat',
-		'ngAnnotate',
-		'copy',
+		'concat:js',
+		'ngAnnotate:dist',
+		'copy:dist',
 		'cssmin',
 		'uglify'
 	]);
