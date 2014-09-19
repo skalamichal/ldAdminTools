@@ -42,11 +42,11 @@ data = [
     }
 ]
 ```
-*menuLevel* [optional]
-number, which defines actual menu depth, default value 1
-*collapsed* [optional]
-boolean value, which defines if menu is collapsed, useful for responsive layouts or submenus
-*options* [optional]
-object with menu options - to be done
-*menu-template* [optional]
-custom defined template
+*menuLevel* [optional]    
+number, which defines actual menu depth, default value 1    
+*collapsed* [optional]    
+boolean value, which defines if menu is collapsed, useful for responsive layouts or submenus    
+*options* [optional]    
+object with menu options - to be done    
+*menu-template* [optional]    
+custom defined template    
