@@ -1,16 +1,11 @@
+/* Based on the sb-admin-v2 theme */
 /* Global Styles */
 
 /* ------------------------------- */
 
 body {
-    padding-top: 100px;
+    padding-top: 50px;
     background-color: #f8f8f8;
-}
-
-@media(min-width:768px) {
-    body {
-        padding-top: 50px;
-    }
 }
 
 /* Wrappers */
@@ -124,32 +119,22 @@ body {
     padding-left: 52px;
 }
 
-@media(min-width:768px) {
+.navbar-static-side {
+    z-index: 1;
+    position: absolute;
+    width: 250px;
+    margin-top: 51px;
+}
+
+@media(max-width: 767px) {
     .navbar-static-side {
-        z-index: 1;
-        position: absolute;
-        width: 250px;
-        margin-top: 51px;
+        border-right: 1px solid #e7e7e7;
     }
 
     .navbar-top-links .dropdown-messages,
     .navbar-top-links .dropdown-tasks,
     .navbar-top-links .dropdown-alerts {
         margin-left: auto;
-    }
-}
-
-@media(max-height:600px) and (max-width:767px) {
-    .sidebar-collapse {
-        max-height: 300px;
-        overflow-y: scroll;
-    }
-}
-
-@media(max-height:400px) and (max-width:767px) {
-    .sidebar-collapse {
-        max-height: 200px;
-        overflow-y: scroll;
     }
 }
 
@@ -163,4 +148,19 @@ a[ld-menuitem]
 .ld-right {
     float: right;
     padding-top: 2px;
+}
+
+.ld-slide {
+    display: 'none';
+}
+
+.ld-slide.in {
+    display: 'block';
+}
+
+.ld-sliding-left {
+    -webkit-transition: left 0.35s ease;
+    -moz-transition: left 0.35s ease;
+    -o-transition: left 0.35s ease;
+    transition: left 0.35s ease;
 }
