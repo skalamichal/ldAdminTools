@@ -59,7 +59,7 @@ module.exports = function (grunt) {
 				}
 			},
 			html: {
-				files: ['<%= library.app %>/partials/{,*/}*.html', '<%= library.examples'],
+				files: ['<%= library.app %>/partials/{,*/}*.html', '<%= library.examples %>/*.html'],
 				tasks: ['ngtemplates', 'concat:serve', 'ngAnnotate:serve'],
 				options: {
 					livereload: '<%= connect.options.livereload %>'
@@ -157,7 +157,7 @@ module.exports = function (grunt) {
 					banner: getHeader(),
 					footer: getFooter()
 				},
-				dest: '<%= library.examples %>/<% library.name %>.js'
+				dest: '<%= library.examples %>/<%= library.name %>.js'
 			}
 		},
 

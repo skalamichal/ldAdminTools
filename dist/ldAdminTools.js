@@ -120,16 +120,26 @@ angular.module('ldAdminTools')
  * # ldCollapseWidth
  */
 angular.module('ldAdminTools')
+	.controller('ldSlideLeftController', [function()
+	{
+	}])
 	.directive('ldSlideLeft', ['$transition', function ($transition) {
 		return {
 			restrict: 'A',
 			link: function postLink(scope, element, attrs) {
 				var initialAnimSkip = true;
 				var currentTransition;
+				var skipAnimation = false;
 
 				var width = element.prop('offsetWidth');
 
 				function doTransition(change) {
+					function newTransitionDone() {
+						// Make sure it's this transition, otherwise, leave it alone.
+						if (currentTransition === newTransition) {
+							currentTransition = undefined;
+						}
+					}
 					var newTransition = $transition(element, change);
 					if (currentTransition) {
 						currentTransition.cancel();
@@ -138,16 +148,10 @@ angular.module('ldAdminTools')
 					newTransition.then(newTransitionDone, newTransitionDone);
 					return newTransition;
 
-					function newTransitionDone() {
-						// Make sure it's this transition, otherwise, leave it alone.
-						if (currentTransition === newTransition) {
-							currentTransition = undefined;
-						}
-					}
 				}
 
 				function expand() {
-					if (initialAnimSkip) {
+					if (initialAnimSkip || skipAnimation) {
 						initialAnimSkip = false;
 						expandDone();
 					} else {
@@ -162,7 +166,7 @@ angular.module('ldAdminTools')
 				}
 
 				function slide() {
-					if (initialAnimSkip) {
+					if (initialAnimSkip || skipAnimation) {
 						initialAnimSkip = false;
 						slideDone();
 						element.css({left: -width + 'px'});
@@ -170,7 +174,9 @@ angular.module('ldAdminTools')
 						// CSS transitions don't work with width: auto, so we have to manually change the height to a specific value
 						element.css({ left: 0 + 'px' });
 						//trigger reflow so a browser realizes that height was updated from auto to a specific value
-						var x = element[0].offsetHeight;
+
+						/*jshint unused:false*/
+						var x = element[0].offsetLeft;
 
 						element.removeClass('ld-hide in').addClass('ld-sliding-left');
 

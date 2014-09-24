@@ -10,17 +10,16 @@
 <body ng-app="demo">
 
 <div id="wrapper" ng-controller="demoCtrl">
-    <nav class="navbar navbar-default navbar-fixed-top">
+    <nav class="navbar navbar-default" style="padding-top:51px">
 
-        <div ld-menu collapse="menuCollapsed" data="menu" menu-template="'partials/ldmenu-main.html'">
-
-        </div>
+           <ld-menu data="menu" style="position: absolute; width: 250px" ld-slide-left="menuCollapsed" ld-slide-left-animated="animate"></ld-menu>
 
     </nav>
 
     <div id="page-wrapper">
-        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-        <a href="#" ng-click="menuCollapsed = !menuCollapsed">Show/Hide menu - {{ menuCollapsed }}</a>
+        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+        <a href="#" ng-click="menuCollapsed = !menuCollapsed">Show/Hide menu - {{ menuCollapsed }}</a> <br/>
+        <a href="#" ng-click="animate = !animate">Show/Hide menu - {{ animate }}</a>
     </div>
 </div>
 
@@ -35,6 +34,7 @@
     var app = angular.module('demo', ['ui.bootstrap', 'ldAdminTools']);
     app.controller('demoCtrl', function ($scope) {
         $scope.menuCollapsed = false;
+        $scope.animate = true;
 
         $scope.menu = [
             {
