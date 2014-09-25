@@ -10,17 +10,17 @@
 <body ng-app="demo">
 
 <div id="wrapper" ng-controller="demoCtrl">
-    <nav class="navbar navbar-default navbar-fixed-top">
+    <nav class="navbar navbar-default" style="padding-top:51px">
 
-        <div ld-menu collapse="menuCollapsed" data="menu" menu-template="'partials/ldmenu-main.html'">
-
-        </div>
-
+           <ld-menu data="menu" style="position: absolute; width: 250px" ld-slide-left="menuOpened" ld-animated="animate" ld-closeable="closeable"></ld-menu>
     </nav>
 
+
     <div id="page-wrapper">
-        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-        <a href="#" ng-click="menuCollapsed = !menuCollapsed">Show/Hide menu - {{ menuCollapsed }}</a>
+        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+        <a href="#" ng-click="menuOpened = !menuOpened">Show/Hide menu - <em>{{ menuOpened ? 'opened' : 'closed' }}</em></a> <br/>
+        <a href="#" ng-click="animate = !animate">Animation on/off - <em>{{ animate ? 'on' : 'off' }}</em></a><br/>
+        <a href="#" ng-click="closeable = !closeable">Closeable on/off - <em>{{ closeable ? 'on' : 'off' }}</em></a>
     </div>
 </div>
 
@@ -34,7 +34,9 @@
 
     var app = angular.module('demo', ['ui.bootstrap', 'ldAdminTools']);
     app.controller('demoCtrl', function ($scope) {
-        $scope.menuCollapsed = false;
+        $scope.menuOpened = true;
+        $scope.animate = true;
+        $scope.closeable = false;
 
         $scope.menu = [
             {
