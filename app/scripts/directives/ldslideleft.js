@@ -2,9 +2,15 @@
 
 /**
  * @ngdoc directive
- * @name ldAdminTools.directive:ldHideLeft
+ * @name ldAdminTools.directive:ldSlideLeft
  * @description
- * # ldCollapseWidth
+ * Directive which allows the DOM element to slide to the left and hide the element.
+ * Usage:
+ * <div ld-slide-left="boolean value"></div>
+ * Options:
+ * ld-slide-left - boolean - shows the element
+ * ld-animated - boolean - turns on/off the animation
+ * ld-closeable - boolean - allows to hide the element
  */
 angular.module('ldAdminTools')
 	.controller('ldSlideLeftController', ['$scope', '$transition', '$attrs', '$parse', function ($scope, $transition, $attrs, $parse) {
@@ -15,33 +21,50 @@ angular.module('ldAdminTools')
 		var getIsAnimated;
 		var setIsAnimated = angular.noop;
 
-		var getIsSlide = $parse($attrs.ldSlideLeft);
-		var setIsSlide = getIsSlide.assign;
+		var getIsOpen = $parse($attrs.ldSlideLeft);
+		var setIsOpen = getIsOpen.assign;
+
+		var getIsCloseable;
+		var setIsCloseable = angular.noop;
 
 		scope.initialAnimSkip = true;
-		scope.animated = true;
+		scope.isAnimated = true;
+		scope.isCloseable = false;
+		scope.isOpen = true;
 
 		this.init = function (element) {
 			self.$element = element;
 			scope.width = self.$element[0].offsetWidth;
 
-			if ($attrs.ldSlideLeftAnimated) {
-				getIsAnimated = $parse($attrs.ldSlideLeftAnimated);
+			// check if ld-isAnimated is set and set watcher function to handle changes
+			if ($attrs.ldAnimated) {
+				getIsAnimated = $parse($attrs.ldAnimated);
 				setIsAnimated = getIsAnimated.assign;
 
+				// watch the attribute in the parent scope
 				$scope.$watch(getIsAnimated, function (value) {
-					scope.animated = !!value;
+					scope.isAnimated = !!value;
 				});
 			}
 
-			$scope.$watch($attrs.ldSlideLeft, function (shouldSlide) {
-				scope.shouldSlide = !!shouldSlide;
+			// check if ld-isCloseable is set and set watcher function to handle changes
+			if ($attrs.ldCloseable) {
+				getIsCloseable = $parse($attrs.ldCloseable);
+				setIsCloseable = getIsCloseable.assign;
+
+				$scope.$watch(getIsCloseable, function(value) {
+					scope.isCloseable = !!value;
+				});
+			}
+
+			$scope.$watch($attrs.ldSlideLeft, function (open) {
+				scope.isOpen = !!open;
 			});
 		};
 
-		this.toggle = function (slide) {
-			scope.shouldSlide = arguments.length ? !!slide : !scope.shouldSlide;
-			setIsSlide($scope, scope.shouldSlide);
+		this.toggle = function (open) {
+			scope.isOpen = arguments.length ? !!open : !scope.isOpen;
+			setIsOpen($scope, scope.isOpen);
 		};
 
 		function doTransition(change) {
@@ -63,7 +86,7 @@ angular.module('ldAdminTools')
 		}
 
 		this.expand = function () {
-			if (!scope.animated || scope.initialAnimSkip) {
+			if (!scope.isAnimated || scope.initialAnimSkip) {
 				scope.initialAnimSkip = false;
 				expandDone();
 			}
@@ -80,7 +103,7 @@ angular.module('ldAdminTools')
 		}
 
 		this.slide = function () {
-			if (scope.initialAnimSkip || !scope.animated) {
+			if (scope.initialAnimSkip || !scope.isAnimated) {
 				scope.initialAnimSkip = false;
 				slideDone();
 				self.$element.css({left: -scope.width + 'px'});
@@ -104,13 +127,32 @@ angular.module('ldAdminTools')
 			self.$element.addClass('ld-slide');
 		}
 
-		scope.$watch('shouldSlide', function(shouldSlide) {
-			if (shouldSlide) {
-				self.slide();
-			}
-			else {
+		function update() {
+			if (scope.isOpen) {
 				self.expand();
 			}
+			else {
+				self.slide();
+			}
+		}
+
+		scope.$watch('isOpen', function(shouldOpen) {
+			// if not isCloseable and we should close, it's not allowed, switch back to isOpen true
+			if (!scope.isCloseable && !shouldOpen) {
+				scope.isOpen = true;
+				setIsOpen($scope, scope.isOpen);
+			}
+			update();
+		});
+
+		scope.$watch('isCloseable', function(closeable) {
+			if (!closeable && !scope.isOpen)
+			{
+				scope.isOpen = true;
+				setIsOpen($scope, scope.isOpen);
+			}
+			update();
+
 		});
 
 	}])

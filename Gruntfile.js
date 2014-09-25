@@ -77,7 +77,7 @@ module.exports = function (grunt) {
 			},
 			serve: {
 				options: {
-					open: true,
+					isOpen: true,
 					middleware: function (connect)
 					{
 						return [
