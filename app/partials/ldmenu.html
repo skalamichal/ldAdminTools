@@ -1,4 +1,10 @@
 <ul class="nav" ng-class="menuLevelStyle">
+    <li ng-repeat="item in data">
+        <ld-menu-item data="item"></ld-menu-item>
+    </li>
+</ul>
+<!--
+<ul class="nav" ng-class="menuLevelStyle">
     <li ng-repeat="item in data" ng-init="isCollapsed=true">
         <a ld-menuitem ng-href="{{item.url}}" ng-click="isCollapsed = !isCollapsed" ld-slide-toggle="item.submenu">
             <i ng-if="item.icon.length > 0" class="fa fa-fw {{item.icon}}"></i>
@@ -12,3 +18,4 @@
         </div>
     </li>
 </ul>
+-->

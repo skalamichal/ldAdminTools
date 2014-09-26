@@ -30,11 +30,13 @@
     position: absolute;
     width: 250px;
     margin-top: 51px;
+    background-color: #f8f8f8;
 }
 
 @media(max-width: 767px) {
     .navbar-static-side {
         border-right: 1px solid #e7e7e7;
+        background-color: #f8f8f8;
     }
 
     .navbar-top-links .dropdown-messages,

@@ -32,5 +32,8 @@
     "test",
     "app"
   ],
-  "appPath": "app"
+  "appPath": "app",
+  "devDependencies": {
+    "angular-recursion": "~1.0.3"
+  }
 }

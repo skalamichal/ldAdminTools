@@ -27,7 +27,7 @@ module.exports = function (grunt) {
 	function getHeader() {
 		var fn = '; (function(angular){\n';
 		fn += '\'use strict\';\n';
-		fn += 'angular.module(\'' + libConfig.name + '\', [\'ui.bootstrap\']); \n';
+		fn += 'angular.module(\'' + libConfig.name + '\', [\'ui.bootstrap\', \'RecursionHelper\']); \n';
 
 		return fn;
 	}

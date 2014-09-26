@@ -9,13 +9,10 @@
 </head>
 <body ng-app="demo">
 
-<div id="wrapper" ng-controller="demoCtrl">
-    <nav class="navbar navbar-default" style="padding-top:51px">
-           <ld-menu data="menu" style="position: absolute; width: 250px" ld-slide-left="menuOpened" ld-animated="animate" ld-closeable="closeable"></ld-menu>
-    </nav>
+<div id="wrapper" ng-controller="demoCtrl" style="padding-top: 20px">
+    <ld-menu data="menu" class="navbar-static-side" style="position: absolute; width: 250px" ld-slide-left="menuOpened" ld-animated="animate" ld-closeable="closeable"></ld-menu>
 
-    <div id="page-wrapper">
-        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <div id="page-wrapper" style="margin-left: 300px">
         <a href="#" ng-click="menuOpened = !menuOpened">Show/Hide menu - <em>{{ menuOpened ? 'opened' : 'closed' }}</em></a> <br/>
         <a href="#" ng-click="animate = !animate">Animation on/off - <em>{{ animate ? 'on' : 'off' }}</em></a><br/>
         <a href="#" ng-click="closeable = !closeable">Closeable on/off - <em>{{ closeable ? 'on' : 'off' }}</em></a>
@@ -25,6 +22,7 @@
 </body>
 
 <script src="bower_components/angular/angular.js"></script>
+<script src="bower_components/angular-recursion/angular-recursion.js"></script>
 <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
 <script src="ldAdminTools.js"></script>
 
