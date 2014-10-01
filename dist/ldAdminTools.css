@@ -30,9 +30,10 @@
     position: absolute;
     width: 250px;
     margin-top: 51px;
+    background-color: #f8f8f8;
 }
 
-@media(max-width: 767px) {
+@media (max-width: 767px) {
     .navbar-static-side {
         border-right: 1px solid #e7e7e7;
         background-color: #f8f8f8;
@@ -49,11 +50,27 @@
     }
 }
 
+/* submenu styles */
+
+.ld-submenu {
+    display: none;
+}
+
+.open > .ld-submenu {
+    display: block;
+}
+
 /* Cursor for menu items */
 
-a[ld-menuitem]
-{
+a.ld-menuitem {
     cursor: pointer;
+    position: relative;
+    display: block;
+    padding: 10px 15px;
+}
+
+a.ld-menuitem:hover {
+    text-decoration: none;
 }
 
 .ld-right {

@@ -1,6 +1,6 @@
 ; (function(angular){
 'use strict';
-angular.module('ldAdminTools', ['ui.bootstrap']); 
+angular.module('ldAdminTools', ['ui.bootstrap', 'RecursionHelper']); 
 'use strict';
 
 /**
@@ -10,52 +10,189 @@ angular.module('ldAdminTools', ['ui.bootstrap']);
  * # sidebar menu directive
  */
 angular.module('ldAdminTools')
-	.directive('ldMenu', [function () {
+	/*jshint unused:false*/
+/**
+ * The controller for the main ld-sidebar-menu directive for the sidebar menu.
+ */
+	.controller('ldSidebarMenuController', ['$scope', '$parse', '$attrs', function ($scope, $parse, $attrs) {
+		var self = this;
+		var menus = [];
+
+		// register menu block
+		this.registerMenu = function (menu) {
+			var level = menu.level;
+			if (angular.isUndefined(menus[level])) {
+				menus[level] = [];
+			}
+			menus[level].push(menu);
+
+			// setup the menu level style
+			menu.menuLevelStyle = 'nav-' + self.getLevelAsString(level) + '-level';
+		};
+
+		// open menu function, goes through all menus at the same level and calls its closeMenu function on the scope
+		this.openMenu = function(menu) {
+			angular.forEach(menus[menu.level], function(m) {
+				if (m.$id !== menu.$id) {
+					m.closeMenu();
+				}
+			}, this);
+
+			closeAllSubmenus(menu.level);
+		};
+
+		// close all submenus
+		function closeAllSubmenus(level) {
+			angular.forEach(menus, function(menu, index) {
+				if (index > level) {
+					angular.forEach(menu, function (m) {
+						m.closeMenu();
+					});
+				}
+			});
+		}
+
+		/**
+		 * Return level as string, example "1" -> "first"
+		 * @param level - max 3
+		 */
+		this.getLevelAsString = function (level) {
+			if (level === 1) {
+				return 'first';
+			}
+			else if (level === 2) {
+				return 'second';
+			}
+			else if (level === 3) {
+				return 'third';
+			}
+
+			return '';
+		};
+
+	}])
+/**
+ * The main directive, which wraps the menu functionality.
+ */
+	.directive('ldSidebarMenu', [function () {
 		return {
-			restrict: 'EA',
+			restrict: 'E',
 			scope: {
-				'level': '=?',
 				'data': '=',
-				'isCollapsed': '=?collapsed',
-				'menuTemplate': '=?',
-				'options': '=?ldMenuOptions'
+				'options': '=?ldMenuOptions',
+				'level': '=?level'
 			},
-			require: '?^ldMenu',
-			controller: [function () {
-				/**
-				 * Return level as string, example "1" -> "first"
-				 * @param level - max 3
-				 */
-				this.getLevelAsString = function (level) {
-					if (level === 1) {
-						return 'first';
-					}
-					else if (level === 2) {
-						return 'second';
-					}
-					else if (level === 3) {
-						return 'third';
-					}
-
-					return '';
-				};
-			}],
-			template: '<ng-include src="getTemplate()"></ng-include>',
+			replace: true,
+			// expose the sidebar menu controller API
+			controller: 'ldSidebarMenuController',
+			templateUrl: 'partials/ldmenu-wrap.html',
 			/*jshint unused:false*/
-			link: function (scope, element, attrs, menuController) {
+			link: function (scope, element, attrs, controller) {
+				// set the menu level
 				scope.level = scope.level || 1;
-				scope.menuLevelStyle = 'nav-' + menuController.getLevelAsString(scope.level) + '-level';
+				// get the style for the level: nav-first-level for example
+				scope.menuLevelStyle = 'nav-' + controller.getLevelAsString(scope.level) + '-level';
+			}
+		};
+	}])
+/**
+ * The ld-menu directive is used to wrap menu items.
+ */
+	.directive('ldMenu', ['RecursionHelper', function (recursionHelper) {
+		return {
+			restrict: 'E',
+			scope: {
+				'data': '=',
+				'level': '='
+			},
+			// require the ld-sidebar-menu directive - each menu is registered to the top sidebar controller
+			// require the ld-submenu-item directive, which is optional for submenu.
+			require: ['^ldSidebarMenu', '?^ldSubmenuItem'],
+			replace: true,
+			templateUrl: 'partials/ldmenu-wrap.html',
+			compile: function (element) {
+				return recursionHelper.compile(element, function (scope, element, attrs, controllers) {
+					var sidebarController = controllers[0];
+					var submenuItemController = controllers[1];
 
-				scope.menuTemplate = scope.menuTemplate || 'partials/ldmenu.html';
+					// register the menu for parent controllers
+					sidebarController.registerMenu(scope);
+					if (angular.isDefined(submenuItemController)) {
+						submenuItemController.registerMenu(scope);
+					}
 
-				scope.getTemplate = function () {
+					// define close menu at the scope, called from ld-sidebar-menu controller
+					scope.closeMenu = function() {
+						if (angular.isDefined(submenuItemController)) {
+							submenuItemController.closeMenu();
+						}
+					};
+				});
+			}
+		};
+	}])
+/**
+ * The ld-menu-item is the simple menu item element
+ */
+	.directive('ldMenuItem', [function () {
+		return {
+			restrict: 'E',
+			scope: {
+				item: '=data'
+			},
+			templateUrl: 'partials/ldmenuitem.html',
+			replace: true
+		};
+	}])
+/**
+ * The ld-submenu-item is item with submenu functionality
+ * Defines several functions to handle submenu close/expand state and also via parent ld-sidebar-menu closes other menus
+ * when current submenu is expanded
+ */
+	.directive('ldSubmenuItem', [function () {
+		return {
+			restrict: 'E',
+			scope: {
+				item: '=data',
+				level: '='
+			},
+			controller: ['$scope', function($scope) {
+				console.log($scope);
 
-					return scope.menuTemplate   ;
+				this.registerMenu = function(menu) {
+					$scope.menu = menu;
+				};
+
+				this.closeMenu = function() {
+					if (!$scope.collapsed) {
+						$scope.collapsed = true;
+					}
+				};
+
+			}],
+			require: '^ldSidebarMenu',
+			templateUrl: 'partials/ldsubmenuitem.html',
+			replace: true,
+			link: function(scope, element, attrs, controller) {
+				scope.collapsed = true;
+
+				scope.toggle = function() {
+					scope.collapsed = !scope.collapsed;
+					if (!scope.collapsed && angular.isDefined(scope.menu)) {
+						controller.openMenu(scope.menu);
+					}
+				};
+
+				scope.collapsedClass = function() {
+					return scope.collapsed ? 'fa-angle-left' : 'fa-angle-down';
+				};
+
+				scope.isCollapsed = function() {
+					return scope.collapsed;
 				};
 			}
 		};
 	}]);
-
 'use strict';
 
 /**
@@ -126,60 +263,84 @@ angular.module('ldAdminTools')
  * ld-closeable - boolean - allows to hide the element
  */
 angular.module('ldAdminTools')
-	.controller('ldSlideLeftController', ['$scope', '$transition', '$attrs', '$parse', function ($scope, $transition, $attrs, $parse) {
+	.constant('ldSlideLeftConfig', {
+		// slide animation is by default on
+		isAnimated: true,
+		// the element is by default not closeable
+		isCloseable: false
+	})
+	.controller('ldSlideLeftController', ['$scope', '$transition', '$attrs', '$parse', 'ldSlideLeftConfig', function ($scope, $transition, $attrs, $parse, config) {
 		var self = this;
 		var scope = $scope.$new();
 		var currentTransition;
 
+		// getter and setter for the ldAnimated value
 		var getIsAnimated;
 		var setIsAnimated = angular.noop;
 
+		// getter and setter for the ldSlideLeft value, which has the open/close state
 		var getIsOpen = $parse($attrs.ldSlideLeft);
 		var setIsOpen = getIsOpen.assign;
 
+		// getter and setter for the ldCloseable value
 		var getIsCloseable;
 		var setIsCloseable = angular.noop;
 
-		scope.initialAnimSkip = true;
-		scope.isAnimated = true;
-		scope.isCloseable = false;
-		scope.isOpen = true;
+		// default properties
+		var width = 0;
+		var initialAnimSkip = true;
 
+		// these properties may be defined in the directive, check if they are defined and get the value from them
+		// or use the config value
+		scope.isAnimated = angular.isDefined($attrs.ldAnimated) ? $scope.$eval($attrs.ldAnimated) : config.isAnimated;
+		scope.isCloseable = angular.isDefined($attrs.ldCloseable) ? $scope.$eval($attrs.ldCloseable) : config.isCloseable;
+		scope.isOpen = $scope.$eval($attrs.ldSlideLeft);
+
+		// initialize the controller with element for sliding
 		this.init = function (element) {
 			self.$element = element;
-			scope.width = self.$element[0].offsetWidth;
+			width = self.$element[0].offsetWidth;
 
 			// check if ld-isAnimated is set and set watcher function to handle changes
-			if ($attrs.ldAnimated) {
+			if (angular.isDefined($attrs.ldAnimated)) {
 				getIsAnimated = $parse($attrs.ldAnimated);
 				setIsAnimated = getIsAnimated.assign;
 
 				// watch the attribute in the parent scope
 				$scope.$watch(getIsAnimated, function (value) {
+					// and update our scope variable so we can watch it's state
 					scope.isAnimated = !!value;
 				});
 			}
 
 			// check if ld-isCloseable is set and set watcher function to handle changes
-			if ($attrs.ldCloseable) {
+			if (angular.isDefined($attrs.ldCloseable)) {
 				getIsCloseable = $parse($attrs.ldCloseable);
 				setIsCloseable = getIsCloseable.assign;
 
+				// watch the attribute in the parent scope
 				$scope.$watch(getIsCloseable, function(value) {
+					// and update our scope variable so we can watch it's state
 					scope.isCloseable = !!value;
 				});
 			}
 
+			// the ld-slide-left is always set, because it's the directive name
+			// watch the parent scope value
 			$scope.$watch($attrs.ldSlideLeft, function (open) {
+				// and update our scope variable so we can watch it's state
 				scope.isOpen = !!open;
 			});
 		};
 
+		// public controller API method
 		this.toggle = function (open) {
 			scope.isOpen = arguments.length ? !!open : !scope.isOpen;
+			// update the parent scope as well
 			setIsOpen($scope, scope.isOpen);
 		};
 
+		// perform the transition
 		function doTransition(change) {
 			function newTransitionDone() {
 				// Make sure it's this transition, otherwise, leave it alone.
@@ -198,9 +359,10 @@ angular.module('ldAdminTools')
 
 		}
 
+		// expand (show) the element
 		this.expand = function () {
-			if (!scope.isAnimated || scope.initialAnimSkip) {
-				scope.initialAnimSkip = false;
+			if (!scope.isAnimated || initialAnimSkip) {
+				initialAnimSkip = false;
 				expandDone();
 			}
 			else {
@@ -209,17 +371,19 @@ angular.module('ldAdminTools')
 			}
 		};
 
+		// transition is done
 		function expandDone() {
 			self.$element.css('left', '0px');
 			self.$element.removeClass('ld-sliding-left');
 			self.$element.addClass('ld-slide in');
 		}
 
+		// slide (close) the element
 		this.slide = function () {
-			if (scope.initialAnimSkip || !scope.isAnimated) {
-				scope.initialAnimSkip = false;
+			if (initialAnimSkip || !scope.isAnimated) {
+				initialAnimSkip = false;
 				slideDone();
-				self.$element.css({left: -scope.width + 'px'});
+				self.$element.css({left: -width + 'px'});
 			}
 			else {
 				// CSS transitions don't work with width: auto, so we have to manually change the height to a specific value
@@ -230,16 +394,18 @@ angular.module('ldAdminTools')
 
 				self.$element.removeClass('ld-slide in').addClass('ld-sliding-left');
 
-				doTransition({ left: -scope.width + 'px' }).then(slideDone);
+				doTransition({ left: -width + 'px' }).then(slideDone);
 			}
 		};
 
+		// transition is done
 		function slideDone() {
-			self.$element.css('left', '-' + scope.width + 'px');
+			self.$element.css('left', '-' + width + 'px');
 			self.$element.removeClass('ld-sliding-left in');
 			self.$element.addClass('ld-slide');
 		}
 
+		// update the element based on the isOpen state
 		function update() {
 			if (scope.isOpen) {
 				self.expand();
@@ -249,6 +415,7 @@ angular.module('ldAdminTools')
 			}
 		}
 
+		// watch for the isOpen scope variable changes
 		scope.$watch('isOpen', function(shouldOpen) {
 			// if not isCloseable and we should close, it's not allowed, switch back to isOpen true
 			if (!scope.isCloseable && !shouldOpen) {
@@ -258,6 +425,7 @@ angular.module('ldAdminTools')
 			update();
 		});
 
+		// watch for the isCloseable scope variable changes
 		scope.$watch('isCloseable', function(closeable) {
 			if (!closeable && !scope.isOpen)
 			{
@@ -272,8 +440,10 @@ angular.module('ldAdminTools')
 	.directive('ldSlideLeft', [function () {
 		return {
 			restrict: 'A',
+			// use the ldSlideLeftController defined above
 			controller: 'ldSlideLeftController',
 			link: function postLink(scope, element, attrs, controller) {
+				// initialize the controller
 				controller.init(element);
 			}
 		};
@@ -288,21 +458,18 @@ angular.module('ldAdminTools')
 					return;
 				}
 
+				// toggle the element visibility (slide it)
 				function toggleSlide() {
 					scope.$apply(function() {
 						slideController.toggle();
 					});
 				}
 
-				scope.$watch(attrs.ldSlideToggle, function(value)
-				{
-					if (!angular.isDefined(value) || value.length === 0) {
-						element.on('click', toggleSlide);
+				element.on('click', toggleSlide);
 
-						scope.$on('$destroy', function () {
-							element.off('click', toggleSlide());
-						});
-					}
+				// remove the handler, when directive is removed
+				scope.$on('$destroy', function () {
+					element.off('click', toggleSlide);
 				});
 			}
 		};
@@ -311,8 +478,18 @@ angular.module('ldAdminTools')
 angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
-  $templateCache.put('partials/ldmenu.html',
-    "<ul class=nav ng-class=menuLevelStyle><li ng-repeat=\"item in data\" ng-init=\"isCollapsed=true\"><a ld-menuitem ng-href={{item.url}} ng-click=\"isCollapsed = !isCollapsed\" ld-slide-toggle=item.submenu><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span> <span ng-if=item.submenu class=\"fa ld-right\" ng-class=\"isCollapsed? 'fa-angle-left' : 'fa-angle-down'\"></span></a><div ng-if=item.submenu><div ld-menu collapse=isCollapsed data=item.submenu level=\"level + 1\"></div></div></li></ul>"
+  $templateCache.put('partials/ldmenu-wrap.html',
+    "<ul class=nav ng-class=menuLevelStyle><li ng-repeat=\"item in data\"><ld-menu-item ng-if=!item.submenu data=item></ld-menu-item><ld-submenu-item ng-if=item.submenu data=item level=level></ld-submenu-item></li></ul>"
+  );
+
+
+  $templateCache.put('partials/ldmenuitem.html',
+    "<a class=ld-menuitem ng-href={{item.url}} ld-slide-toggle><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span></a>"
+  );
+
+
+  $templateCache.put('partials/ldsubmenuitem.html',
+    "<div><a class=ld-menuitem ng-href={{item.url}} ng-click=toggle()><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span> <span class=\"fa ld-right\" ng-class=collapsedClass()></span></a><ld-menu collapse=isCollapsed() data=item.submenu level=\"level + 1\"></ld-menu></div>"
   );
 
 }]);
