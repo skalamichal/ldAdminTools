@@ -10,7 +10,7 @@
 <body ng-app="demo">
 
 <div id="wrapper" ng-controller="demoCtrl" style="padding-top: 20px">
-    <ld-menu data="menu" class="navbar-static-side" style="position: absolute; width: 250px" ld-slide-left="menuOpened" ld-animated="animate" ld-closeable="closeable"></ld-menu>
+    <ld-sidebar-menu data="menu" class="navbar-static-side" style="position: absolute; width: 250px" ld-slide-left="menuOpened" ld-animated="animate" ld-closeable="closeable"></ld-sidebar-menu>
 
     <div id="page-wrapper" style="margin-left: 300px">
         <a href="#" ng-click="menuOpened = !menuOpened">Show/Hide menu - <em>{{ menuOpened ? 'opened' : 'closed' }}</em></a> <br/>
@@ -110,6 +110,84 @@
                     {
                         'url': '#/options/portals',
                         'text': 'Portals'
+                    }
+                ]
+            },
+            {
+                'url': '',
+                'icon': 'fa-table',
+                'text': 'Reports',
+                'submenu': [
+                    {
+                        'url': '#/reports/audit',
+                        'text': 'ICE Audit'
+                    },
+                    {
+                        'url': '#/reports/onboard',
+                        'text': 'Onboard Summary'
+                    },
+                    {
+                        'url': '#/reports/billing',
+                        'text': 'Billing Summary'
+                    }
+                ]
+            },
+            {
+                'url': '',
+                'icon': 'fa-gear',
+                'text': 'Options',
+                'submenu': [
+                    {
+                        'url': '#/options/users',
+                        'text': 'Users'
+                    },
+                    {
+                        'url': '#/options/empforms',
+                        'text': 'Employee Forms'
+                    },
+                    {
+                        'url': '',
+                        'text': 'Level3',
+                        'submenu': [
+                            {
+                                'url': '#/options/compforms',
+                                'text': 'Company Forms'
+                            },
+                            {
+                                'url': '#/options/states',
+                                'text': 'States'
+                            },
+                            {
+                                'url': '#/options/doctypes',
+                                'text': 'Document Types'
+                            },
+                            {
+                                'url': '#/options/portals',
+                                'text': 'Portals'
+                            }
+                        ]
+                    },
+                    {
+                        'url': '',
+                        'text': 'Level3',
+                        'submenu': [
+                            {
+                                'url': '#/options/compforms',
+                                'text': 'Company Forms'
+                            },
+                            {
+                                'url': '#/options/states',
+                                'text': 'States'
+                            },
+                            {
+                                'url': '#/options/doctypes',
+                                'text': 'Document Types'
+                            },
+                            {
+                                'url': '#/options/portals',
+                                'text': 'Portals'
+                            }
+                        ]
                     }
                 ]
             },

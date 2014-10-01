@@ -215,17 +215,11 @@ angular.module('ldAdminTools')
 					});
 				}
 
-				// watch for the ld-slide-toggle value
-				scope.$watch(attrs.ldSlideToggle, function(value)
-				{
-					if (!angular.isDefined(value) || value.length === 0) {
-						element.on('click', toggleSlide);
+				element.on('click', toggleSlide);
 
-						// remove the handler, when directive is removed
-						scope.$on('$destroy', function () {
-							element.off('click', toggleSlide);
-						});
-					}
+				// remove the handler, when directive is removed
+				scope.$on('$destroy', function () {
+					element.off('click', toggleSlide);
 				});
 			}
 		};

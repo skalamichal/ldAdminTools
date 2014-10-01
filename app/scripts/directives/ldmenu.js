@@ -7,24 +7,53 @@
  * # sidebar menu directive
  */
 angular.module('ldAdminTools')
-	.constant('ldMenuConfig', {
-		level: 1
-	})
-	.controller('ldMenuController', ['$scope', '$parse', '$attrs', 'ldMenuConfig', function ($scope, $parse, $attrs, config) {
+	/*jshint unused:false*/
+/**
+ * The controller for the main ld-sidebar-menu directive for the sidebar menu.
+ */
+	.controller('ldSidebarMenuController', ['$scope', '$parse', '$attrs', function ($scope, $parse, $attrs) {
+		var self = this;
+		var menus = [];
 
-		//var self = this;
+		// register menu block
+		this.registerMenu = function (menu) {
+			var level = menu.level;
+			if (angular.isUndefined(menus[level])) {
+				menus[level] = [];
+			}
+			menus[level].push(menu);
 
-		// create new scope
-		//var scope = $scope.$new();
-		var level = angular.isDefined($attrs.level) ? $scope.$eval($attrs.level) : config.level;
+			// setup the menu level style
+			menu.menuLevelStyle = 'nav-' + self.getLevelAsString(level) + '-level';
+		};
 
-		console.log(level);
+		// open menu function, goes through all menus at the same level and calls its closeMenu function on the scope
+		this.openMenu = function(menu) {
+			angular.forEach(menus[menu.level], function(m) {
+				if (m.$id !== menu.$id) {
+					m.closeMenu();
+				}
+			}, this);
+
+			closeAllSubmenus(menu.level);
+		};
+
+		// close all submenus
+		function closeAllSubmenus(level) {
+			angular.forEach(menus, function(menu, index) {
+				if (index > level) {
+					angular.forEach(menu, function (m) {
+						m.closeMenu();
+					});
+				}
+			});
+		}
 
 		/**
 		 * Return level as string, example "1" -> "first"
 		 * @param level - max 3
 		 */
-		this.getLevelAsString = function () {
+		this.getLevelAsString = function (level) {
 			if (level === 1) {
 				return 'first';
 			}
@@ -38,41 +67,126 @@ angular.module('ldAdminTools')
 			return '';
 		};
 
-		this.getLevel = function () {
-			return level;
-		};
 	}])
-	.directive('ldMenu', ['RecursionHelper', function (recursionHelper) {
+/**
+ * The main directive, which wraps the menu functionality.
+ */
+	.directive('ldSidebarMenu', [function () {
 		return {
-			restrict: 'EA',
+			restrict: 'E',
 			scope: {
 				'data': '=',
-				'options': '=?ldMenuOptions'
+				'options': '=?ldMenuOptions',
+				'level': '=?level'
 			},
-			require: '?^ldMenu',
-			controller: 'ldMenuController',
 			replace: true,
-			templateUrl: 'partials/ldmenu.html',
+			// expose the sidebar menu controller API
+			controller: 'ldSidebarMenuController',
+			templateUrl: 'partials/ldmenu-wrap.html',
 			/*jshint unused:false*/
-			compile: function(element) {
-				return recursionHelper.compile(element, function(scope, element, attrs, menuController) {
+			link: function (scope, element, attrs, controller) {
+				// set the menu level
+				scope.level = scope.level || 1;
+				// get the style for the level: nav-first-level for example
+				scope.menuLevelStyle = 'nav-' + controller.getLevelAsString(scope.level) + '-level';
+			}
+		};
+	}])
+/**
+ * The ld-menu directive is used to wrap menu items.
+ */
+	.directive('ldMenu', ['RecursionHelper', function (recursionHelper) {
+		return {
+			restrict: 'E',
+			scope: {
+				'data': '=',
+				'level': '='
+			},
+			// require the ld-sidebar-menu directive - each menu is registered to the top sidebar controller
+			// require the ld-submenu-item directive, which is optional for submenu.
+			require: ['^ldSidebarMenu', '?^ldSubmenuItem'],
+			replace: true,
+			templateUrl: 'partials/ldmenu-wrap.html',
+			compile: function (element) {
+				return recursionHelper.compile(element, function (scope, element, attrs, controllers) {
+					var sidebarController = controllers[0];
+					var submenuItemController = controllers[1];
+
+					// register the menu for parent controllers
+					sidebarController.registerMenu(scope);
+					if (angular.isDefined(submenuItemController)) {
+						submenuItemController.registerMenu(scope);
+					}
+
+					// define close menu at the scope, called from ld-sidebar-menu controller
+					scope.closeMenu = function() {
+						if (angular.isDefined(submenuItemController)) {
+							submenuItemController.closeMenu();
+						}
+					};
 				});
 			}
 		};
 	}])
-	.directive('ldMenuItem', ['RecursionHelper', function (recursionHelper) {
+/**
+ * The ld-menu-item is the simple menu item element
+ */
+	.directive('ldMenuItem', [function () {
 		return {
-			restrict: 'EA',
-			require: '?^ldMenu',
+			restrict: 'E',
 			scope: {
 				item: '=data'
 			},
-			replace: true,
 			templateUrl: 'partials/ldmenuitem.html',
-			/*jshint unused:false*/
-			compile: function(element) {
-				return recursionHelper.compile(element, function(scope, element, attrs, menuController) {
-				});
+			replace: true
+		};
+	}])
+/**
+ * The ld-submenu-item is item with submenu functionality
+ * Defines several functions to handle submenu close/expand state and also via parent ld-sidebar-menu closes other menus
+ * when current submenu is expanded
+ */
+	.directive('ldSubmenuItem', [function () {
+		return {
+			restrict: 'E',
+			scope: {
+				item: '=data',
+				level: '='
+			},
+			controller: ['$scope', function($scope) {
+				console.log($scope);
+
+				this.registerMenu = function(menu) {
+					$scope.menu = menu;
+				};
+
+				this.closeMenu = function() {
+					if (!$scope.collapsed) {
+						$scope.collapsed = true;
+					}
+				};
+
+			}],
+			require: '^ldSidebarMenu',
+			templateUrl: 'partials/ldsubmenuitem.html',
+			replace: true,
+			link: function(scope, element, attrs, controller) {
+				scope.collapsed = true;
+
+				scope.toggle = function() {
+					scope.collapsed = !scope.collapsed;
+					if (!scope.collapsed && angular.isDefined(scope.menu)) {
+						controller.openMenu(scope.menu);
+					}
+				};
+
+				scope.collapsedClass = function() {
+					return scope.collapsed ? 'fa-angle-left' : 'fa-angle-down';
+				};
+
+				scope.isCollapsed = function() {
+					return scope.collapsed;
+				};
 			}
 		};
 	}]);
