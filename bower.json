@@ -1,7 +1,7 @@
 {
   "name": "ld-admin-tools",
   "description": "A collection of angular tools for admin sites",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": [
     "dist/ldAdminTools.js",
     "dist/ldAdminTools.css"
@@ -35,6 +35,5 @@
   ],
   "appPath": "app",
   "devDependencies": {
-    "angular-recursion": "~1.0.3"
   }
 }
