@@ -154,8 +154,6 @@ angular.module('ldAdminTools')
 				level: '='
 			},
 			controller: ['$scope', function($scope) {
-				console.log($scope);
-
 				this.registerMenu = function(menu) {
 					$scope.menu = menu;
 				};

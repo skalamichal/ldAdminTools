@@ -157,8 +157,6 @@ angular.module('ldAdminTools')
 				level: '='
 			},
 			controller: ['$scope', function($scope) {
-				console.log($scope);
-
 				this.registerMenu = function(menu) {
 					$scope.menu = menu;
 				};
@@ -475,6 +473,28 @@ angular.module('ldAdminTools')
 		};
 	}]);
 
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name ldAdminTools.directive:ldStFilter
+ * @description
+ * # Filter for the angular-smart-table, which is required to use.
+ */
+angular.module('ldAdminTools')
+	.directive('ldStFilter', function () {
+		return {
+			restrict: 'A',
+			require: '^stTable',
+			link: function postLink(scope, element, attrs, stTableController) {
+				scope.$watch(attrs.ldStFilter, function(value) {
+					if (value) {
+						stTableController.search(value.value, value.key);
+					}
+				});
+			}
+		};
+	});
 angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
