@@ -83,3 +83,21 @@ a.ld-menuitem:hover {
     -o-transition: left 0.35s ease;
     transition: left 0.35s ease;
 }
+
+/* ld-filter-dropdown style */
+.ld-filter-dropdown {
+    position: relative;
+    display: inline-block;
+    margin-top: 7px;
+}
+
+/* ld-table-pagination styles */
+.ld-table-pagination {
+    line-height: 0px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.ld-pagination {
+    margin: 0px !important;
+}

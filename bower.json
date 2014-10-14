@@ -1,7 +1,7 @@
 {
   "name": "ld-admin-tools",
   "description": "A collection of angular tools for admin sites",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": [
     "dist/ldAdminTools.js",
     "dist/ldAdminTools.css"
@@ -23,7 +23,8 @@
     "bootstrap": "~3.2.0",
     "angular-bootstrap": "~0.11.0",
     "font-awesome": "~4.2.0",
-    "angular-recursion": "~1.0.3"
+    "angular-recursion": "~1.0.3",
+    "angular-smart-table": "~1.3.0"
   },
   "ignore": [
     "**/.*",
@@ -34,6 +35,5 @@
     "app"
   ],
   "appPath": "app",
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
