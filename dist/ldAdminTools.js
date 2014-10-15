@@ -838,7 +838,7 @@ angular.module('ldAdminTools')
  * The ld-table-filter allows to use custom search for the table. The value is a filter object with following data:
  * - name {String}- the filter name (not required here!!!)
  * - filters {Object} optional - with predicate: value pairs
- * - clear {Array} optional - predicates as values, if defined and empty clear the filter
+ * - clear {Array} optional - predicates as values, if defined and empty clear the filter (!!!)
  * - divider {Boolean} - if true, the item is a divider in dropdown (not required here!!!)
  */
 	.directive('ldTableFilter', [function () {
@@ -894,7 +894,7 @@ angular.module('ldAdminTools')
 				maxSize: '=?',
 				isVisible: '=?'
 			},
-			template: '<div class="ld-table-pagination"><pagination class="ld-pagination" ng-show="__numPages > 1 && isVisible" num-pages="__numPages" ng-model="currentPage" max-size="maxSize" total-items="totalItems" items-per-page="itemsPerPage" boundary-links="true" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></pagination></div>',
+			templateUrl: 'partials/ldtablepagination.html',
 			link: function (scope, element, attrs, tableController) {
 				scope.totalItems = tableController.getFilteredRows();
 				scope.itemsPerPage = scope.itemsPerPage || 10;
@@ -927,7 +927,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('partials/ldfilterdropdown.html',
-    "<div class=ld-filter-dropdown dropdown><button class=\"btn btn-default\" dropdown-toggle role=button>{{ selectedFilter.name }} <i class=\"fa fa-caret-down\"></i></button><ul class=dropdown-menu><li ng-repeat=\"filter in filters\" ng-class=\"filter.divider ? 'divider' : ''\"><a ng-if=!filter.divider ng-click=selectFilter(filter);>{{ filter.name }}</a></li></ul></div>"
+    "<div class=ld-filter-dropdown dropdown><a style=cursor:pointer dropdown-toggle role=button>{{ selectedFilter.name }} <i class=\"fa fa-caret-down\"></i></a><ul class=dropdown-menu><li ng-repeat=\"filter in filters\" ng-class=\"filter.divider ? 'divider' : ''\"><a ng-if=!filter.divider ng-click=selectFilter(filter);>{{ filter.name }}</a></li></ul></div>"
   );
 
 
@@ -943,6 +943,11 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('partials/ldsubmenuitem.html',
     "<div><a class=ld-menuitem ng-href={{item.url}} ng-click=toggle()><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span> <span class=\"fa ld-right\" ng-class=collapsedClass()></span></a><ld-menu collapse=isCollapsed() data=item.submenu level=\"level + 1\"></ld-menu></div>"
+  );
+
+
+  $templateCache.put('partials/ldtablepagination.html',
+    "<div class=ld-table-pagination><pagination class=ld-pagination ng-show=\"__numPages > 1 && isVisible\" num-pages=__numPages ng-model=currentPage max-size=maxSize total-items=totalItems items-per-page=itemsPerPage boundary-links=true previous-text=&lsaquo; next-text=&rsaquo; first-text=&laquo; last-text=&raquo;></pagination></div>"
   );
 
 }]);

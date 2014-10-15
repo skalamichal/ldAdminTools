@@ -385,7 +385,7 @@ angular.module('ldAdminTools')
 				maxSize: '=?',
 				isVisible: '=?'
 			},
-			template: '<div class="ld-table-pagination"><pagination class="ld-pagination" ng-show="__numPages > 1 && isVisible" num-pages="__numPages" ng-model="currentPage" max-size="maxSize" total-items="totalItems" items-per-page="itemsPerPage" boundary-links="true" previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"></pagination></div>',
+			templateUrl: 'partials/ldtablepagination.html',
 			link: function (scope, element, attrs, tableController) {
 				scope.totalItems = tableController.getFilteredRows();
 				scope.itemsPerPage = scope.itemsPerPage || 10;

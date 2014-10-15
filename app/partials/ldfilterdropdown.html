@@ -1,6 +1,6 @@
 <div class="ld-filter-dropdown" dropdown>
-    <button class="btn btn-default" dropdown-toggle role="button">{{ selectedFilter.name }} <i
-            class="fa fa-caret-down"></i></button>
+    <a style="cursor:pointer;" dropdown-toggle role="button">{{ selectedFilter.name }} <i
+            class="fa fa-caret-down"></i></a>
     <ul class="dropdown-menu">
         <li ng-repeat="filter in filters" ng-class="filter.divider ? 'divider' : ''">
             <a ng-if="!filter.divider" ng-click="selectFilter(filter);">{{ filter.name }}</a>
