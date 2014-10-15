@@ -8,6 +8,11 @@ angular.module('ldAdminTools', ['ui.bootstrap', 'RecursionHelper']);
  * @name ldAdminTools.directive:ldFilterDropdown
  * @description
  * # ldFilterDropdown
+ * filters is array with objects with following data:
+ * - name {String}- the filter name
+ * - filters {Object} optional - with predicate: value pairs
+ * - clear {Array} optional - predicates as values, if defined and empty clear the filter
+ * - divider {Boolean} - if true, the item is a divider in dropdown
  */
 angular.module('ldAdminTools')
 	.directive('ldFilterDropdown', [function () {
@@ -897,7 +902,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('partials/ldfilterdropdown.html',
-    "<div class=ld-filter-dropdown dropdown><a style=\"cursor: pointer\" dropdown-toggle role=button>{{ selectedFilter.name }} <i class=\"fa fa-caret-down\"></i></a><ul class=dropdown-menu><li ng-repeat=\"filter in filters\" ng-class=\"filter.divider ? 'divider' : ''\"><a ng-if=!filter.divider ng-click=selectFilter(filter);>{{ filter.name }}</a></li></ul></div>"
+    "<div class=ld-filter-dropdown dropdown><button class=\"btn btn-default\" dropdown-toggle role=button>{{ selectedFilter.name }} <i class=\"fa fa-caret-down\"></i></button><ul class=dropdown-menu><li ng-repeat=\"filter in filters\" ng-class=\"filter.divider ? 'divider' : ''\"><a ng-if=!filter.divider ng-click=selectFilter(filter);>{{ filter.name }}</a></li></ul></div>"
   );
 
 

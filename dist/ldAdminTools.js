@@ -8,6 +8,11 @@ angular.module('ldAdminTools', ['ui.bootstrap', 'RecursionHelper']);
  * @name ldAdminTools.directive:ldFilterDropdown
  * @description
  * # ldFilterDropdown
+ * filters is array with objects with following data:
+ * - name {String}- the filter name
+ * - filters {Object} optional - with predicate: value pairs
+ * - clear {Array} optional - predicates as values, if defined and empty clear the filter
+ * - divider {Boolean} - if true, the item is a divider in dropdown
  */
 angular.module('ldAdminTools')
 	.directive('ldFilterDropdown', [function () {
@@ -17,16 +22,7 @@ angular.module('ldAdminTools')
 			selectedFilter: '=',
 			filters: '='
 		},
-		template: function () {
-			var tpl = '<div class="ld-filter-dropdown" dropdown>';
-			tpl += '<a style="cursor: pointer" dropdown-toggle role="button">{{ selectedFilter.name }} <i class="fa fa-caret-down"></i></a>';
-			tpl += '<ul class="dropdown-menu">';
-			tpl += '<li ng-repeat="filter in filters"><a ng-click="selectFilter(filter);">{{ filter.name }}</a></li>';
-			tpl += '</ul>';
-			tpl += '</div>';
-
-			return tpl;
-		},
+		templateUrl: 'partials/ldfilterdropdown.html',
 		link: function (scope, element, attrs) {
 
 			scope.selectFilter = function (filter) {
@@ -515,28 +511,6 @@ angular.module('ldAdminTools')
 
 /**
  * @ngdoc directive
- * @name ldAdminTools.directive:ldStFilter
- * @description
- * # Filter for the angular-smart-table, which is required to use.
- */
-angular.module('ldAdminTools')
-	.directive('ldStFilter', function () {
-		return {
-			restrict: 'A',
-			require: '^stTable',
-			link: function postLink(scope, element, attrs, stTableController) {
-				scope.$watch(attrs.ldStFilter, function(value) {
-					if (value) {
-						stTableController.search(value.value, value.key);
-					}
-				});
-			}
-		};
-	});
-'use strict';
-
-/**
- * @ngdoc directive
  * @name ldAdminTools.directive:ldTable
  * @description
  * # ldTable
@@ -611,6 +585,15 @@ angular.module('ldAdminTools')
 		this.removeSearchFilter = function removeSearchFilter(predicate) {
 			var property = angular.isDefined(predicate) ? predicate : '$';
 			delete filters[property];
+
+			this.applyFilters();
+		};
+
+		/**
+		 * Clear the search filter
+		 */
+		this.clearSearchFilter = function clearSearchFilter() {
+			filters = {};
 
 			this.applyFilters();
 		};
@@ -720,6 +703,10 @@ angular.module('ldAdminTools')
 			}
 		};
 	}])
+/**
+ * The ld-table-search makes a binding between input field and table filter
+ * The ld-table-search value is a predicate. If no value is set, the global filter is applied.
+ */
 	.directive('ldTableSearch', ['$timeout', function ($timeout) {
 		return {
 			restrict: 'A',
@@ -756,6 +743,12 @@ angular.module('ldAdminTools')
 			}
 		};
 	}])
+/**
+ * The ld-table-sort makes a binding between element and table column sorting. The value defines the
+ * order by predicate.
+ * Optionally you can use the ld-table-sort-default attribute with no value as a default ascent sorting or "reverse"
+ * value for descent sorting.
+ */
 	.directive('ldTableSort', ['$parse', function ($parse) {
 		return {
 			restrict: 'A',
@@ -841,22 +834,44 @@ angular.module('ldAdminTools')
 			}
 		};
 	}])
+/**
+ * The ld-table-filter allows to use custom search for the table. The value is a filter object with following data:
+ * - name {String}- the filter name (not required here!!!)
+ * - filters {Object} optional - with predicate: value pairs
+ * - clear {Array} optional - predicates as values, if defined and empty clear the filter
+ * - divider {Boolean} - if true, the item is a divider in dropdown (not required here!!!)
+ */
 	.directive('ldTableFilter', [function () {
 		return {
 			restrict: 'A',
 			require: '^ldTable',
 			scope: {
-				predicate: '=ldTableFilter'
+				filter: '=ldTableFilter'
 			},
 			link: function (scope, element, link, tableController) {
 
-				scope.$watch('predicate', function (newValue, oldValue) {
+				scope.$watch('filter', function (newValue, oldValue) {
 					if (angular.isDefined(newValue)) {
-						if (angular.isDefined(newValue.value)) {
-							tableController.setSearchFilter(newValue.value, newValue.predicate);
+
+						// if the clear object is defined, first clear the old filter
+						if (angular.isDefined(newValue.clear)) {
+							// clear all filters
+							if (newValue.clear.length === 0) {
+								tableController.clearSearchFilter();
+							}
+							// remove filters
+							else {
+								angular.forEach(newValue.clear, function (predicate) {
+									tableController.removeSearchFilter(predicate);
+								});
+							}
 						}
-						else {
-							tableController.removeSearchFilter(newValue.predicate);
+
+						// if filters are defined, apply them
+						if (angular.isDefined(newValue.filters)) {
+							angular.forEach(newValue.filters, function(value, key) {
+								tableController.setSearchFilter(value, key);
+							});
 						}
 					}
 				}, true);
@@ -864,6 +879,12 @@ angular.module('ldAdminTools')
 			}
 		}
 	}])
+/**
+ * The ld-table-pagination is a plugin to paginate the table. Following values could be set via attributes:
+ * - items-per-page {Number} - the max number of rows displayed on the page
+ * - max-size {Number} - max number of buttons in paginntion
+ * - is-visible {Boolean} - show/hide the pagination
+ */
 	.directive('ldTablePagination', [function () {
 		return {
 			restrict: 'EA',
@@ -904,6 +925,11 @@ angular.module('ldAdminTools')
 	}]);
 angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
+
+  $templateCache.put('partials/ldfilterdropdown.html',
+    "<div class=ld-filter-dropdown dropdown><button class=\"btn btn-default\" dropdown-toggle role=button>{{ selectedFilter.name }} <i class=\"fa fa-caret-down\"></i></button><ul class=dropdown-menu><li ng-repeat=\"filter in filters\" ng-class=\"filter.divider ? 'divider' : ''\"><a ng-if=!filter.divider ng-click=selectFilter(filter);>{{ filter.name }}</a></li></ul></div>"
+  );
+
 
   $templateCache.put('partials/ldmenu-wrap.html',
     "<ul class=nav ng-class=menuLevelStyle><li ng-repeat=\"item in data\"><ld-menu-item ng-if=!item.submenu data=item></ld-menu-item><ld-submenu-item ng-if=item.submenu data=item level=level></ld-submenu-item></li></ul>"

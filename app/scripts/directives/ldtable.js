@@ -81,6 +81,15 @@ angular.module('ldAdminTools')
 		};
 
 		/**
+		 * Clear the search filter
+		 */
+		this.clearSearchFilter = function clearSearchFilter() {
+			filters = {};
+
+			this.applyFilters();
+		};
+
+		/**
 		 * Set rows order
 		 * @param predicate
 		 * @param reverse
@@ -185,6 +194,10 @@ angular.module('ldAdminTools')
 			}
 		};
 	}])
+/**
+ * The ld-table-search makes a binding between input field and table filter
+ * The ld-table-search value is a predicate. If no value is set, the global filter is applied.
+ */
 	.directive('ldTableSearch', ['$timeout', function ($timeout) {
 		return {
 			restrict: 'A',
@@ -221,6 +234,12 @@ angular.module('ldAdminTools')
 			}
 		};
 	}])
+/**
+ * The ld-table-sort makes a binding between element and table column sorting. The value defines the
+ * order by predicate.
+ * Optionally you can use the ld-table-sort-default attribute with no value as a default ascent sorting or "reverse"
+ * value for descent sorting.
+ */
 	.directive('ldTableSort', ['$parse', function ($parse) {
 		return {
 			restrict: 'A',
@@ -306,22 +325,44 @@ angular.module('ldAdminTools')
 			}
 		};
 	}])
+/**
+ * The ld-table-filter allows to use custom search for the table. The value is a filter object with following data:
+ * - name {String}- the filter name (not required here!!!)
+ * - filters {Object} optional - with predicate: value pairs
+ * - clear {Array} optional - predicates as values, if defined and empty clear the filter (!!!)
+ * - divider {Boolean} - if true, the item is a divider in dropdown (not required here!!!)
+ */
 	.directive('ldTableFilter', [function () {
 		return {
 			restrict: 'A',
 			require: '^ldTable',
 			scope: {
-				predicate: '=ldTableFilter'
+				filter: '=ldTableFilter'
 			},
 			link: function (scope, element, link, tableController) {
 
-				scope.$watch('predicate', function (newValue, oldValue) {
+				scope.$watch('filter', function (newValue, oldValue) {
 					if (angular.isDefined(newValue)) {
-						if (angular.isDefined(newValue.value)) {
-							tableController.setSearchFilter(newValue.value, newValue.predicate);
+
+						// if the clear object is defined, first clear the old filter
+						if (angular.isDefined(newValue.clear)) {
+							// clear all filters
+							if (newValue.clear.length === 0) {
+								tableController.clearSearchFilter();
+							}
+							// remove filters
+							else {
+								angular.forEach(newValue.clear, function (predicate) {
+									tableController.removeSearchFilter(predicate);
+								});
+							}
 						}
-						else {
-							tableController.removeSearchFilter(newValue.predicate);
+
+						// if filters are defined, apply them
+						if (angular.isDefined(newValue.filters)) {
+							angular.forEach(newValue.filters, function(value, key) {
+								tableController.setSearchFilter(value, key);
+							});
 						}
 					}
 				}, true);
@@ -329,6 +370,12 @@ angular.module('ldAdminTools')
 			}
 		}
 	}])
+/**
+ * The ld-table-pagination is a plugin to paginate the table. Following values could be set via attributes:
+ * - items-per-page {Number} - the max number of rows displayed on the page
+ * - max-size {Number} - max number of buttons in paginntion
+ * - is-visible {Boolean} - show/hide the pagination
+ */
 	.directive('ldTablePagination', [function () {
 		return {
 			restrict: 'EA',

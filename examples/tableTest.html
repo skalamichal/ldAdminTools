@@ -9,7 +9,7 @@
 </head>
 <body ng-app="TableApp">
 
-<div ng-controller="testController">
+<div style="margin: 20px" ng-controller="testController">
 
     <ld-filter-dropdown filters="filters" selected-filter="selectedFilter"></ld-filter-dropdown>
 
@@ -24,7 +24,7 @@
 
 <script type="text/javascript">
 
-    angular.module('TableApp', ['ldAdminTools'])
+    angular.module('TableApp', ['ui.bootstrap', 'RecursionHelper', 'ldAdminTools'])
             .controller('testController', ['$scope', function (scope) {
 
                 scope.$watch('selectedFilter', function (newValue, oldValue) {
@@ -34,7 +34,10 @@
                 scope.filters = [
                     {
                         name: 'All',
-                        predicate: 'read'
+                        filter: {
+                            'read': 'false'
+                        },
+                        clear: true
                     },
                     {
                         name: 'Some',
