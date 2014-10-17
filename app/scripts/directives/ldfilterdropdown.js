@@ -20,7 +20,7 @@ angular.module('ldAdminTools')
 			filters: '='
 		},
 		templateUrl: 'partials/ldfilterdropdown.html',
-		link: function (scope, element, attrs) {
+		link: function (scope) {
 
 			scope.selectFilter = function (filter) {
 				scope.selectedFilter = filter;

@@ -11,7 +11,39 @@
 
 <div style="margin: 20px" ng-controller="testController">
 
-    <ld-filter-dropdown filters="filters" selected-filter="selectedFilter"></ld-filter-dropdown>
+    <table ld-table="users" class="table table-condensed table-striped" ld-table-filter="selectedFilter" ld-table-page-rows="10">
+        <thead>
+        <tr>
+            <th>
+                <ld-filter-dropdown filters="filters" selected-filter="selectedFilter"></ld-filter-dropdown>
+            </th>
+            <th>
+                <input ld-table-search="" ng-model="searchValue" class="form-control" placeholder="global search ..."
+                       type="text"/>
+            </th>
+        </tr>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="user in users">
+            <td>{{ user.firstName }} {{ user.lastName }}</td>
+            <td>{{ user.email }}</td>
+        </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>
+                    <ld-table-pagination></ld-table-pagination>
+                </td>
+                <td>
+                    <ld-table-info description="'Messages'"></ld-table-info>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
 
 </div>
 
@@ -27,27 +59,41 @@
     angular.module('TableApp', ['ui.bootstrap', 'RecursionHelper', 'ldAdminTools'])
             .controller('testController', ['$scope', function (scope) {
 
-                scope.$watch('selectedFilter', function (newValue, oldValue) {
-                    console.log(newValue);
-                });
-
                 scope.filters = [
                     {
                         name: 'All',
-                        filter: {
-                            'read': 'false'
-                        },
-                        clear: true
+                        clear: []
                     },
                     {
-                        name: 'Some',
-                        predicate: 'read',
-                        value: 'false'
+                        name: 'rambo',
+                        filters: {
+                            'email': 'rambo'
+                        }
                     },
                     {
                         divider: true
                     }
                 ];
+
+                function randomTableRow() {
+                    var fnames = ['Michal', 'John', 'George', 'Jones', 'Arnold', 'Dean'];
+                    var lnames = ['Doe', 'Smith', 'Rambo', 'Black', 'White'];
+
+                    var fname = fnames[Math.floor(Math.random() * fnames.length)];
+                    var lname = lnames[Math.floor(Math.random() * lnames.length)];
+
+                    return {
+                        firstName: fname,
+                        lastName: lname,
+                        email: fname.toLowerCase() + '@' + lname.toLowerCase() + '.com'
+                    };
+                }
+
+                scope.users = [];
+                for (var i = 0; i < 20; i++) {
+                    scope.users.push(randomTableRow());
+                }
+
             }])
 
 </script>
