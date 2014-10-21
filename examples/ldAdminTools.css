@@ -114,3 +114,7 @@ a.ld-menuitem:hover {
     position: relative;
     display: inline-block;
 }
+
+.ld-table-info {
+    font-weight: bold;
+}

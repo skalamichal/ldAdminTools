@@ -538,7 +538,6 @@ angular.module('ldAdminTools')
 			link: function(scope, element, attrs, tableController) {
 
 				var infoText = scope.text || config.textDefault;
-				console.log(infoText);
 
 				// update the scope variables used in the template
 				function update() {
@@ -679,8 +678,9 @@ angular.module('ldAdminTools')
 					var startPage = Math.max(currentPage - 2, 1);
 					var endPage = Math.min(currentPage + 2, tableController.getTotalPages());
 
-					if (endPage - startPage < 5)
+					if (tableController.getTotalPages() < 5) {
 						return;
+					}
 
 					var pages = [];
 
