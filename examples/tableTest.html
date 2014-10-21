@@ -11,7 +11,8 @@
 
 <div style="margin: 20px" ng-controller="testController">
 
-    <table ld-table="users" class="table table-condensed table-striped" ld-table-filter="selectedFilter" ld-table-page-rows="10">
+    <table ld-table="users" class="table table-condensed table-striped" ld-table-filter="selectedFilter"
+           ld-table-page-rows="10">
         <thead>
         <tr>
             <th>
@@ -19,7 +20,9 @@
             </th>
             <th>
                 <input ld-table-search="" ng-model="searchValue" class="form-control" placeholder="global search ..."
-                       type="text"/>
+                       type="text" style="display: inline-block; width: 250px"/>
+                <ld-table-navigation-dropdown header-text="{0} {{ selectedFilter.name }}"></ld-table-navigation-dropdown>
+                <ld-table-navigation></ld-table-navigation>
             </th>
         </tr>
         <tr>
@@ -34,14 +37,14 @@
         </tr>
         </tbody>
         <tfoot>
-            <tr>
-                <td>
-                    <ld-table-pagination></ld-table-pagination>
-                </td>
-                <td>
-                    <ld-table-info description="'Messages'"></ld-table-info>
-                </td>
-            </tr>
+        <tr>
+            <td>
+                <ld-table-pagination></ld-table-pagination>
+            </td>
+            <td>
+                <ld-table-info text="{0} - {1} of {2} Messages"></ld-table-info>
+            </td>
+        </tr>
         </tfoot>
     </table>
 
@@ -90,7 +93,7 @@
                 }
 
                 scope.users = [];
-                for (var i = 0; i < 20; i++) {
+                for (var i = 0; i < 155; i++) {
                     scope.users.push(randomTableRow());
                 }
 

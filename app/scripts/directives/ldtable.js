@@ -81,19 +81,23 @@ angular.module('ldAdminTools')
 			rowsPerPage = rows;
 			currentPage = page || 1;
 
-			var pages = rowsPerPage < 1 ? 1 : Math.ceil(filteredRows / rowsPerPage);
-			totalPages = Math.max(pages || 0, 1);
+			totalPages = calcTotalPages();
 
 			this.applyFilters();
 		};
+
+		function calcTotalPages() {
+			var pages = rowsPerPage < 1 ? 1 : Math.ceil(filteredRows / rowsPerPage);
+			return Math.max(pages || 0, 1);
+		}
 
 		/**
 		 * Remove paging
 		 */
 		this.clearPaging = function clearPaging() {
-			rowsPerPage = undefined;
-			currentPage = undefined;
-			totalPages = undefined;
+			rowsPerPage = dataCopy.length;
+			currentPage = 1;
+			totalPages = 1;
 
 			this.applyFilters();
 		};
@@ -103,7 +107,9 @@ angular.module('ldAdminTools')
 		 * @param page
 		 */
 		this.setPage = function setPage(page) {
-		    currentPage = page;
+			if (currentPage !== page && page > 0 && page <= totalPages) {
+				currentPage = page;
+			}
 
 		    this.applyFilters();
 		};
@@ -120,12 +126,18 @@ angular.module('ldAdminTools')
 				delete filters[property];
 			}
 
+			// reset the currentpage to 1
+			currentPage = 1;
+
 			this.applyFilters();
 		};
 
 		this.removeSearchFilter = function removeSearchFilter(predicate) {
 			var property = angular.isDefined(predicate) ? predicate : '$';
 			delete filters[property];
+
+			// reset the currentpage to 1
+			currentPage = 1;
 
 			this.applyFilters();
 		};
@@ -163,8 +175,9 @@ angular.module('ldAdminTools')
 		this.clearFilters = function clearFilters() {
 			orders = {};
 			filters = {};
-			currentPage = undefined;
-			rowsPerPage = undefined;
+			currentPage = 1;
+			rowsPerPage = dataCopy.length;
+			totalPages = 1;
 
 			this.applyFilters();
 		};
@@ -178,7 +191,9 @@ angular.module('ldAdminTools')
 
 			filteredRows = sorted.length;
 
-			if (angular.isDefined(totalPages)) {
+			totalPages = calcTotalPages();
+
+			if (totalPages > 1) {
 				sorted = pagingFilter(sorted, currentPage, rowsPerPage);
 			}
 
@@ -268,7 +283,6 @@ angular.module('ldAdminTools')
 			},
 			link: function (scope, element, attrs, controllers) {
 				var tableController = controllers[0];
-				var modelController = controllers[1];
 				var promise;
 
 				// watch the predicate value so we can change is at runtime
@@ -506,19 +520,24 @@ angular.module('ldAdminTools')
 			}
 		};
 	}])
+	.constant('ldTableInfoConfig', {
+		textDefault: '{0} - {1} of {2} Items'
+	})
 /**
  * Simple directive which allows to display the range of displayed items. Allows to set the description.
  * Example: 1-20 of 95 Messages
  */
-	.directive('ldTableInfo', [function() {
+	.directive('ldTableInfo', ['ldTableInfoConfig', function(config) {
 		return {
 			restrict: 'EA',
 			require: '^ldTable',
 			templateUrl: 'partials/ldtableinfo.html',
 			scope: {
-				description: '='
+				text: '@'
 			},
 			link: function(scope, element, attrs, tableController) {
+
+				scope.text = scope.text || config.textDefault;
 
 				// udpate the scope variables used in the template
 				function update() {
@@ -526,9 +545,14 @@ angular.module('ldAdminTools')
 					var rowsPerPage = tableController.getRowsPerPage();
 					var rows = tableController.getFilteredRows();
 
-					scope.rowFrom = ((page - 1) * rowsPerPage) + 1;
-					scope.rowTo = Math.min(scope.rowFrom + rowsPerPage, rows);
-					scope.rows = rows;
+					var rowFrom = ((page - 1) * rowsPerPage) + 1;
+					var rowTo = Math.min(rowFrom + rowsPerPage, rows);
+
+					var txt = scope.text.replace('{0}', rowFrom);
+					txt = txt.replace('{1}', rowTo);
+					txt = txt.replace('{2}', rows);
+
+					scope.infoText = txt;
 				}
 
 				// watch for table filter udpates
@@ -536,8 +560,149 @@ angular.module('ldAdminTools')
 					update();
 				});
 
+				scope.$watch(tableController.getCurrentPage, function() {
+					update();
+				});
+
 				// initialize
 				update();
+			}
+		};
+	}])
+	.constant('ldTableNavigationConfig', {
+		showPreviousButtonDefault: true,
+		showNextButtonDefault: true
+	})
+	.directive('ldTableNavigation', ['ldTableNavigationConfig', function (config) {
+		return {
+			restrict: 'EA',
+			require: '^ldTable',
+			templateUrl: 'partials/ldtablenavigation.html',
+			scope: {
+				showPreviousButton: '=?',
+				showNextButton: '=?'
+			},
+			/*jshint unused:false*/
+			link: function(scope, element, attrs, tableController) {
+				scope.disablePreviousButtonClass = '';
+				scope.disableNextButtonClass = '';
+
+				scope.showPreviousButton = scope.showPreviousButton || config.showPreviousButtonDefault;
+				scope.showNextButton = scope.showNextButton || config.showNextButtonDefault;
+
+				function updateNavigation() {
+					var page = tableController.getCurrentPage();
+					scope.disablePreviousButtonClass = (page <= 1 ? 'disabled' : '');
+					scope.disableNextButtonClass = (page >= tableController.getTotalPages() ? 'disabled' : '');
+				}
+
+				scope.$watch(tableController.getCurrentPage, function() {
+					updateNavigation();
+				});
+
+				scope.$watch(tableController.getFilteredRows, function() {
+					updateNavigation();
+				});
+
+				scope.previousPage = function() {
+					tableController.setPage(tableController.getCurrentPage() - 1);
+				};
+
+				scope.nextPage = function() {
+					tableController.setPage(tableController.getCurrentPage() + 1);
+				};
+			}
+		};
+	}])
+	.constant('ldTableNavigationDropdownConfig', {
+		headerTextDefault: '{0} Items',
+		firstPageTextDefault: 'First Page',
+		lastPageTextDefault: 'Last Page',
+		pageTextDefault: 'Page {0}'
+	})
+	.directive('ldTableNavigationDropdown', ['ldTableNavigationDropdownConfig', function (config) {
+		return {
+			restrict: 'EA',
+			require: '^ldTable',
+			templateUrl: 'partials/ldtablenavigationdropdown.html',
+			scope: {
+				description: '=',
+				headerText: '@',
+				firstPageText: '@',
+				lastPageText: '@',
+				pageText: '@'
+			},
+			/*jshint unused:false*/
+			link: function(scope, element, attrs, tableController) {
+				// initialized the text variables
+				scope.headerText = scope.headerText || config.headerTextDefault;
+				scope.firstPageText = scope.firstPageText || config.firstPageTextDefault;
+				scope.lastPageText = scope.lastPageText || config.lastPageTextDefault;
+				var pageText = scope.pageText || config.pageTextDefault;
+
+				// display text
+				scope.firstPage = scope.firstPageText;
+				scope.lastPage = scope.lastPageText;
+
+				// the pages array
+				scope.pages = [];
+
+				/* update the dropdown header text */
+				function updateHeader(items) {
+					scope.header = scope.headerText.replace('{0}', items);
+				}
+
+				function updateStyles(obj) {
+					scope.firstPageClass = (obj.totalPages > 1 && obj.currentPage > 1) ? '' : 'disabled';
+					scope.lastPageClass = (obj.totalPages > 1 && obj.currentPage < obj.totalPages) ? '' : 'disabled';
+				}
+
+				function makePage(page, currentPage) {
+					var pageObj = {
+						page: page,
+						text: pageText.replace('{0}', page),
+						active: page === currentPage
+					};
+
+					return pageObj;
+				}
+
+				function makePages(currentPage) {
+					var startPage = Math.max(currentPage - 2, 1);
+					var endPage = Math.min(currentPage + 2, tableController.getTotalPages());
+
+					var pages = [];
+
+					for (var p = startPage; p<= endPage; p++) {
+						var page = makePage(p, currentPage);
+						pages.push(page);
+					}
+
+					scope.pages = pages;
+				}
+
+				scope.gotoPage = function(page) {
+					tableController.setPage(page);
+				};
+
+				/* watch for header text changes */
+				scope.$watch('headerText', function (value) {
+					updateHeader(tableController.getFilteredRows());
+				});
+
+				scope.$watch(function() {
+					return {
+						'totalPages': tableController.getTotalPages(),
+						'currentPage': tableController.getCurrentPage(),
+						'rows': tableController.getFilteredRows()
+					};
+				}, function(newValue) {
+					scope.totalPages = newValue.totalPages;
+					scope.currentPage = newValue.currentPage;
+					updateHeader(newValue.rows);
+					updateStyles(newValue);
+					makePages(newValue.currentPage);
+				}, true);
 			}
 		};
 	}]);

@@ -101,3 +101,16 @@ a.ld-menuitem:hover {
 .ld-pagination {
     margin: 0px !important;
 }
+
+.ld-table-navigation {
+    display: inline-block;
+}
+
+.ld-table-navigation-btn {
+    padding: 6px 6px;
+}
+
+.ld-table-navigation-dropdown {
+    position: relative;
+    display: inline-block;
+}
