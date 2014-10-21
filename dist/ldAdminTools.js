@@ -1046,7 +1046,7 @@ angular.module('ldAdminTools')
 			},
 			link: function(scope, element, attrs, tableController) {
 
-				scope.text = scope.text || config.textDefault;
+				var infoText = scope.text || config.textDefault;
 
 				// udpate the scope variables used in the template
 				function update() {
@@ -1057,14 +1057,19 @@ angular.module('ldAdminTools')
 					var rowFrom = ((page - 1) * rowsPerPage) + 1;
 					var rowTo = Math.min(rowFrom + rowsPerPage, rows);
 
-					var txt = scope.text.replace('{0}', rowFrom);
+					var txt = infoText.replace('{0}', rowFrom);
 					txt = txt.replace('{1}', rowTo);
 					txt = txt.replace('{2}', rows);
 
 					scope.infoText = txt;
 				}
 
-				// watch for table filter udpates
+				scope.$watch('text', function(value) {
+					infoText = value;
+					update();
+				});
+
+				// watch for table filter updates
 				scope.$watch(tableController.getFilteredRows, function() {
 					update();
 				});
