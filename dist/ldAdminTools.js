@@ -1047,8 +1047,9 @@ angular.module('ldAdminTools')
 			link: function(scope, element, attrs, tableController) {
 
 				var infoText = scope.text || config.textDefault;
+				console.log(infoText);
 
-				// udpate the scope variables used in the template
+				// update the scope variables used in the template
 				function update() {
 					var page = tableController.getCurrentPage();
 					var rowsPerPage = tableController.getRowsPerPage();
@@ -1129,10 +1130,11 @@ angular.module('ldAdminTools')
 		};
 	}])
 	.constant('ldTableNavigationDropdownConfig', {
-		headerTextDefault: '{0} Items',
 		firstPageTextDefault: 'First Page',
 		lastPageTextDefault: 'Last Page',
-		pageTextDefault: 'Page {0}'
+		pageTextDefault: 'Page {0}',
+		previousPageTextDefault: 'Previous Page',
+		nextPageTextDefault: 'Next Page'
 	})
 	.directive('ldTableNavigationDropdown', ['ldTableNavigationDropdownConfig', function (config) {
 		return {
@@ -1141,34 +1143,35 @@ angular.module('ldAdminTools')
 			templateUrl: 'partials/ldtablenavigationdropdown.html',
 			scope: {
 				description: '=',
-				headerText: '@',
 				firstPageText: '@',
 				lastPageText: '@',
-				pageText: '@'
+				pageText: '@',
+				previousPageText: '@',
+				nextPageText: '@'
 			},
 			/*jshint unused:false*/
 			link: function(scope, element, attrs, tableController) {
 				// initialized the text variables
-				scope.headerText = scope.headerText || config.headerTextDefault;
 				scope.firstPageText = scope.firstPageText || config.firstPageTextDefault;
 				scope.lastPageText = scope.lastPageText || config.lastPageTextDefault;
+				scope.previousPageText = scope.previousPageText || config.previousPageTextDefault;
+				scope.nextPageText = scope.nextPageText || config.nextPageTextDefault;
 				var pageText = scope.pageText || config.pageTextDefault;
 
 				// display text
 				scope.firstPage = scope.firstPageText;
 				scope.lastPage = scope.lastPageText;
+				scope.previousPage = scope.previousPageText;
+				scope.nextPage = scope.nextPageText;
 
 				// the pages array
 				scope.pages = [];
 
-				/* update the dropdown header text */
-				function updateHeader(items) {
-					scope.header = scope.headerText.replace('{0}', items);
-				}
-
 				function updateStyles(obj) {
 					scope.firstPageClass = (obj.totalPages > 1 && obj.currentPage > 1) ? '' : 'disabled';
 					scope.lastPageClass = (obj.totalPages > 1 && obj.currentPage < obj.totalPages) ? '' : 'disabled';
+					scope.previousPageClass = (obj.currentPage > 1) ? '' : 'disabled';
+					scope.nextPageClass = (obj.currentPage < obj.totalPages) ? '' : 'disabled';
 				}
 
 				function makePage(page, currentPage) {
@@ -1185,6 +1188,9 @@ angular.module('ldAdminTools')
 					var startPage = Math.max(currentPage - 2, 1);
 					var endPage = Math.min(currentPage + 2, tableController.getTotalPages());
 
+					if (endPage - startPage < 5)
+						return;
+
 					var pages = [];
 
 					for (var p = startPage; p<= endPage; p++) {
@@ -1199,11 +1205,6 @@ angular.module('ldAdminTools')
 					tableController.setPage(page);
 				};
 
-				/* watch for header text changes */
-				scope.$watch('headerText', function (value) {
-					updateHeader(tableController.getFilteredRows());
-				});
-
 				scope.$watch(function() {
 					return {
 						'totalPages': tableController.getTotalPages(),
@@ -1213,7 +1214,6 @@ angular.module('ldAdminTools')
 				}, function(newValue) {
 					scope.totalPages = newValue.totalPages;
 					scope.currentPage = newValue.currentPage;
-					updateHeader(newValue.rows);
 					updateStyles(newValue);
 					makePages(newValue.currentPage);
 				}, true);
@@ -1244,7 +1244,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/ldtableinfo.html',
-    "<span>{{ infoText }}</span>"
+    "<span class=ld-table-info>{{ infoText }}</span>"
   );
 
 
@@ -1254,7 +1254,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/ldtablenavigationdropdown.html',
-    "<div class=ld-table-navigation-dropdown dropdown><a href=\"\" dropdown-toggle style=cursor:pointer role=button>{{ description }} {{ currentPage }} of {{ totalPages }} <i class=\"fa fa-fw fa-caret-down\"></i></a><ul class=\"dropdown-menu dropdown-menu-right\"><li class=dropdown-header>{{ header }}</li><li ng-class=firstPageClass><a href=\"\" ng-click=gotoPage(1)><i class=\"fa fa-fw fa-angle-double-left fa-lg\"></i>{{ firstPage }}</a></li><li ng-repeat=\"page in pages\" ng-class=\"page.active ? 'divider' : ''\"><a href=\"\" ng-if=!page.active ng-click=gotoPage(page.page)><i class=\"fa fa-fw fa-lg\" ng-class=\"page.active ? 'fa-caret-right' : ''\"></i>{{ page.text }}</a></li><li ng-class=lastPageClass><a href=\"\" ng-click=gotoPage(totalPages)><i class=\"fa fa-fw fa-angle-double-right fa-lg\"></i>{{ lastPage }}</a></li></ul></div>"
+    "<div class=ld-table-navigation-dropdown dropdown><a href=\"\" dropdown-toggle style=cursor:pointer role=button>{{ description }} {{ currentPage }} of {{ totalPages }} <i class=\"fa fa-fw fa-caret-down\"></i></a><ul class=\"dropdown-menu dropdown-menu-right\"><li class=dropdown-header>{{ header }}</li><li ng-class=firstPageClass><a href=\"\" ng-click=gotoPage(1)><i class=\"fa fa-fw fa-angle-double-left fa-lg\"></i>{{ firstPage }}</a></li><li ng-class=previousPageClass><a href=\"\" ng-click=\"gotoPage(currentPage - 1)\"><i class=\"fa fa-fw fa-angle-left fa-lg\"></i>{{ previousPage }}</a></li><li ng-repeat=\"page in pages\" ng-class=\"page.active ? 'divider' : ''\"><a href=\"\" ng-if=!page.active ng-click=gotoPage(page.page)><i class=\"fa fa-fw fa-lg\" ng-class=\"page.active ? 'fa-caret-right' : ''\"></i>{{ page.text }}</a></li><li ng-class=nextPageClass><a href=\"\" ng-click=\"gotoPage(currentPage + 1)\"><i class=\"fa fa-fw fa-angle-right fa-lg\"></i>{{ nextPage }}</a></li><li ng-class=lastPageClass><a href=\"\" ng-click=gotoPage(totalPages)><i class=\"fa fa-fw fa-angle-double-right fa-lg\"></i>{{ lastPage }}</a></li></ul></div>"
   );
 
 

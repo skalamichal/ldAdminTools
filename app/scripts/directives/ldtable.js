@@ -621,10 +621,11 @@ angular.module('ldAdminTools')
 		};
 	}])
 	.constant('ldTableNavigationDropdownConfig', {
-		headerTextDefault: '{0} Items',
 		firstPageTextDefault: 'First Page',
 		lastPageTextDefault: 'Last Page',
-		pageTextDefault: 'Page {0}'
+		pageTextDefault: 'Page {0}',
+		previousPageTextDefault: 'Previous Page',
+		nextPageTextDefault: 'Next Page'
 	})
 	.directive('ldTableNavigationDropdown', ['ldTableNavigationDropdownConfig', function (config) {
 		return {
@@ -633,34 +634,35 @@ angular.module('ldAdminTools')
 			templateUrl: 'partials/ldtablenavigationdropdown.html',
 			scope: {
 				description: '=',
-				headerText: '@',
 				firstPageText: '@',
 				lastPageText: '@',
-				pageText: '@'
+				pageText: '@',
+				previousPageText: '@',
+				nextPageText: '@'
 			},
 			/*jshint unused:false*/
 			link: function(scope, element, attrs, tableController) {
 				// initialized the text variables
-				scope.headerText = scope.headerText || config.headerTextDefault;
 				scope.firstPageText = scope.firstPageText || config.firstPageTextDefault;
 				scope.lastPageText = scope.lastPageText || config.lastPageTextDefault;
+				scope.previousPageText = scope.previousPageText || config.previousPageTextDefault;
+				scope.nextPageText = scope.nextPageText || config.nextPageTextDefault;
 				var pageText = scope.pageText || config.pageTextDefault;
 
 				// display text
 				scope.firstPage = scope.firstPageText;
 				scope.lastPage = scope.lastPageText;
+				scope.previousPage = scope.previousPageText;
+				scope.nextPage = scope.nextPageText;
 
 				// the pages array
 				scope.pages = [];
 
-				/* update the dropdown header text */
-				function updateHeader(items) {
-					scope.header = scope.headerText.replace('{0}', items);
-				}
-
 				function updateStyles(obj) {
 					scope.firstPageClass = (obj.totalPages > 1 && obj.currentPage > 1) ? '' : 'disabled';
 					scope.lastPageClass = (obj.totalPages > 1 && obj.currentPage < obj.totalPages) ? '' : 'disabled';
+					scope.previousPageClass = (obj.currentPage > 1) ? '' : 'disabled';
+					scope.nextPageClass = (obj.currentPage < obj.totalPages) ? '' : 'disabled';
 				}
 
 				function makePage(page, currentPage) {
@@ -677,6 +679,9 @@ angular.module('ldAdminTools')
 					var startPage = Math.max(currentPage - 2, 1);
 					var endPage = Math.min(currentPage + 2, tableController.getTotalPages());
 
+					if (endPage - startPage < 5)
+						return;
+
 					var pages = [];
 
 					for (var p = startPage; p<= endPage; p++) {
@@ -691,11 +696,6 @@ angular.module('ldAdminTools')
 					tableController.setPage(page);
 				};
 
-				/* watch for header text changes */
-				scope.$watch('headerText', function (value) {
-					updateHeader(tableController.getFilteredRows());
-				});
-
 				scope.$watch(function() {
 					return {
 						'totalPages': tableController.getTotalPages(),
@@ -705,7 +705,6 @@ angular.module('ldAdminTools')
 				}, function(newValue) {
 					scope.totalPages = newValue.totalPages;
 					scope.currentPage = newValue.currentPage;
-					updateHeader(newValue.rows);
 					updateStyles(newValue);
 					makePages(newValue.currentPage);
 				}, true);
