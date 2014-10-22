@@ -268,7 +268,6 @@ module.exports = function (grunt) {
 	});
 
 	grunt.registerTask('test', [
-		'clean',
 		'connect:test',
 		'karma'
 	]);

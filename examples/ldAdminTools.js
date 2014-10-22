@@ -1055,7 +1055,7 @@ angular.module('ldAdminTools')
 					var rows = tableController.getFilteredRows();
 
 					var rowFrom = ((page - 1) * rowsPerPage) + 1;
-					var rowTo = Math.min(rowFrom + rowsPerPage, rows);
+					var rowTo = Math.min(rowFrom - 1 + rowsPerPage, rows);
 
 					var txt = infoText.replace('{0}', rowFrom);
 					txt = txt.replace('{1}', rowTo);
@@ -1187,8 +1187,9 @@ angular.module('ldAdminTools')
 					var startPage = Math.max(currentPage - 2, 1);
 					var endPage = Math.min(currentPage + 2, tableController.getTotalPages());
 
-					if (tableController.getTotalPages() < 5)
+					if (tableController.getTotalPages() < 5) {
 						return;
+					}
 
 					var pages = [];
 
@@ -1219,6 +1220,61 @@ angular.module('ldAdminTools')
 			}
 		};
 	}]);
+'use strict';
+
+/**
+ * @ngdoc filter
+ * @name ldAdminTools.filter:ldFilterMembers
+ * @function
+ * @description
+ * # ldFilterMembers
+ * Filter in the ldAdminTools.
+ */
+angular.module('ldAdminTools')
+	.filter('ldFilterMembers', function () {
+		function filterObject(obj, members) {
+			var out = {};
+			for (var i=0; i< members.length; i++) {
+				var member = members[i];
+
+				out[member] = obj[member];
+			}
+
+			return out;
+		}
+
+		function filterArray(arr, members) {
+			var out = [];
+
+			for (var i=0; i< arr.length; i++) {
+				if (angular.isObject(arr[i])) {
+					out.push(filterObject(arr[i], members));
+				}
+			}
+
+			return out;
+		}
+
+		return function (input, members) {
+			if (angular.isUndefined(members)) {
+				return input;
+			}
+
+			// split the string to array
+			var membersArray = members.split(/[ ]*[,][ ]*/);
+
+			if (angular.isArray(input)) {
+				return filterArray(input, membersArray);
+			}
+			else if (angular.isObject(input)) {
+				return filterObject(input, membersArray);
+			}
+				else {
+				return input;
+			}
+		};
+	});
+
 angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 

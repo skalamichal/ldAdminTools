@@ -34,5 +34,8 @@
     "app"
   ],
   "appPath": "app",
-  "devDependencies": {}
+  "devDependencies": {
+    "angular-mocks": "~1.3.0",
+    "angular-sanitize": "~1.3.0"
+  }
 }
