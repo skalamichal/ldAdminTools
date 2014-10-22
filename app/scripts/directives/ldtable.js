@@ -546,7 +546,7 @@ angular.module('ldAdminTools')
 					var rows = tableController.getFilteredRows();
 
 					var rowFrom = ((page - 1) * rowsPerPage) + 1;
-					var rowTo = Math.min(rowFrom + rowsPerPage, rows);
+					var rowTo = Math.min(rowFrom - 1 + rowsPerPage, rows);
 
 					var txt = infoText.replace('{0}', rowFrom);
 					txt = txt.replace('{1}', rowTo);
