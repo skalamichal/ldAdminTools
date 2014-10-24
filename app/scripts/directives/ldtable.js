@@ -10,8 +10,8 @@ angular.module('ldAdminTools')
 /**
  * The ld-paging filters selects items from array based in paging (page number and page rows)
  */
-	.filter('ldPaging', function() {
-		return function(data, page, rowsPerPage) {
+	.filter('ldPaging', function () {
+		return function (data, page, rowsPerPage) {
 			if (!angular.isArray(data)) {
 				return data;
 			}
@@ -111,7 +111,7 @@ angular.module('ldAdminTools')
 				currentPage = page;
 			}
 
-		    this.applyFilters();
+			this.applyFilters();
 		};
 
 		/**
@@ -440,7 +440,7 @@ angular.module('ldAdminTools')
 
 						// if filters are defined, apply them
 						if (angular.isDefined(newValue.filters)) {
-							angular.forEach(newValue.filters, function(value, key) {
+							angular.forEach(newValue.filters, function (value, key) {
 								tableController.setSearchFilter(value, key);
 							});
 						}
@@ -453,15 +453,15 @@ angular.module('ldAdminTools')
 /**
  * Setup pagination rowsPerPage for the ld-table, otherwise no pagination is used
  */
-	.directive('ldTablePageRows', ['$parse', function($parse) {
+	.directive('ldTablePageRows', ['$parse', function ($parse) {
 		return {
 			restrict: 'A',
 			require: '^ldTable',
-			link: function(scope, element, attrs, tableController) {
+			link: function (scope, element, attrs, tableController) {
 				var rowsPerPageGetter = $parse(attrs.ldTablePageRows);
 
 				// watch if the value is changed
-				scope.$watch(rowsPerPageGetter, function(newValue) {
+				scope.$watch(rowsPerPageGetter, function (newValue) {
 					tableController.setupPaging(newValue, 1);
 				});
 			}
@@ -511,7 +511,7 @@ angular.module('ldAdminTools')
 				});
 
 				// watch if the rowsPerPage is changed
-				scope.$watch(tableController.getRowsPerPage, function(newValue) {
+				scope.$watch(tableController.getRowsPerPage, function (newValue) {
 					scope.itemsPerPage = newValue;
 				});
 
@@ -527,7 +527,7 @@ angular.module('ldAdminTools')
  * Simple directive which allows to display the range of displayed items. Allows to set the description.
  * Example: 1-20 of 95 Messages
  */
-	.directive('ldTableInfo', ['ldTableInfoConfig', function(config) {
+	.directive('ldTableInfo', ['ldTableInfoConfig', function (config) {
 		return {
 			restrict: 'EA',
 			require: '^ldTable',
@@ -535,7 +535,7 @@ angular.module('ldAdminTools')
 			scope: {
 				text: '@'
 			},
-			link: function(scope, element, attrs, tableController) {
+			link: function (scope, element, attrs, tableController) {
 
 				var infoText = scope.text || config.textDefault;
 
@@ -555,17 +555,17 @@ angular.module('ldAdminTools')
 					scope.infoText = txt;
 				}
 
-				scope.$watch('text', function(value) {
+				scope.$watch('text', function (value) {
 					infoText = value;
 					update();
 				});
 
 				// watch for table filter updates
-				scope.$watch(tableController.getFilteredRows, function() {
+				scope.$watch(tableController.getFilteredRows, function () {
 					update();
 				});
 
-				scope.$watch(tableController.getCurrentPage, function() {
+				scope.$watch(tableController.getCurrentPage, function () {
 					update();
 				});
 
@@ -588,7 +588,7 @@ angular.module('ldAdminTools')
 				showNextButton: '=?'
 			},
 			/*jshint unused:false*/
-			link: function(scope, element, attrs, tableController) {
+			link: function (scope, element, attrs, tableController) {
 				scope.disablePreviousButtonClass = '';
 				scope.disableNextButtonClass = '';
 
@@ -601,19 +601,19 @@ angular.module('ldAdminTools')
 					scope.disableNextButtonClass = (page >= tableController.getTotalPages() ? 'disabled' : '');
 				}
 
-				scope.$watch(tableController.getCurrentPage, function() {
+				scope.$watch(tableController.getCurrentPage, function () {
 					updateNavigation();
 				});
 
-				scope.$watch(tableController.getFilteredRows, function() {
+				scope.$watch(tableController.getFilteredRows, function () {
 					updateNavigation();
 				});
 
-				scope.previousPage = function() {
+				scope.previousPage = function () {
 					tableController.setPage(tableController.getCurrentPage() - 1);
 				};
 
-				scope.nextPage = function() {
+				scope.nextPage = function () {
 					tableController.setPage(tableController.getCurrentPage() + 1);
 				};
 			}
@@ -640,7 +640,7 @@ angular.module('ldAdminTools')
 				nextPageText: '@'
 			},
 			/*jshint unused:false*/
-			link: function(scope, element, attrs, tableController) {
+			link: function (scope, element, attrs, tableController) {
 				// initialized the text variables
 				scope.firstPageText = scope.firstPageText || config.firstPageTextDefault;
 				scope.lastPageText = scope.lastPageText || config.lastPageTextDefault;
@@ -684,7 +684,7 @@ angular.module('ldAdminTools')
 
 					var pages = [];
 
-					for (var p = startPage; p<= endPage; p++) {
+					for (var p = startPage; p <= endPage; p++) {
 						var page = makePage(p, currentPage);
 						pages.push(page);
 					}
@@ -692,17 +692,17 @@ angular.module('ldAdminTools')
 					scope.pages = pages;
 				}
 
-				scope.gotoPage = function(page) {
+				scope.gotoPage = function (page) {
 					tableController.setPage(page);
 				};
 
-				scope.$watch(function() {
+				scope.$watch(function () {
 					return {
 						'totalPages': tableController.getTotalPages(),
 						'currentPage': tableController.getCurrentPage(),
 						'rows': tableController.getFilteredRows()
 					};
-				}, function(newValue) {
+				}, function (newValue) {
 					scope.totalPages = newValue.totalPages;
 					scope.currentPage = newValue.currentPage;
 					updateStyles(newValue);
