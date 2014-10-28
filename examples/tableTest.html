@@ -11,8 +11,7 @@
 
 <div style="margin: 20px" ng-controller="testController">
 
-    <table ld-table="users" class="table table-condensed table-striped" ld-table-filter="selectedFilter"
-           ld-table-page-rows="10">
+    <table ld-table="users" class="table table-condensed table-striped" ld-table-page-rows="10" ld-table-filter="selectedFilter">
         <thead>
         <tr>
             <th>
@@ -55,6 +54,7 @@
 <script src="bower_components/angular/angular.js"></script>
 <script src="bower_components/angular-recursion/angular-recursion.js"></script>
 <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+<script src="bower_components/angular-local-storage/dist/angular-local-storage.js"></script>
 <script src="ldAdminTools.js"></script>
 
 <script type="text/javascript">
@@ -93,10 +93,9 @@
                 }
 
                 scope.users = [];
-                for (var i = 0; i < 155; i++) {
+                for (var i = 0; i < 32; i++) {
                     scope.users.push(randomTableRow());
                 }
-
             }])
 
 </script>

@@ -24,29 +24,18 @@ angular.module('ldAdminTools')
 /**
  * The controller used in the ld-table directive
  */
-	.controller('ldTableController', ['$scope', '$parse', '$filter', '$attrs', function ($scope, $parse, $filter, $attrs) {
+	.controller('ldTableController', ['$scope', '$parse', '$filter', '$attrs', 'ldFilterService', function ($scope, $parse, $filter, $attrs, filterService) {
+
+		this.TABLE_UPDATED = 'ldTableUpdated';
+
 		var property = $attrs.ldTable;
 		var displayGetter = $parse(property);
 		var displaySetter = displayGetter.assign;
 
-		/**
-		 * filters object, with value pairs:
-		 * - predicate: value
-		 * - predicate is '$' for global filter
-		 * @type {{}}
-		 */
-		var filters = {};
+		// define filter ID
+		var filter = angular.isDefined($attrs.ldFilter) ? $attrs.ldFilter : ('ld-' + Math.round(Math.random() * 150000));
 
-		/**
-		 * order by object with following values:
-		 * - predicate {String}
-		 * - reverse {Boolean}
-		 * @type {{}}
-		 */
-		var orders = {};
-
-		var searchFilter = $filter('filter');
-		var orderByFilter = $filter('orderBy');
+		// define paging filter
 		var pagingFilter = $filter('ldPaging');
 
 		// selected rows in collection
@@ -72,6 +61,18 @@ angular.module('ldAdminTools')
 		var currentPage = 1;
 		var rowsPerPage = dataCopy.length;
 		var totalPages = 1;
+
+		// setup event handler
+		$scope.$on(filterService.FILTER_UPDATED, angular.bind(this, function(event, filterId) {
+			// call apply if the updated filter is the same as ours
+			if (filterId === filter) {
+				this.filterUpdated();
+			}
+		}));
+
+		this.getFilter = function getFilter() {
+			return filter;
+		};
 
 		/**
 		 * Set the number of items/rows displayed on one page
@@ -115,70 +116,61 @@ angular.module('ldAdminTools')
 		};
 
 		/**
-		 * Adds or removes the search
-		 * @param {String} value - the value to search, if value is undefined, the filter is removed
-		 * @param {String} [predicate] - if not set the '$' is used
+		 * Adds the search criterion
+		 * @param {String} or {Object} value
 		 */
-		this.setSearchFilter = function setSearchFilter(value, predicate) {
-			var property = angular.isDefined(predicate) ? predicate : '$';
-			filters[property] = value;
-			if (angular.isUndefined(value)) {
-				delete filters[property];
-			}
+		this.setSearchFilter = function setSearchFilter(criterion) {
+			filterService.addFilterFilterCriterion(filter, criterion);
 
 			// reset the currentpage to 1
 			currentPage = 1;
-
-			this.applyFilters();
 		};
 
-		this.removeSearchFilter = function removeSearchFilter(predicate) {
-			var property = angular.isDefined(predicate) ? predicate : '$';
-			delete filters[property];
+		/**
+		 * Remove the search criterion
+		 * @param {String} - remove predicate given as string
+		 *        {Object} - remove predicates given as object pairs
+		 *        {Array} - remove predicates, each array value is a predicate
+		 */
+		this.removeSearchFilter = function removeSearchFilter(criterion) {
+			filterService.removeFilterFilterCriterion(filter, criterion);
 
 			// reset the currentpage to 1
 			currentPage = 1;
-
-			this.applyFilters();
 		};
 
 		/**
 		 * Clear the search filter
 		 */
 		this.clearSearchFilter = function clearSearchFilter() {
-			filters = {};
-
-			this.applyFilters();
+			filterService.clearFilterFilter(filter);
 		};
 
 		/**
 		 * Set rows order
-		 * @param predicate
+		 * @param criterion
 		 * @param reverse
 		 */
-		this.setOrderByFilter = function setOrderByFilter(predicate, reverse) {
-			orders.predicate = predicate;
-			orders.reverse = reverse;
-
-			this.applyFilters();
+		this.setOrderByFilter = function setOrderByFilter(criterion, reverse) {
+			filterService.addOrderByFilterCriterion(filter, criterion, reverse);
 		};
 
 		/**
 		 * Remove the order by filter.
 		 */
 		this.clearOrderByFilter = function clearOrderByFilter() {
-			orders = {};
-
-			this.applyFilters();
+			filterService.clearOrderByFilter(filter);
 		};
 
 		this.clearFilters = function clearFilters() {
-			orders = {};
-			filters = {};
+			filterService.clearFilterFilter(filter);
+			filterService.clearOrderByFilter(filter);
 			currentPage = 1;
 			rowsPerPage = dataCopy.length;
 			totalPages = 1;
+		};
 
+		this.filterUpdated = function filterUpdated() {
 			this.applyFilters();
 		};
 
@@ -186,26 +178,26 @@ angular.module('ldAdminTools')
 		 * Apply defined filters.
 		 */
 		this.applyFilters = function applyFilters() {
-			var filtered = searchFilter(dataCopy, filters);
-			var sorted = orderByFilter(filtered, orders.predicate, orders.reverse);
-
-			filteredRows = sorted.length;
+			var filtered = filterService.applyFilter(filter, dataCopy);
+			filteredRows = filtered.length;
 
 			totalPages = calcTotalPages();
 
 			if (totalPages > 1) {
-				sorted = pagingFilter(sorted, currentPage, rowsPerPage);
+				filtered = pagingFilter(filtered, currentPage, rowsPerPage);
 			}
 
-			displaySetter($scope, sorted);
+			displaySetter($scope, filtered);
+
+			$scope.$broadcast(this.TABLE_UPDATED);
 		};
 
 		/**
 		 * Return the order state
 		 * @returns {{}}
 		 */
-		this.getOrderByFilters = function getOrderState() {
-			return orders;
+		this.getOrderByFilters = function getOrderByFilters() {
+			return filterService.getFilter(filter).orderBy;
 		};
 
 		/**
@@ -213,7 +205,7 @@ angular.module('ldAdminTools')
 		 * @returns {{}}
 		 */
 		this.getSearchFilters = function getSearchFilters() {
-			return filters;
+			return filterService.getFilter(filter).filter;
 		};
 
 		/**
@@ -270,7 +262,7 @@ angular.module('ldAdminTools')
 	}])
 /**
  * The ld-table-search makes a binding between input field and table filter
- * The ld-table-search value is a predicate. If no value is set, the global filter is applied.
+ * The ld-table-search value is a criterion for search. If no value is set, the global filter is applied.
  * The ng-model is required to set.
  */
 	.directive('ldTableSearch', ['$timeout', function ($timeout) {
@@ -278,7 +270,7 @@ angular.module('ldAdminTools')
 			restrict: 'A',
 			require: ['^ldTable', 'ngModel'],
 			scope: {
-				predicate: '=?ldTableSearch',
+				criterion: '=?ldTableSearch',
 				model: '=ngModel'
 			},
 			link: function (scope, element, attrs, controllers) {
@@ -286,7 +278,7 @@ angular.module('ldAdminTools')
 				var promise;
 
 				// watch the predicate value so we can change is at runtime
-				scope.$watch('predicate', function (newValue, oldValue) {
+				scope.$watch('criterion', function (newValue, oldValue) {
 					if (newValue !== oldValue) {
 						tableController.removeSearchFilter(oldValue);
 						tableController.setSearchFilter(scope.model || '', newValue);
@@ -301,7 +293,7 @@ angular.module('ldAdminTools')
 					}
 
 					promise = $timeout(function () {
-						tableController.setSearchFilter(scope.model || '', scope.predicate);
+						tableController.setSearchFilter(scope.model || '', scope.criterion);
 						promise = null;
 					}, 100);
 				}
@@ -337,7 +329,7 @@ angular.module('ldAdminTools')
 					DESCENT: 2
 				});
 
-				var predicate = attrs.ldTableSort;
+				var criterion = attrs.ldTableSort;
 				var order = ORDER.NONE;
 
 				// udpate the order if the ld-table-sort-default attribute is set
@@ -384,7 +376,7 @@ angular.module('ldAdminTools')
 
 				// watch for the table order by filters. When different column is set, update this one.
 				scope.$watch(tableController.getOrderByFilters, function (newValue) {
-					if (angular.isUndefined(newValue.predicate) || newValue.predicate !== predicate) {
+					if (angular.isUndefined(newValue) || angular.isUndefined(newValue.criterion) || newValue.criterion !== criterion) {
 						order = ORDER.NONE;
 					}
 					updateStyle();
@@ -440,9 +432,7 @@ angular.module('ldAdminTools')
 
 						// if filters are defined, apply them
 						if (angular.isDefined(newValue.filters)) {
-							angular.forEach(newValue.filters, function (value, key) {
-								tableController.setSearchFilter(value, key);
-							});
+							tableController.setSearchFilter(newValue.filters);
 						}
 					}
 				}, true);
