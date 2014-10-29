@@ -514,15 +514,11 @@ angular.module('ldAdminTools')
 					}
 				});
 
-				// watch for the items/rows change, so we can update the pagination directive
-				scope.$watch(tableController.getFilteredRows, function (newValue) {
-					scope.totalItems = newValue;
-					setCurrentPage(1);
-				});
+				scope.$on(tableController.TABLE_UPDATED, function() {
+					scope.totalItems = tableController.getFilteredRows();
+					scope.itemsPerPage = tableController.getRowsPerPage();
 
-				// watch if the rowsPerPage is changed
-				scope.$watch(tableController.getRowsPerPage, function (newValue) {
-					scope.itemsPerPage = newValue;
+					setCurrentPage(1);
 				});
 
 				// initialize
@@ -570,12 +566,7 @@ angular.module('ldAdminTools')
 					update();
 				});
 
-				// watch for table filter updates
-				scope.$watch(tableController.getFilteredRows, function () {
-					update();
-				});
-
-				scope.$watch(tableController.getCurrentPage, function () {
+				scope.$on(tableController.TABLE_UPDATED, function() {
 					update();
 				});
 
@@ -611,13 +602,9 @@ angular.module('ldAdminTools')
 					scope.disableNextButtonClass = (page >= tableController.getTotalPages() ? 'disabled' : '');
 				}
 
-				scope.$watch(tableController.getCurrentPage, function () {
+				scope.$on(tableController.TABLE_UPDATED, function() {
 					updateNavigation();
-				});
-
-				scope.$watch(tableController.getFilteredRows, function () {
-					updateNavigation();
-				});
+				})
 
 				scope.previousPage = function () {
 					tableController.setPage(tableController.getCurrentPage() - 1);
@@ -667,11 +654,13 @@ angular.module('ldAdminTools')
 				// the pages array
 				scope.pages = [];
 
-				function updateStyles(obj) {
-					scope.firstPageClass = (obj.totalPages > 1 && obj.currentPage > 1) ? '' : 'disabled';
-					scope.lastPageClass = (obj.totalPages > 1 && obj.currentPage < obj.totalPages) ? '' : 'disabled';
-					scope.previousPageClass = (obj.currentPage > 1) ? '' : 'disabled';
-					scope.nextPageClass = (obj.currentPage < obj.totalPages) ? '' : 'disabled';
+				function updateStyles() {
+					var totalPages = tableController.getTotalPages();
+					var currentPage = tableController.getCurrentPage();
+					scope.firstPageClass = (totalPages > 1 && currentPage > 1) ? '' : 'disabled';
+					scope.lastPageClass = (totalPages > 1 && currentPage < totalPages) ? '' : 'disabled';
+					scope.previousPageClass = (currentPage > 1) ? '' : 'disabled';
+					scope.nextPageClass = (currentPage < totalPages) ? '' : 'disabled';
 				}
 
 				function makePage(page, currentPage) {
@@ -684,7 +673,8 @@ angular.module('ldAdminTools')
 					return pageObj;
 				}
 
-				function makePages(currentPage) {
+				function makePages() {
+					var currentPage = tableController.getCurrentPage();
 					var startPage = Math.max(currentPage - 2, 1);
 					var endPage = Math.min(currentPage + 2, tableController.getTotalPages());
 
@@ -706,18 +696,12 @@ angular.module('ldAdminTools')
 					tableController.setPage(page);
 				};
 
-				scope.$watch(function () {
-					return {
-						'totalPages': tableController.getTotalPages(),
-						'currentPage': tableController.getCurrentPage(),
-						'rows': tableController.getFilteredRows()
-					};
-				}, function (newValue) {
-					scope.totalPages = newValue.totalPages;
-					scope.currentPage = newValue.currentPage;
-					updateStyles(newValue);
-					makePages(newValue.currentPage);
-				}, true);
+				scope.$on(tableController.TABLE_UPDATED, function() {
+					scope.totalPages = tableController.getTotalPages();
+					scope.currentPage = tableController.getCurrentPage();
+					updateStyles();
+					makePages();
+				});
 			}
 		};
 	}]);
