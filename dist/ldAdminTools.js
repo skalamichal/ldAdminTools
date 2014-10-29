@@ -591,6 +591,11 @@ angular.module('ldAdminTools')
 		// the number of records in filtered collection, can be used for pagination
 		var filteredRows;
 
+		/**
+		 * Makes copy of source array, which is used for filtering, ...
+		 * @param src
+		 * @returns {Array}
+		 */
 		function makeCopy(src) {
 			filteredRows = totalRows = src.length;
 			return [].concat(src);
@@ -600,6 +605,7 @@ angular.module('ldAdminTools')
 		 * We have a copy of the data, which is updated, so we don't affect the original collection
 		 */
 		var dataCopy = makeCopy(displayGetter($scope));
+		var filtered = dataCopy;
 
 		// table paging properties
 		var currentPage = 1;
@@ -607,13 +613,24 @@ angular.module('ldAdminTools')
 		var totalPages = 1;
 
 		// setup event handler
-		$scope.$on(filterService.FILTER_UPDATED, angular.bind(this, function(event, filterId) {
+		$scope.$on(filterService.FILTER_UPDATED, angular.bind(this, function(event, filterId, filterObj)     {
 			// call apply if the updated filter is the same as ours
 			if (filterId === filter) {
 				this.filterUpdated();
 			}
 		}));
 
+		// if the filter is generated, don't store it and remove, when table is removed
+		if (angular.isUndefined($attrs.ldFilter)) {
+			$scope.$on('$destroy', function() {
+				filterService.removeFilter(filter);
+			});
+		}
+
+		/**
+		 * Return filter used in the table
+		 * @returns {*}
+		 */
 		this.getFilter = function getFilter() {
 			return filter;
 		};
@@ -628,7 +645,7 @@ angular.module('ldAdminTools')
 
 			totalPages = calcTotalPages();
 
-			this.applyFilters();
+			this.applyPaging();
 		};
 
 		function calcTotalPages() {
@@ -644,7 +661,7 @@ angular.module('ldAdminTools')
 			currentPage = 1;
 			totalPages = 1;
 
-			this.applyFilters();
+			this.applyPaging();
 		};
 
 		/**
@@ -656,18 +673,22 @@ angular.module('ldAdminTools')
 				currentPage = page;
 			}
 
-			this.applyFilters();
+			this.applyPaging();
 		};
 
 		/**
 		 * Adds the search criterion
-		 * @param {String} or {Object} value
+		 * @param {String} value to search for
+		 * @param {String} the object property, which should be filtered
+		 *
 		 */
-		this.setSearchFilter = function setSearchFilter(criterion) {
+		this.setSearchFilter = function setSearchFilter(value, predicate) {
+			var criterion = value;
+			if (angular.isDefined(predicate) && predicate.length > 0) {
+				criterion = {};
+				criterion[predicate] = value;
+			}
 			filterService.addFilterFilterCriterion(filter, criterion);
-
-			// reset the currentpage to 1
-			currentPage = 1;
 		};
 
 		/**
@@ -678,9 +699,6 @@ angular.module('ldAdminTools')
 		 */
 		this.removeSearchFilter = function removeSearchFilter(criterion) {
 			filterService.removeFilterFilterCriterion(filter, criterion);
-
-			// reset the currentpage to 1
-			currentPage = 1;
 		};
 
 		/**
@@ -709,29 +727,30 @@ angular.module('ldAdminTools')
 		this.clearFilters = function clearFilters() {
 			filterService.clearFilterFilter(filter);
 			filterService.clearOrderByFilter(filter);
-			currentPage = 1;
 			rowsPerPage = dataCopy.length;
-			totalPages = 1;
 		};
 
 		this.filterUpdated = function filterUpdated() {
-			this.applyFilters();
+			filtered = filterService.applyFilter(filter, dataCopy);
+			filteredRows = filtered.length;
+
+			currentPage = 1;
+			totalPages = calcTotalPages();
+
+			this.applyPaging();
 		};
 
 		/**
-		 * Apply defined filters.
+		 * Apply paging filters.
 		 */
-		this.applyFilters = function applyFilters() {
-			var filtered = filterService.applyFilter(filter, dataCopy);
-			filteredRows = filtered.length;
-
-			totalPages = calcTotalPages();
+		this.applyPaging = function applyPaging() {
+			var display = filtered;
 
 			if (totalPages > 1) {
-				filtered = pagingFilter(filtered, currentPage, rowsPerPage);
+				display = pagingFilter(display, currentPage, rowsPerPage);
 			}
 
-			displaySetter($scope, filtered);
+			displaySetter($scope, display);
 
 			$scope.$broadcast(this.TABLE_UPDATED);
 		};
@@ -805,8 +824,9 @@ angular.module('ldAdminTools')
 		};
 	}])
 /**
- * The ld-table-search makes a binding between input field and table filter
- * The ld-table-search value is a criterion for search. If no value is set, the global filter is applied.
+ * The ld-table-search makes a binding between input field and table filter.
+ * The ld-table-search can be set to filter specific properties on objects in array. If no value is set any property
+ * of the object is tested for match.
  * The ng-model is required to set.
  */
 	.directive('ldTableSearch', ['$timeout', function ($timeout) {
@@ -814,15 +834,15 @@ angular.module('ldAdminTools')
 			restrict: 'A',
 			require: ['^ldTable', 'ngModel'],
 			scope: {
-				criterion: '=?ldTableSearch',
-				model: '=ngModel'
+				predicate: '=?ldTableSearch', // the property to filter
+				model: '=ngModel'             // the value to look for
 			},
 			link: function (scope, element, attrs, controllers) {
 				var tableController = controllers[0];
 				var promise;
 
-				// watch the predicate value so we can change is at runtime
-				scope.$watch('criterion', function (newValue, oldValue) {
+				// watch the predicate value so we can change filter at runtime
+				scope.$watch('predicate', function (newValue, oldValue) {
 					if (newValue !== oldValue) {
 						tableController.removeSearchFilter(oldValue);
 						tableController.setSearchFilter(scope.model || '', newValue);
@@ -837,9 +857,9 @@ angular.module('ldAdminTools')
 					}
 
 					promise = $timeout(function () {
-						tableController.setSearchFilter(scope.model || '', scope.criterion);
+						tableController.setSearchFilter(scope.model || '', scope.predicate);
 						promise = null;
-					}, 100);
+					}, 200);
 				}
 
 				// watch for the input changes
@@ -902,7 +922,7 @@ angular.module('ldAdminTools')
 						tableController.clearOrderByFilter();
 					}
 					else {
-						tableController.setOrderByFilter(predicate, (order === ORDER.DESCENT));
+						tableController.setOrderByFilter(criterion, (order === ORDER.DESCENT));
 					}
 				}
 
@@ -1321,7 +1341,7 @@ angular.module('ldAdminTools')
 			 * Remove the stored filter
 			 * @param filterId
 			 */
-			removeFilter: function(filterId) {
+			removeFilter: function (filterId) {
 				delete filters[filterId];
 
 				$rootScope.$broadcast(this.FILTER_REMOVED, filterId);
@@ -1379,12 +1399,12 @@ angular.module('ldAdminTools')
 					return;
 				}
 
-				// check if this is the global criterion and if, remove it, if equals
+				// string should represent one property, remove it
 				if (angular.isString(criterion)) {
 					delete filter.filter[criterion];
 				}
 				else if (angular.isArray(criterion)) {
-					angular.forEach(criterion, function(key) {
+					angular.forEach(criterion, function (key) {
 						delete filter.filter[key];
 					});
 				}
@@ -1437,34 +1457,39 @@ angular.module('ldAdminTools')
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			clearOrderByFilter: function(filterId) {
+			clearOrderByFilter: function (filterId) {
 				var filter = this.getFilter(filterId);
 				delete filter.orderBy;
 
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			forceUpdate: function(filterId) {
+			forceUpdate: function (filterId) {
 				var filter = this.getFilter(filterId);
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			forceUpdateAll: function() {
-				angular.forEach(filters, function(filter, filterId) {
+			forceUpdateAll: function () {
+				angular.forEach(filters, function (filter, filterId) {
 					$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 				}, this);
 			},
 
-			storeFilters: function() {
+			storeFilters: function () {
 				if (localStorage.isSupported) {
 					localStorage.set('filters', angular.toJson(filters));
 				}
 			},
 
-			loadFilters: function() {
+			loadFilters: function () {
 				if (localStorage.isSupported) {
 					filters = angular.fromJson(localStorage.get('filters'));
 				}
+
+				if (angular.isDefined(filters) && filters === null) {
+					filters = {};
+				}
+
 			}
 		};
 	}]);

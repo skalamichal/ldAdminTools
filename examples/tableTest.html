@@ -18,15 +18,15 @@
                 <ld-filter-dropdown filters="filters" selected-filter="selectedFilter"></ld-filter-dropdown>
             </th>
             <th>
-                <input ld-table-search="" ng-model="searchValue" class="form-control" placeholder="global search ..."
+                <input ld-table-search="'email'" ng-model="searchValue" class="form-control" placeholder="global search ..."
                        type="text" style="display: inline-block; width: 250px"/>
                 <ld-table-navigation-dropdown header-text="{0} {{ selectedFilter.name }}"></ld-table-navigation-dropdown>
                 <ld-table-navigation></ld-table-navigation>
             </th>
         </tr>
         <tr>
-            <th>Name</th>
-            <th>Email</th>
+            <th ld-table-sort="lastName">Name</th>
+            <th ld-table-sort="email">Email</th>
         </tr>
         </thead>
         <tbody>
@@ -65,12 +65,12 @@
                 scope.filters = [
                     {
                         name: 'All',
-                        clear: []
+                        clear: ['firstName']
                     },
                     {
                         name: 'rambo',
                         filters: {
-                            'email': 'rambo'
+                            'firstName': 'Michal'
                         }
                     },
                     {

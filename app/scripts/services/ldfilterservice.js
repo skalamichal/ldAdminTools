@@ -73,7 +73,7 @@ angular.module('ldAdminTools')
 			 * Remove the stored filter
 			 * @param filterId
 			 */
-			removeFilter: function(filterId) {
+			removeFilter: function (filterId) {
 				delete filters[filterId];
 
 				$rootScope.$broadcast(this.FILTER_REMOVED, filterId);
@@ -131,12 +131,12 @@ angular.module('ldAdminTools')
 					return;
 				}
 
-				// check if this is the global criterion and if, remove it, if equals
+				// string should represent one property, remove it
 				if (angular.isString(criterion)) {
 					delete filter.filter[criterion];
 				}
 				else if (angular.isArray(criterion)) {
-					angular.forEach(criterion, function(key) {
+					angular.forEach(criterion, function (key) {
 						delete filter.filter[key];
 					});
 				}
@@ -189,34 +189,39 @@ angular.module('ldAdminTools')
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			clearOrderByFilter: function(filterId) {
+			clearOrderByFilter: function (filterId) {
 				var filter = this.getFilter(filterId);
 				delete filter.orderBy;
 
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			forceUpdate: function(filterId) {
+			forceUpdate: function (filterId) {
 				var filter = this.getFilter(filterId);
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			forceUpdateAll: function() {
-				angular.forEach(filters, function(filter, filterId) {
+			forceUpdateAll: function () {
+				angular.forEach(filters, function (filter, filterId) {
 					$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 				}, this);
 			},
 
-			storeFilters: function() {
+			storeFilters: function () {
 				if (localStorage.isSupported) {
 					localStorage.set('filters', angular.toJson(filters));
 				}
 			},
 
-			loadFilters: function() {
+			loadFilters: function () {
 				if (localStorage.isSupported) {
 					filters = angular.fromJson(localStorage.get('filters'));
 				}
+
+				if (angular.isDefined(filters) && filters === null) {
+					filters = {};
+				}
+
 			}
 		};
 	}]);
