@@ -47,6 +47,8 @@ angular.module('ldAdminTools')
 		// the number of records in filtered collection, can be used for pagination
 		var filteredRows;
 
+		var ctrl = this;
+
 		/**
 		 * Makes copy of source array, which is used for filtering, ...
 		 * @param src
@@ -57,10 +59,40 @@ angular.module('ldAdminTools')
 			return [].concat(src);
 		}
 
+		function updateTableSource(src) {
+			dataCopy = makeCopy(src);
+			ctrl.filterUpdated();
+		}
+
+		// make sure, the display data are defined
+		if (angular.isUndefined(displayGetter($scope))) {
+			displaySetter($scope, []);
+		}
+
 		/**
 		 * We have a copy of the data, which is updated, so we don't affect the original collection
 		 */
 		var dataCopy = makeCopy(displayGetter($scope));
+
+		// check the ld-table-source and add an watcher if exists, so we always update the copy and
+		// update the display data
+		var ldTableSource = $attrs.ldTableSource;
+		if (angular.isDefined(ldTableSource)) {
+			var sourceGetter = $parse(ldTableSource);
+
+			// make the copy of the ldTableSource now
+			dataCopy = makeCopy(sourceGetter($scope));
+
+			// setup the watcher
+			$scope.$watch(function () {
+				return sourceGetter($scope);
+			}, function (newData, oldData) {
+				if (newData !== oldData) {
+					updateTableSource(newData);
+				}
+			}, true);
+		}
+
 		var filtered = dataCopy;
 
 		// table paging properties
@@ -69,7 +101,7 @@ angular.module('ldAdminTools')
 		var totalPages = 1;
 
 		// setup event handler
-		$scope.$on(filterService.FILTER_UPDATED, angular.bind(this, function(event, filterId, filterObj)     {
+		$scope.$on(filterService.FILTER_UPDATED, angular.bind(this, function (event, filterId) {
 			// call apply if the updated filter is the same as ours
 			if (filterId === filter) {
 				this.filterUpdated();
@@ -78,7 +110,7 @@ angular.module('ldAdminTools')
 
 		// if the filter is generated, don't store it and remove, when table is removed
 		if (angular.isUndefined($attrs.ldFilter)) {
-			$scope.$on('$destroy', function() {
+			$scope.$on('$destroy', function () {
 				filterService.removeFilter(filter);
 			});
 		}
@@ -503,7 +535,9 @@ angular.module('ldAdminTools')
 
 				function setCurrentPage(page) {
 					scope.currentPage = page;
-					tableController.setPage(page);
+					if (tableController.getCurrentPage() !== page) {
+						tableController.setPage(page);
+					}
 				}
 
 				// watch for the current page value, so we can set it in the table
@@ -514,15 +548,12 @@ angular.module('ldAdminTools')
 					}
 				});
 
-				scope.$on(tableController.TABLE_UPDATED, function() {
+				scope.$on(tableController.TABLE_UPDATED, function () {
 					scope.totalItems = tableController.getFilteredRows();
 					scope.itemsPerPage = tableController.getRowsPerPage();
 
-					setCurrentPage(1);
+					setCurrentPage(tableController.getCurrentPage());
 				});
-
-				// initialize
-				tableController.setupPaging(scope.itemsPerPage, 1);
 			}
 		};
 	}])
@@ -566,7 +597,7 @@ angular.module('ldAdminTools')
 					update();
 				});
 
-				scope.$on(tableController.TABLE_UPDATED, function() {
+				scope.$on(tableController.TABLE_UPDATED, function () {
 					update();
 				});
 
@@ -602,9 +633,9 @@ angular.module('ldAdminTools')
 					scope.disableNextButtonClass = (page >= tableController.getTotalPages() ? 'disabled' : '');
 				}
 
-				scope.$on(tableController.TABLE_UPDATED, function() {
+				scope.$on(tableController.TABLE_UPDATED, function () {
 					updateNavigation();
-				})
+				});
 
 				scope.previousPage = function () {
 					tableController.setPage(tableController.getCurrentPage() - 1);
@@ -693,10 +724,12 @@ angular.module('ldAdminTools')
 				}
 
 				scope.gotoPage = function (page) {
-					tableController.setPage(page);
+					if (tableController.getCurrentPage() !== page) {
+						tableController.setPage(page);
+					}
 				};
 
-				scope.$on(tableController.TABLE_UPDATED, function() {
+				scope.$on(tableController.TABLE_UPDATED, function () {
 					scope.totalPages = tableController.getTotalPages();
 					scope.currentPage = tableController.getCurrentPage();
 					updateStyles();

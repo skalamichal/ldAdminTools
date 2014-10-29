@@ -58,13 +58,16 @@ angular.module('ldAdminTools')
 			filters: '='
 		},
 		templateUrl: 'partials/ldfilterdropdown.html',
-		link: function (scope) {
+		link: function (scope, element) {
+			scope.isEmpty = false;
 
 			scope.selectFilter = function (filter) {
 				scope.selectedFilter = filter;
 			};
 
-			scope.selectFilter(scope.filters[0]);
+			if (angular.isDefined(scope.filters) && scope.filters.length > 0) {
+				scope.selectFilter(scope.filters[0]);
+			}
 		}
 	};
 }]);
@@ -591,6 +594,8 @@ angular.module('ldAdminTools')
 		// the number of records in filtered collection, can be used for pagination
 		var filteredRows;
 
+		var ctrl = this;
+
 		/**
 		 * Makes copy of source array, which is used for filtering, ...
 		 * @param src
@@ -601,10 +606,40 @@ angular.module('ldAdminTools')
 			return [].concat(src);
 		}
 
+		function updateTableSource(src) {
+			dataCopy = makeCopy(src);
+			ctrl.filterUpdated();
+		}
+
+		// make sure, the display data are defined
+		if (angular.isUndefined(displayGetter($scope))) {
+			displaySetter($scope, []);
+		}
+
 		/**
 		 * We have a copy of the data, which is updated, so we don't affect the original collection
 		 */
 		var dataCopy = makeCopy(displayGetter($scope));
+
+		// check the ld-table-source and add an watcher if exists, so we always update the copy and
+		// update the display data
+		var ldTableSource = $attrs.ldTableSource;
+		if (angular.isDefined(ldTableSource)) {
+			var sourceGetter = $parse(ldTableSource);
+
+			// make the copy of the ldTableSource now
+			dataCopy = makeCopy(sourceGetter($scope));
+
+			// setup the watcher
+			$scope.$watch(function () {
+				return sourceGetter($scope);
+			}, function (newData, oldData) {
+				if (newData !== oldData) {
+					updateTableSource(newData);
+				}
+			}, true);
+		}
+
 		var filtered = dataCopy;
 
 		// table paging properties
@@ -613,17 +648,16 @@ angular.module('ldAdminTools')
 		var totalPages = 1;
 
 		// setup event handler
-		$scope.$on(filterService.FILTER_UPDATED, angular.bind(this, function(event, filterId, filterObj)     {
+		$scope.$on(filterService.FILTER_UPDATED, angular.bind(this, function (event, filterId) {
 			// call apply if the updated filter is the same as ours
 			if (filterId === filter) {
 				this.filterUpdated();
-				console.log(filterObj);
 			}
 		}));
 
 		// if the filter is generated, don't store it and remove, when table is removed
 		if (angular.isUndefined($attrs.ldFilter)) {
-			$scope.$on('$destroy', function() {
+			$scope.$on('$destroy', function () {
 				filterService.removeFilter(filter);
 			});
 		}
@@ -1048,7 +1082,9 @@ angular.module('ldAdminTools')
 
 				function setCurrentPage(page) {
 					scope.currentPage = page;
-					tableController.setPage(page);
+					if (tableController.getCurrentPage() !== page) {
+						tableController.setPage(page);
+					}
 				}
 
 				// watch for the current page value, so we can set it in the table
@@ -1059,19 +1095,12 @@ angular.module('ldAdminTools')
 					}
 				});
 
-				// watch for the items/rows change, so we can update the pagination directive
-				scope.$watch(tableController.getFilteredRows, function (newValue) {
-					scope.totalItems = newValue;
-					setCurrentPage(1);
-				});
+				scope.$on(tableController.TABLE_UPDATED, function () {
+					scope.totalItems = tableController.getFilteredRows();
+					scope.itemsPerPage = tableController.getRowsPerPage();
 
-				// watch if the rowsPerPage is changed
-				scope.$watch(tableController.getRowsPerPage, function (newValue) {
-					scope.itemsPerPage = newValue;
+					setCurrentPage(tableController.getCurrentPage());
 				});
-
-				// initialize
-				tableController.setupPaging(scope.itemsPerPage, 1);
 			}
 		};
 	}])
@@ -1115,12 +1144,7 @@ angular.module('ldAdminTools')
 					update();
 				});
 
-				// watch for table filter updates
-				scope.$watch(tableController.getFilteredRows, function () {
-					update();
-				});
-
-				scope.$watch(tableController.getCurrentPage, function () {
+				scope.$on(tableController.TABLE_UPDATED, function () {
 					update();
 				});
 
@@ -1156,11 +1180,7 @@ angular.module('ldAdminTools')
 					scope.disableNextButtonClass = (page >= tableController.getTotalPages() ? 'disabled' : '');
 				}
 
-				scope.$watch(tableController.getCurrentPage, function () {
-					updateNavigation();
-				});
-
-				scope.$watch(tableController.getFilteredRows, function () {
+				scope.$on(tableController.TABLE_UPDATED, function () {
 					updateNavigation();
 				});
 
@@ -1212,11 +1232,13 @@ angular.module('ldAdminTools')
 				// the pages array
 				scope.pages = [];
 
-				function updateStyles(obj) {
-					scope.firstPageClass = (obj.totalPages > 1 && obj.currentPage > 1) ? '' : 'disabled';
-					scope.lastPageClass = (obj.totalPages > 1 && obj.currentPage < obj.totalPages) ? '' : 'disabled';
-					scope.previousPageClass = (obj.currentPage > 1) ? '' : 'disabled';
-					scope.nextPageClass = (obj.currentPage < obj.totalPages) ? '' : 'disabled';
+				function updateStyles() {
+					var totalPages = tableController.getTotalPages();
+					var currentPage = tableController.getCurrentPage();
+					scope.firstPageClass = (totalPages > 1 && currentPage > 1) ? '' : 'disabled';
+					scope.lastPageClass = (totalPages > 1 && currentPage < totalPages) ? '' : 'disabled';
+					scope.previousPageClass = (currentPage > 1) ? '' : 'disabled';
+					scope.nextPageClass = (currentPage < totalPages) ? '' : 'disabled';
 				}
 
 				function makePage(page, currentPage) {
@@ -1229,7 +1251,8 @@ angular.module('ldAdminTools')
 					return pageObj;
 				}
 
-				function makePages(currentPage) {
+				function makePages() {
+					var currentPage = tableController.getCurrentPage();
 					var startPage = Math.max(currentPage - 2, 1);
 					var endPage = Math.min(currentPage + 2, tableController.getTotalPages());
 
@@ -1248,21 +1271,17 @@ angular.module('ldAdminTools')
 				}
 
 				scope.gotoPage = function (page) {
-					tableController.setPage(page);
+					if (tableController.getCurrentPage() !== page) {
+						tableController.setPage(page);
+					}
 				};
 
-				scope.$watch(function () {
-					return {
-						'totalPages': tableController.getTotalPages(),
-						'currentPage': tableController.getCurrentPage(),
-						'rows': tableController.getFilteredRows()
-					};
-				}, function (newValue) {
-					scope.totalPages = newValue.totalPages;
-					scope.currentPage = newValue.currentPage;
-					updateStyles(newValue);
-					makePages(newValue.currentPage);
-				}, true);
+				scope.$on(tableController.TABLE_UPDATED, function () {
+					scope.totalPages = tableController.getTotalPages();
+					scope.currentPage = tableController.getCurrentPage();
+					updateStyles();
+					makePages();
+				});
 			}
 		};
 	}]);
