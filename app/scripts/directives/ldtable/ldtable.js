@@ -286,6 +286,10 @@ angular.module('ldAdminTools')
 		this.getTotalPages = function getTotalPages() {
 			return totalPages;
 		};
+
+		this.getRows = function getRows() {
+			return displayGetter($scope);
+		};
 	}])
 /**
  * The main ld-table directive

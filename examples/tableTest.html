@@ -16,6 +16,7 @@
     <table ld-table="filteredUsers" ld-table-source="users" class="table table-condensed table-striped" ld-table-page-rows="10" ld-table-filter="selectedFilter">
         <thead>
         <tr>
+            <th></th>
             <th>
                 <ld-filter-dropdown filters="filters" selected-filter="selectedFilter"></ld-filter-dropdown>
             </th>
@@ -27,18 +28,21 @@
             </th>
         </tr>
         <tr>
+            <th><ld-table-checkbox></ld-table-checkbox></th>
             <th ld-table-sort="lastName">Name</th>
             <th ld-table-sort="email">Email</th>
         </tr>
         </thead>
         <tbody>
         <tr ng-repeat="user in filteredUsers">
+            <td width="20"><input type="checkbox" ng-model="user.selected"></td>
             <td>{{ user.firstName }} {{ user.lastName }}</td>
             <td>{{ user.email }}</td>
         </tr>
         </tbody>
         <tfoot>
         <tr>
+            <td></td>
             <td>
                 <ld-table-pagination></ld-table-pagination>
             </td>

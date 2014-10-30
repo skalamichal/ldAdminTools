@@ -38,6 +38,7 @@ angular.module('ldAdminTools')
 					txt = txt.replace('{2}', rows);
 
 					scope.infoText = txt;
+					scope.isVisible = rows > 0;
 				}
 
 				scope.$watch('text', function (value) {
