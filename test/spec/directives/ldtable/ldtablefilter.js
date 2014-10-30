@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Directive: ldStFilter', function () {
+describe('Directive: ldTableFilter', function () {
 
 	// load the directive's module
 	beforeEach(module('ldAdminTools'));
@@ -13,7 +13,8 @@ describe('Directive: ldStFilter', function () {
 	}));
 
 	it('should make hidden element visible', inject(function ($compile) {
-		element = angular.element('<ld-st-filter></ld-st-filter>');
+		element = angular.element('<ld-table-filter></ld-table-filter>');
 		element = $compile(element)(scope);
+
 	}));
 });
