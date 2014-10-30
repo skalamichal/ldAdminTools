@@ -208,8 +208,10 @@ angular.module('ldAdminTools')
 			filtered = filterService.applyFilter(filter, dataCopy);
 			filteredRows = filtered.length;
 
-			currentPage = 1;
 			totalPages = calcTotalPages();
+			if (currentPage > totalPages) {
+				currentPage = totalPages;
+			}
 
 			this.applyPaging();
 		};

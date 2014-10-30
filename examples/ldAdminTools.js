@@ -555,20 +555,6 @@ angular.module('ldAdminTools')
  */
 angular.module('ldAdminTools')
 /**
- * The ld-paging filters selects items from array based in paging (page number and page rows)
- */
-	.filter('ldPaging', function () {
-		return function (data, page, rowsPerPage) {
-			if (!angular.isArray(data)) {
-				return data;
-			}
-
-			var fromRow = (page - 1) * rowsPerPage;
-			var toRow = fromRow + rowsPerPage;
-			return data.slice(fromRow, toRow);
-		};
-	})
-/**
  * The controller used in the ld-table directive
  */
 	.controller('ldTableController', ['$scope', '$parse', '$filter', '$attrs', 'ldFilterService', function ($scope, $parse, $filter, $attrs, filterService) {
@@ -769,8 +755,12 @@ angular.module('ldAdminTools')
 			filtered = filterService.applyFilter(filter, dataCopy);
 			filteredRows = filtered.length;
 
-			currentPage = 1;
 			totalPages = calcTotalPages();
+			if (currentPage > totalPages) {
+				currentPage = totalPages;
+			}
+
+			console.log(currentPage);
 
 			this.applyPaging();
 		};
@@ -857,153 +847,21 @@ angular.module('ldAdminTools')
 			link: function (scope, element, attrs, controller) {
 			}
 		};
-	}])
+	}]);
+
+'use strict';
+
 /**
- * The ld-table-search makes a binding between input field and table filter.
- * The ld-table-search can be set to filter specific properties on objects in array. If no value is set any property
- * of the object is tested for match.
- * The ng-model is required to set.
- */
-	.directive('ldTableSearch', ['$timeout', function ($timeout) {
-		return {
-			restrict: 'A',
-			require: ['^ldTable', 'ngModel'],
-			scope: {
-				predicate: '=?ldTableSearch', // the property to filter
-				model: '=ngModel'             // the value to look for
-			},
-			link: function (scope, element, attrs, controllers) {
-				var tableController = controllers[0];
-				var promise;
-
-				// watch the predicate value so we can change filter at runtime
-				scope.$watch('predicate', function (newValue, oldValue) {
-					if (newValue !== oldValue) {
-						tableController.removeSearchFilter(oldValue);
-						tableController.setSearchFilter(scope.model || '', newValue);
-					}
-				});
-
-				// method called when the content of ng-model is changed
-				// it's using the $timeout service, so we don't update the filter at every change
-				function inputChanged() {
-					if (promise !== null) {
-						$timeout.cancel(promise);
-					}
-
-					promise = $timeout(function () {
-						tableController.setSearchFilter(scope.model || '', scope.predicate);
-						promise = null;
-					}, 200);
-				}
-
-				// watch for the input changes
-				scope.$watch('model', inputChanged);
-			}
-		};
-	}])
-/**
- * The ld-table-sort makes a binding between element and table column sorting. The value defines the
- * order by predicate.
- * Optionally you can use the ld-table-sort-default attribute with no value as a default ascent sorting or "reverse"
- * value for descent sorting.
- */
-	.directive('ldTableSort', [function () {
-		return {
-			restrict: 'A',
-			require: '^ldTable',
-			link: function (scope, element, attrs, tableController) {
-				if (angular.isUndefined(attrs.ldTableSort)) {
-					return;
-				}
-
-				// default classes
-				var ascentClass = 'ld-table-sort-ascent';
-				var descentClass = 'ld-table-sort-descent';
-
-				// order status enum
-				var ORDER = Object.freeze({
-					NONE: 0,
-					ASCENT: 1,
-					DESCENT: 2
-				});
-
-				var criterion = attrs.ldTableSort;
-				var order = ORDER.NONE;
-
-				// udpate the order if the ld-table-sort-default attribute is set
-				if (angular.isDefined(attrs.ldTableSortDefault)) {
-					order = attrs.ldTableSortDefault === 'reverse' ? ORDER.DESCENT : ORDER.ASCENT;
-				}
-
-				/**
-				 * Update the style based on the orderBy status
-				 */
-				function updateStyle() {
-					element.removeClass(ascentClass).removeClass(descentClass);
-					if (order === ORDER.ASCENT) {
-						element.addClass(ascentClass);
-					}
-					else if (order === ORDER.DESCENT) {
-						element.addClass(descentClass);
-					}
-				}
-
-				/**
-				 * Update element style and apply the orderBy filter.
-				 */
-				function sort() {
-					if (order === ORDER.NONE) {
-						tableController.clearOrderByFilter();
-					}
-					else {
-						tableController.setOrderByFilter(criterion, (order === ORDER.DESCENT));
-					}
-				}
-
-				/**
-				 * Change the order when the element is clicked
-				 */
-				function changeSortOrder() {
-					order++;
-					if (order > ORDER.DESCENT) {
-						order = ORDER.NONE;
-					}
-
-					scope.$apply(sort);
-				}
-
-				// watch for the table order by filters. When different column is set, update this one.
-				scope.$watch(tableController.getOrderByFilters, function (newValue) {
-					if (angular.isUndefined(newValue) || angular.isUndefined(newValue.criterion) || newValue.criterion !== criterion) {
-						order = ORDER.NONE;
-					}
-					updateStyle();
-				}, true); // watch also object members
-
-				// bind the click handler to the element
-				element.on('click', changeSortOrder);
-
-				// unbind the click handler, when the element is removed
-				// clean up!
-				scope.$on('$destroy', function () {
-					element.off('click', changeSortOrder);
-				});
-
-				// initialize
-				if (order !== ORDER.NONE) {
-					sort();
-				}
-			}
-		};
-	}])
-/**
+ * @ngdoc directive
+ * @name ldAdminTools.directive:ldTableFilter
+ * @description
+ * # ldTableFilter
  * The ld-table-filter allows to use custom search for the table. The value is a filter object with following data:
  * - name {String}- the filter name (not required here!!!)
  * - filters {Object} optional - with predicate: value pairs
  * - clear {Array} optional - predicates as values, if defined and empty clear the filter (!!!)
- * - divider {Boolean} - if true, the item is a divider in dropdown (not required here!!!)
- */
+ * - divider {Boolean} - if true, the item is a divider in dropdown (not required here!!!) */
+angular.module('ldAdminTools')
 	.directive('ldTableFilter', ['$parse', function ($parse) {
 		return {
 			restrict: 'A',
@@ -1038,79 +896,21 @@ angular.module('ldAdminTools')
 
 			}
 		};
-	}])
+	}]);
+'use strict';
+
 /**
- * Setup pagination rowsPerPage for the ld-table, otherwise no pagination is used
- */
-	.directive('ldTablePageRows', ['$parse', function ($parse) {
-		return {
-			restrict: 'A',
-			require: '^ldTable',
-			link: function (scope, element, attrs, tableController) {
-				var rowsPerPageGetter = $parse(attrs.ldTablePageRows);
-
-				// watch if the value is changed
-				scope.$watch(rowsPerPageGetter, function (newValue) {
-					tableController.setupPaging(newValue, 1);
-				});
-			}
-		};
-	}])
-/**
- * The ld-table-pagination is a plugin to paginate the table. Following values could be set via attributes:
- * - items-per-page {Number} - the max number of rows displayed on the page
- * - max-size {Number} - max number of buttons in paginntion
- * - is-visible {Boolean} - show/hide the pagination
- */
-	.directive('ldTablePagination', [function () {
-		return {
-			restrict: 'EA',
-			require: '^ldTable',
-			scope: {
-				maxSize: '=?',
-				isVisible: '=?'
-			},
-			templateUrl: 'partials/ldtablepagination.html',
-			link: function (scope, element, attrs, tableController) {
-				// defaylt values used by the angular-ui pagination used by this directive
-				scope.totalItems = tableController.getFilteredRows();
-				scope.itemsPerPage = tableController.getRowsPerPage();
-				scope.maxSize = scope.maxSize || null;
-
-				// allows to show/hide the directive
-				scope.isVisible = scope.isVisible || true;
-
-				function setCurrentPage(page) {
-					scope.currentPage = page;
-					if (tableController.getCurrentPage() !== page) {
-						tableController.setPage(page);
-					}
-				}
-
-				// watch for the current page value, so we can set it in the table
-				// it's update by the angular-ui pagination directive
-				scope.$watch('currentPage', function (newValue, oldValue) {
-					if (newValue !== oldValue) {
-						setCurrentPage(newValue);
-					}
-				});
-
-				scope.$on(tableController.TABLE_UPDATED, function () {
-					scope.totalItems = tableController.getFilteredRows();
-					scope.itemsPerPage = tableController.getRowsPerPage();
-
-					setCurrentPage(tableController.getCurrentPage());
-				});
-			}
-		};
-	}])
-	.constant('ldTableInfoConfig', {
-		textDefault: '{0} - {1} of {2} Items'
-	})
-/**
+ * @ngdoc directive
+ * @name ldAdminTools.directive:ldTableInfo
+ * @description
+ * # ldTableInfo
  * Simple directive which allows to display the range of displayed items. Allows to set the description.
  * Example: 1-20 of 95 Messages
  */
+angular.module('ldAdminTools')
+	.constant('ldTableInfoConfig', {
+		textDefault: '{0} - {1} of {2} Items'
+	})
 	.directive('ldTableInfo', ['ldTableInfoConfig', function (config) {
 		return {
 			restrict: 'EA',
@@ -1152,7 +952,17 @@ angular.module('ldAdminTools')
 				update();
 			}
 		};
-	}])
+	}]);
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name ldAdminTools.directive:ldTableNavigation
+ * @description
+ * # ldTableNavigation
+ * Simple navigation directive, which displays previous and next button
+ */
+angular.module('ldAdminTools')
 	.constant('ldTableNavigationConfig', {
 		showPreviousButtonDefault: true,
 		showNextButtonDefault: true
@@ -1193,7 +1003,17 @@ angular.module('ldAdminTools')
 				};
 			}
 		};
-	}])
+	}]);
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name ldAdminTools.directive:ldTableNavigationDropdown
+ * @description
+ * # ldTableNavigationDropdown
+ * Allows do navigate with a dropdown.
+ */
+angular.module('ldAdminTools')
 	.constant('ldTableNavigationDropdownConfig', {
 		firstPageTextDefault: 'First Page',
 		lastPageTextDefault: 'Last Page',
@@ -1285,6 +1105,262 @@ angular.module('ldAdminTools')
 			}
 		};
 	}]);
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name ldAdminTools.directive:ldTablePageRows
+ * @description
+ * # ldTablePageRows
+ * Setup pagination rowsPerPage for the ld-table, otherwise no pagination is used
+ */
+angular.module('ldAdminTools')
+	.directive('ldTablePageRows', ['$parse', function ($parse) {
+		return {
+			restrict: 'A',
+			require: '^ldTable',
+			link: function (scope, element, attrs, tableController) {
+				var rowsPerPageGetter = $parse(attrs.ldTablePageRows);
+
+				// watch if the value is changed
+				scope.$watch(rowsPerPageGetter, function (newValue) {
+					tableController.setupPaging(newValue, 1);
+				});
+			}
+		};
+	}]);
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name ldAdminTools.directive:ldTablePagination
+ * @description
+ * # ldTablePagination
+ * The ld-table-pagination is a plugin to paginate the table. Following values could be set via attributes:
+ * - items-per-page {Number} - the max number of rows displayed on the page
+ * - max-size {Number} - max number of buttons in paginntion
+ * - is-visible {Boolean} - show/hide the pagination
+ */
+angular.module('ldAdminTools')
+	.directive('ldTablePagination', [function () {
+		return {
+			restrict: 'EA',
+			require: '^ldTable',
+			scope: {
+				maxSize: '=?',
+				isVisible: '=?'
+			},
+			templateUrl: 'partials/ldtablepagination.html',
+			link: function (scope, element, attrs, tableController) {
+				// defaylt values used by the angular-ui pagination used by this directive
+				scope.totalItems = tableController.getFilteredRows();
+				scope.itemsPerPage = tableController.getRowsPerPage();
+				scope.maxSize = scope.maxSize || null;
+
+				// allows to show/hide the directive
+				scope.isVisible = scope.isVisible || true;
+
+				function setCurrentPage(page) {
+					scope.currentPage = page;
+					if (tableController.getCurrentPage() !== page) {
+						tableController.setPage(page);
+					}
+				}
+
+				// watch for the current page value, so we can set it in the table
+				// it's update by the angular-ui pagination directive
+				scope.$watch('currentPage', function (newValue, oldValue) {
+					if (newValue !== oldValue) {
+						setCurrentPage(newValue);
+					}
+				});
+
+				scope.$on(tableController.TABLE_UPDATED, function () {
+					scope.totalItems = tableController.getFilteredRows();
+					scope.itemsPerPage = tableController.getRowsPerPage();
+
+					setCurrentPage(tableController.getCurrentPage());
+				});
+			}
+		};
+	}]);
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name ldAdminTools.directive:ldTableSearch
+ * @description
+ * # ldTableSearch
+ * The ld-table-search makes a binding between input field and table filter.
+ * The ld-table-search can be set to filter specific properties on objects in array. If no value is set any property
+ * of the object is tested for match.
+ * The ng-model is required to set.
+
+ */
+angular.module('ldAdminTools')
+	.directive('ldTableSearch', ['$timeout', function ($timeout) {
+		return {
+			restrict: 'A',
+			require: ['^ldTable', 'ngModel'],
+			scope: {
+				predicate: '=?ldTableSearch', // the property to filter
+				model: '=ngModel'             // the value to look for
+			},
+			link: function (scope, element, attrs, controllers) {
+				var tableController = controllers[0];
+				var promise;
+
+				// watch the predicate value so we can change filter at runtime
+				scope.$watch('predicate', function (newValue, oldValue) {
+					if (newValue !== oldValue) {
+						tableController.removeSearchFilter(oldValue);
+						tableController.setSearchFilter(scope.model || '', newValue);
+					}
+				});
+
+				// method called when the content of ng-model is changed
+				// it's using the $timeout service, so we don't update the filter at every change
+				function inputChanged() {
+					if (promise !== null) {
+						$timeout.cancel(promise);
+					}
+
+					promise = $timeout(function () {
+						tableController.setSearchFilter(scope.model || '', scope.predicate);
+						promise = null;
+					}, 200);
+				}
+
+				// watch for the input changes
+				scope.$watch('model', inputChanged);
+			}
+		};
+	}])
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name ldAdminTools.directive:ldTableSort
+ * @description
+ * # ldTableSort
+ * The ld-table-sort makes a binding between element and table column sorting. The value defines the
+ * order by predicate.
+ * Optionally you can use the ld-table-sort-default attribute with no value as a default ascent sorting or "reverse"
+ * value for descent sorting.
+ */
+angular.module('ldAdminTools')
+	.directive('ldTableSort', [function () {
+		return {
+			restrict: 'A',
+			require: '^ldTable',
+			link: function (scope, element, attrs, tableController) {
+				if (angular.isUndefined(attrs.ldTableSort)) {
+					return;
+				}
+
+				// default classes
+				var ascentClass = 'ld-table-sort-ascent';
+				var descentClass = 'ld-table-sort-descent';
+
+				// order status enum
+				var ORDER = Object.freeze({
+					NONE: 0,
+					ASCENT: 1,
+					DESCENT: 2
+				});
+
+				var criterion = attrs.ldTableSort;
+				var order = ORDER.NONE;
+
+				// udpate the order if the ld-table-sort-default attribute is set
+				if (angular.isDefined(attrs.ldTableSortDefault)) {
+					order = attrs.ldTableSortDefault === 'reverse' ? ORDER.DESCENT : ORDER.ASCENT;
+				}
+
+				/**
+				 * Update the style based on the orderBy status
+				 */
+				function updateStyle() {
+					element.removeClass(ascentClass).removeClass(descentClass);
+					if (order === ORDER.ASCENT) {
+						element.addClass(ascentClass);
+					}
+					else if (order === ORDER.DESCENT) {
+						element.addClass(descentClass);
+					}
+				}
+
+				/**
+				 * Update element style and apply the orderBy filter.
+				 */
+				function sort() {
+					if (order === ORDER.NONE) {
+						tableController.clearOrderByFilter();
+					}
+					else {
+						tableController.setOrderByFilter(criterion, (order === ORDER.DESCENT));
+					}
+				}
+
+				/**
+				 * Change the order when the element is clicked
+				 */
+				function changeSortOrder() {
+					order++;
+					if (order > ORDER.DESCENT) {
+						order = ORDER.NONE;
+					}
+
+					scope.$apply(sort);
+				}
+
+				// watch for the table order by filters. When different column is set, update this one.
+				scope.$watch(tableController.getOrderByFilters, function (newValue) {
+					if (angular.isUndefined(newValue) || angular.isUndefined(newValue.criterion) || newValue.criterion !== criterion) {
+						order = ORDER.NONE;
+					}
+					updateStyle();
+				}, true); // watch also object members
+
+				// bind the click handler to the element
+				element.on('click', changeSortOrder);
+
+				// unbind the click handler, when the element is removed
+				// clean up!
+				scope.$on('$destroy', function () {
+					element.off('click', changeSortOrder);
+				});
+
+				// initialize
+				if (order !== ORDER.NONE) {
+					sort();
+				}
+			}
+		};
+	}])
+'use strict';
+
+/**
+ * @ngdoc filter
+ * @name ldAdminTools.filter:ldPading
+ * @function
+ * @description
+ * # ldPading
+ * Filter in the ldAdminTools.
+ * The ld-paging filters selects items from array based in paging (page number and page rows)
+ */
+angular.module('ldAdminTools')
+	.filter('ldPaging', function () {
+		return function (data, page, rowsPerPage) {
+			if (!angular.isArray(data)) {
+				return data;
+			}
+
+			var fromRow = (page - 1) * rowsPerPage;
+			var toRow = fromRow + rowsPerPage;
+			return data.slice(fromRow, toRow);
+		};
+	});
 
 'use strict';
 
