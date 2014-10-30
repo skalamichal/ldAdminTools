@@ -3,7 +3,7 @@
 describe('Service: ldFilterService', function () {
 
   // load the service's module
-  beforeEach(module('ldAdminToolsApp'));
+  beforeEach(module('ldAdminTools'));
 
   // instantiate service
   var ldFilterService;
@@ -12,7 +12,7 @@ describe('Service: ldFilterService', function () {
   }));
 
   it('should do something', function () {
-    expect(!!ldFilterService).toBe(true);
+	  expect(!!ldFilterService).toBe(true);
   });
 
 });

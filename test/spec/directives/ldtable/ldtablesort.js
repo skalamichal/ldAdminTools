@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Directive: ldCheckbox', function () {
+describe('Directive: ldTableSort', function () {
 
   // load the directive's module
   beforeEach(module('ldAdminTools'));
@@ -13,6 +13,7 @@ describe('Directive: ldCheckbox', function () {
   }));
 
   it('should make hidden element visible', inject(function ($compile) {
-    element = angular.element('<ld-checkbox></ld-checkbox>');
+    element = angular.element('<ld-table-sort></ld-table-sort>');
+    element = $compile(element)(scope);
   }));
 });

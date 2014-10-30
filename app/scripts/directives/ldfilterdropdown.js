@@ -20,13 +20,16 @@ angular.module('ldAdminTools')
 			filters: '='
 		},
 		templateUrl: 'partials/ldfilterdropdown.html',
-		link: function (scope) {
+		link: function (scope, element) {
+			scope.isEmpty = false;
 
 			scope.selectFilter = function (filter) {
 				scope.selectedFilter = filter;
 			};
 
-			scope.selectFilter(scope.filters[0]);
+			if (angular.isDefined(scope.filters) && scope.filters.length > 0) {
+				scope.selectFilter(scope.filters[0]);
+			}
 		}
 	};
 }]);

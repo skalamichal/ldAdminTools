@@ -11,7 +11,9 @@
 
 <div style="margin: 20px" ng-controller="testController">
 
-    <table ld-table="users" class="table table-condensed table-striped" ld-table-page-rows="10" ld-table-filter="selectedFilter">
+    <a href="" ng-click="addNewUser()">Add new user</a>
+
+    <table ld-table="filteredUsers" ld-table-source="users" class="table table-condensed table-striped" ld-table-page-rows="10" ld-table-filter="selectedFilter">
         <thead>
         <tr>
             <th>
@@ -30,7 +32,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="user in users">
+        <tr ng-repeat="user in filteredUsers">
             <td>{{ user.firstName }} {{ user.lastName }}</td>
             <td>{{ user.email }}</td>
         </tr>
@@ -96,6 +98,12 @@
                 for (var i = 0; i < 32; i++) {
                     scope.users.push(randomTableRow());
                 }
+
+                scope.addNewUser = function() {
+                    console.log('Add new user');
+                    scope.users.push(randomTableRow());
+                };
+
             }])
 
 </script>
