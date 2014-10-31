@@ -22,7 +22,9 @@ angular.module('ldAdminTools')
 						scope.indeterminate = false;
 						scope.checked = false;
 					}
-					scope.onchanged()(scope.checked);
+					if (angular.isDefined(scope.onchanged)) {
+						scope.onchanged()(scope.checked);
+					}
 				};
 
 				scope.$watch('indeterminate', function (value) {

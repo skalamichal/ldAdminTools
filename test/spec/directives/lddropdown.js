@@ -1,6 +1,6 @@
 'use strict';
 
-describe('Directive: ldFilterDropdown', function () {
+describe('Directive: ldDropdown', function () {
 
 	// load the directive's module
 	beforeEach(module('ldAdminTools'));
@@ -13,7 +13,7 @@ describe('Directive: ldFilterDropdown', function () {
 	}));
 
 	it('should make hidden element visible', inject(function ($compile) {
-		element = angular.element('<ld-filter-dropdown></ld-filter-dropdown>');
+		element = angular.element('<ld-dropdown></ld-dropdown>');
 		element = $compile(element)(scope);
 	}));
 });

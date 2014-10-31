@@ -15,7 +15,7 @@
  */
 angular.module('ldAdminTools')
 	/*jshint unused:false*/
-	.service('ldFilterService', ['$rootScope', '$filter', 'localStorageService', function ldFilterService($rootScope, $filter, localStorage) {
+	.factory('ldFilterService', ['$rootScope', '$filter', 'localStorageService', function ldFilterService($rootScope, $filter, localStorage) {
 
 		// filters are stored in named array
 		var filterFilter = $filter('filter');
@@ -77,6 +77,10 @@ angular.module('ldAdminTools')
 				delete filters[filterId];
 
 				$rootScope.$broadcast(this.FILTER_REMOVED, filterId);
+			},
+
+
+			setFilter: function(filterId, filter) {
 			},
 
 			/**

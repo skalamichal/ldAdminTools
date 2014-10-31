@@ -85,10 +85,9 @@ a.ld-menuitem:hover {
 }
 
 /* ld-filter-dropdown style */
-.ld-filter-dropdown {
+.ld-dropdown {
     position: relative;
     display: inline-block;
-    margin-top: 8px;
 }
 
 /* ld-table-pagination styles */

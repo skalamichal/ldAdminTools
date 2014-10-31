@@ -25,7 +25,9 @@ angular.module('ldAdminTools')
 						scope.indeterminate = false;
 						scope.checked = false;
 					}
-					scope.onchanged()(scope.checked);
+					if (angular.isDefined(scope.onchanged)) {
+						scope.onchanged()(scope.checked);
+					}
 				};
 
 				scope.$watch('indeterminate', function (value) {
@@ -43,30 +45,33 @@ angular.module('ldAdminTools')
  * @name ldAdminTools.directive:ldFilterDropdown
  * @description
  * # ldFilterDropdown
- * filters is array with objects with following data:
- * - name {String}- the filter name
- * - filters {Object} optional - with predicate: value pairs
- * - clear {Array} optional - predicates as values, if defined and empty clear the filter
- * - divider {Boolean} - if true, the item is a divider in dropdown
+ * list is array with objects with following must have data:
+ * - name {String}- the item name displayed in the dropdown
+ * - divider, when item is an divider not a real item to select
+ *
+ * When item is selected, the onchanged function is called and the selected variable is updated.
  */
 angular.module('ldAdminTools')
-	.directive('ldFilterDropdown', [function () {
+	.directive('ldDropdown', [function () {
 	return {
 		restrict: 'EA',
 		scope: {
-			selectedFilter: '=',
-			filters: '='
+			selected: '=?',
+			list: '=',
+			onchanged: '&?'
 		},
-		templateUrl: 'partials/ldfilterdropdown.html',
-		link: function (scope, element) {
-			scope.isEmpty = false;
+		templateUrl: 'partials/lddropdown.html',
+		link: function (scope) {
+			scope.select = function (item) {
+				scope.selected = item;
 
-			scope.selectFilter = function (filter) {
-				scope.selectedFilter = filter;
+				if (angular.isDefined(scope.onchanged)) {
+					scope.onchanged()(item);
+				}
 			};
 
-			if (angular.isDefined(scope.filters) && scope.filters.length > 0) {
-				scope.selectFilter(scope.filters[0]);
+			if (angular.isUndefined(scope.selected) && angular.isDefined(scope.list) && scope.list.length > 0) {
+				scope.select(scope.list[0]);
 			}
 		}
 	};
@@ -605,7 +610,7 @@ angular.module('ldAdminTools')
 		/**
 		 * We have a copy of the data, which is updated, so we don't affect the original collection
 		 */
-		var dataCopy = makeCopy(displayGetter($scope));
+		var dataCopy;
 
 		// check the ld-table-source and add an watcher if exists, so we always update the copy and
 		// update the display data
@@ -615,8 +620,11 @@ angular.module('ldAdminTools')
 
 			// make the copy of the ldTableSource now
 			dataCopy = makeCopy(sourceGetter($scope));
+			displaySetter($scope, dataCopy);
 
 			// setup the watcher
+			// TODO could cause issue with large data, consider to watch only display data
+			// TODO remove deep object watch and add data length changes
 			$scope.$watch(function () {
 				return sourceGetter($scope);
 			}, function (newData, oldData) {
@@ -624,6 +632,11 @@ angular.module('ldAdminTools')
 					updateTableSource(newData);
 				}
 			}, true);
+		}
+		// if no source is defined, watch changes in display data
+		else {
+			dataCopy = makeCopy(displayGetter($scope));
+			// TODO watch
 		}
 
 		var filtered = dataCopy;
@@ -855,9 +868,11 @@ angular.module('ldAdminTools')
 
 /**
  * @ngdoc directive
- * @name ldAdminToolsApp.directive:ldTableCheckbox
+ * @name ldAdminTools.directive:ldTableCheckbox
  * @description
  * # ldTableCheckbox
+ * ldTableCheckbox allows to place the select all/none checkbox to the table, which will mark all currently displayed
+ * items in the table as selected or not selected.
  */
 angular.module('ldAdminTools')
 	.directive('ldTableCheckbox', function () {
@@ -1440,7 +1455,7 @@ angular.module('ldAdminTools')
  */
 angular.module('ldAdminTools')
 	/*jshint unused:false*/
-	.service('ldFilterService', ['$rootScope', '$filter', 'localStorageService', function ldFilterService($rootScope, $filter, localStorage) {
+	.factory('ldFilterService', ['$rootScope', '$filter', 'localStorageService', function ldFilterService($rootScope, $filter, localStorage) {
 
 		// filters are stored in named array
 		var filterFilter = $filter('filter');
@@ -1502,6 +1517,10 @@ angular.module('ldAdminTools')
 				delete filters[filterId];
 
 				$rootScope.$broadcast(this.FILTER_REMOVED, filterId);
+			},
+
+
+			setFilter: function(filterId, filter) {
 			},
 
 			/**
@@ -1654,8 +1673,8 @@ angular.module('ldAdminTools')
 angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
-  $templateCache.put('partials/ldfilterdropdown.html',
-    "<div class=ld-filter-dropdown dropdown><a style=cursor:pointer dropdown-toggle role=button>{{ selectedFilter.name }} <i class=\"fa fa-caret-down\"></i></a><ul class=dropdown-menu><li ng-repeat=\"filter in filters\" ng-class=\"filter.divider ? 'divider' : ''\"><a ng-if=!filter.divider ng-click=selectFilter(filter);>{{ filter.name }}</a></li></ul></div>"
+  $templateCache.put('partials/lddropdown.html',
+    "<div class=ld-dropdown dropdown><a style=cursor:pointer dropdown-toggle role=button>{{ selected.name }} <i class=\"fa fa-caret-down\"></i></a><ul class=dropdown-menu><li ng-repeat=\"item in list\" ng-class=\"item.divider ? 'divider' : ''\"><a ng-if=!item.divider ng-click=select(item);>{{ item.name }}</a></li></ul></div>"
   );
 
 
