@@ -589,6 +589,8 @@ angular.module('ldAdminTools')
 		 */
 		function makeCopy(src) {
 			filteredRows = totalRows = src.length;
+			console.log('make copy ' + filter);
+			console.log(src);
 			return [].concat(src);
 		}
 
@@ -605,7 +607,7 @@ angular.module('ldAdminTools')
 		/**
 		 * We have a copy of the data, which is updated, so we don't affect the original collection
 		 */
-		var dataCopy = makeCopy(displayGetter($scope));
+		var dataCopy;
 
 		// check the ld-table-source and add an watcher if exists, so we always update the copy and
 		// update the display data
@@ -615,8 +617,11 @@ angular.module('ldAdminTools')
 
 			// make the copy of the ldTableSource now
 			dataCopy = makeCopy(sourceGetter($scope));
+			displaySetter($scope, dataCopy);
 
 			// setup the watcher
+			// TODO could cause issue with large data, consider to watch only display data
+			// TODO remove deep object watch and add data length changes
 			$scope.$watch(function () {
 				return sourceGetter($scope);
 			}, function (newData, oldData) {
@@ -624,6 +629,11 @@ angular.module('ldAdminTools')
 					updateTableSource(newData);
 				}
 			}, true);
+		}
+		// if no source is defined, watch changes in display data
+		else {
+			dataCopy = makeCopy(displayGetter($scope));
+			// TODO watch
 		}
 
 		var filtered = dataCopy;
