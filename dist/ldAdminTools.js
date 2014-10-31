@@ -589,8 +589,6 @@ angular.module('ldAdminTools')
 		 */
 		function makeCopy(src) {
 			filteredRows = totalRows = src.length;
-			console.log('make copy ' + filter);
-			console.log(src);
 			return [].concat(src);
 		}
 
