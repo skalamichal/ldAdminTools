@@ -68,7 +68,8 @@ angular.module('ldAdminTools')
 
 			// make the copy of the ldTableSource now
 			dataCopy = makeCopy(sourceGetter($scope));
-			displaySetter($scope, dataCopy);
+			filterService.forceUpdate(filter);
+			//displaySetter($scope, dataCopy);
 
 			// setup the watcher
 			// TODO could cause issue with large data, consider to watch only display data
@@ -308,6 +309,7 @@ angular.module('ldAdminTools')
 			controller: 'ldTableController',
 			/*jshint unused:false*/
 			link: function (scope, element, attrs, controller) {
+
 			}
 		};
 	}]);

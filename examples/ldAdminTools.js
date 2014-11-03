@@ -1492,6 +1492,36 @@ angular.module('ldAdminTools')
 			return orderByFilter(data, orderBy.criterion, orderBy.reverse);
 		}
 
+		/**
+		 * Apply the preset filter, which is object with filters and orderBy data.
+		 * @param data
+		 * @param preset
+		 */
+		function applyPresetFilter(data, preset) {
+			if (angular.isUndefined(preset)) {
+				return data;
+			}
+
+			var filtered = applyFilterFilter(data, preset.filters);
+			return applyOrderByFilter(filtered, preset.orderBy);
+		}
+
+		/**
+		 * Return preset filter from the list of registered (preset) filters.
+		 * @param presets
+		 * @param id
+		 * @returns {*}
+		 */
+		function getPreset(presets, id) {
+			for (var i = 0; i < presets.length; i++) {
+				if (presets[i].id === id) {
+					return presets[i];
+				}
+			}
+
+			return null;
+		}
+
 		return {
 
 			FILTER_REMOVED: 'ldFilterRemoved',
@@ -1519,8 +1549,83 @@ angular.module('ldAdminTools')
 				$rootScope.$broadcast(this.FILTER_REMOVED, filterId);
 			},
 
+			/**
+			 * Register filters which could be used for filter.
+			 * @param filterId
+			 * @param list
+			 */
+			registerPresets: function (filterId, list) {
+				var filter = this.getFilter(filterId);
+				filter.presets = list;
+			},
 
-			setFilter: function(filterId, filter) {
+			/**
+			 * Set filter from registered list
+			 * @param filterId
+			 * @param presetId
+			 */
+			setPreset: function (filterId, presetId) {
+				var filter = this.getFilter(filterId);
+				if (angular.isUndefined(filter.presets)) {
+					return;
+				}
+
+				var preset = getPreset(filter.presets, presetId);
+				if (preset === null) {
+					return;
+				}
+
+				filter.preset = preset;
+
+				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
+			},
+
+			/**
+			 * Get the selected preset from the list
+			 * @param filterId
+			 */
+			getPreset: function (filterId) {
+				var filter = this.getFilter(filterId);
+				if (angular.isUndefined(filter)) {
+					return;
+				}
+
+				return filter.preset;
+			},
+
+			/**
+			 * Clear the preset filter.
+			 * @param filterId
+			 */
+			clearPreset: function (filterId) {
+				var filter = this.getFilter(filterId);
+				if (angular.isUndefined(filter)) {
+					return;
+				}
+				filter.preset = undefined;
+
+				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
+			},
+
+			/**
+			 * Set the preset marked as default in the list.
+			 * @param filterId
+			 */
+			setDefaultPreset: function (filterId) {
+				var filter = this.getFilter(filterId);
+				if (angular.isUndefined(filter) || angular.isUndefined(filter.presets)) {
+					return;
+				}
+
+				var presets = filter.presets;
+				for (var i = 0; i < presets.length; i++) {
+					if (presets[i].default) {
+						filter.preset = presets[i];
+						break;
+					}
+				}
+
+				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
 			/**
@@ -1538,6 +1643,7 @@ angular.module('ldAdminTools')
 
 				var data = input;
 
+				data = applyPresetFilter(data, filter.preset);
 				data = applyFilterFilter(data, filter.filter);
 				data = applyOrderByFilter(data, filter.orderBy);
 
@@ -1674,7 +1780,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('partials/lddropdown.html',
-    "<div class=ld-dropdown dropdown><a style=cursor:pointer dropdown-toggle role=button>{{ selected.name }} <i class=\"fa fa-caret-down\"></i></a><ul class=dropdown-menu><li ng-repeat=\"item in list\" ng-class=\"item.divider ? 'divider' : ''\"><a ng-if=!item.divider ng-click=select(item);>{{ item.name }}</a></li></ul></div>"
+    "<div class=ld-dropdown dropdown><a style=cursor:pointer dropdown-toggle role=button>{{ selected.name }} <i class=\"fa fa-caret-down\"></i></a><ul class=dropdown-menu><li ng-repeat=\"item in list\" ng-class=\"{'divider' : item.divider}\"><a ng-if=!item.divider ng-click=select(item);>{{ item.name }}</a></li></ul></div>"
   );
 
 

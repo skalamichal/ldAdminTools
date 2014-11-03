@@ -14,6 +14,5 @@ describe('Directive: ldTableCheckbox', function () {
 
 	it('should make hidden element visible', inject(function ($compile) {
 		element = angular.element('<ld-table-checkbox></ld-table-checkbox>');
-		element = $compile(element)(scope);
 	}));
 });

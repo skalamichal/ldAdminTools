@@ -52,6 +52,36 @@ angular.module('ldAdminTools')
 			return orderByFilter(data, orderBy.criterion, orderBy.reverse);
 		}
 
+		/**
+		 * Apply the preset filter, which is object with filters and orderBy data.
+		 * @param data
+		 * @param preset
+		 */
+		function applyPresetFilter(data, preset) {
+			if (angular.isUndefined(preset)) {
+				return data;
+			}
+
+			var filtered = applyFilterFilter(data, preset.filters);
+			return applyOrderByFilter(filtered, preset.orderBy);
+		}
+
+		/**
+		 * Return preset filter from the list of registered (preset) filters.
+		 * @param presets
+		 * @param id
+		 * @returns {*}
+		 */
+		function getPreset(presets, id) {
+			for (var i = 0; i < presets.length; i++) {
+				if (presets[i].id === id) {
+					return presets[i];
+				}
+			}
+
+			return null;
+		}
+
 		return {
 
 			FILTER_REMOVED: 'ldFilterRemoved',
@@ -79,8 +109,83 @@ angular.module('ldAdminTools')
 				$rootScope.$broadcast(this.FILTER_REMOVED, filterId);
 			},
 
+			/**
+			 * Register filters which could be used for filter.
+			 * @param filterId
+			 * @param list
+			 */
+			registerPresets: function (filterId, list) {
+				var filter = this.getFilter(filterId);
+				filter.presets = list;
+			},
 
-			setFilter: function(filterId, filter) {
+			/**
+			 * Set filter from registered list
+			 * @param filterId
+			 * @param presetId
+			 */
+			setPreset: function (filterId, presetId) {
+				var filter = this.getFilter(filterId);
+				if (angular.isUndefined(filter.presets)) {
+					return;
+				}
+
+				var preset = getPreset(filter.presets, presetId);
+				if (preset === null) {
+					return;
+				}
+
+				filter.preset = preset;
+
+				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
+			},
+
+			/**
+			 * Get the selected preset from the list
+			 * @param filterId
+			 */
+			getPreset: function (filterId) {
+				var filter = this.getFilter(filterId);
+				if (angular.isUndefined(filter)) {
+					return;
+				}
+
+				return filter.preset;
+			},
+
+			/**
+			 * Clear the preset filter.
+			 * @param filterId
+			 */
+			clearPreset: function (filterId) {
+				var filter = this.getFilter(filterId);
+				if (angular.isUndefined(filter)) {
+					return;
+				}
+				filter.preset = undefined;
+
+				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
+			},
+
+			/**
+			 * Set the preset marked as default in the list.
+			 * @param filterId
+			 */
+			setDefaultPreset: function (filterId) {
+				var filter = this.getFilter(filterId);
+				if (angular.isUndefined(filter) || angular.isUndefined(filter.presets)) {
+					return;
+				}
+
+				var presets = filter.presets;
+				for (var i = 0; i < presets.length; i++) {
+					if (presets[i].default) {
+						filter.preset = presets[i];
+						break;
+					}
+				}
+
+				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
 			/**
@@ -98,6 +203,7 @@ angular.module('ldAdminTools')
 
 				var data = input;
 
+				data = applyPresetFilter(data, filter.preset);
 				data = applyFilterFilter(data, filter.filter);
 				data = applyOrderByFilter(data, filter.orderBy);
 
@@ -213,19 +319,32 @@ angular.module('ldAdminTools')
 
 			storeFilters: function () {
 				if (localStorage.isSupported) {
-					localStorage.set('filters', angular.toJson(filters));
+					var store = {};
+					angular.forEach(filters, function(value, key) {
+						store[key] = {
+							preset: value.preset,
+							filter: value.filter,
+							orderBy: value.filter
+						};
+					});
+					localStorage.set('filters', angular.toJson(store));
 				}
 			},
 
 			loadFilters: function () {
 				if (localStorage.isSupported) {
-					filters = angular.fromJson(localStorage.get('filters'));
-				}
+					var loaded = angular.fromJson(localStorage.get('filters'));
 
-				if (angular.isDefined(filters) && filters === null) {
-					filters = {};
-				}
+					if (angular.isDefined(loaded) && loaded === null) {
+						loaded = {};
+					}
 
+					angular.forEach(loaded, function (value, key) {
+						filters[key].preset = value.preset;
+						filters[key].filter = value.filter;
+						filters[key].orderBy = value.orderBy;
+					});
+				}
 			}
 		};
 	}]);

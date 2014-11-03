@@ -13,7 +13,7 @@
 
     <a href="" ng-click="addNewUser()">Add new user</a>
 
-    <table ld-table="filteredUsers" ld-table-source="users" class="table table-condensed table-striped" ld-table-page-rows="10" ld-table-filter="selectedFilter">
+    <table ld-table="filteredUsers" ld-table-source="users" class="table table-condensed table-striped" ld-table-page-rows="10" ld-filter="test">
         <thead>
         <tr>
             <th></th>
@@ -66,23 +66,35 @@
 <script type="text/javascript">
 
     angular.module('TableApp', ['ui.bootstrap', 'RecursionHelper', 'ldAdminTools'])
-            .controller('testController', ['$scope', function (scope) {
+            .controller('testController', ['$scope', 'ldFilterService', function (scope, filterService) {
 
                 scope.filters = [
                     {
                         name: 'All',
-                        clear: ['firstName']
+                        id: 1,
+                        default: true
                     },
                     {
-                        name: 'rambo',
+                        name: 'Michal',
+                        id: 2,
                         filters: {
                             'firstName': 'Michal'
                         }
                     },
                     {
                         divider: true
+                    },
+                    {
+                        name: 'Email @black.com',
+                        id: 3,
+                        filters: {
+                            'email': '@black.com'
+                        }
                     }
                 ];
+
+                filterService.registerPresets('test', scope.filters);
+                filterService.setDefaultPreset('test');
 
                 function randomTableRow() {
                     var fnames = ['Michal', 'John', 'George', 'Jones', 'Arnold', 'Dean'];
@@ -109,7 +121,9 @@
                 };
 
                 scope.selectItem = function(item) {
-                    scope.selectedFilter = item;
+                    console.log(item);
+                    filterService.setPreset('test', item.id);
+                    filterService.applyFilter('test');
                 };
 
             }])
