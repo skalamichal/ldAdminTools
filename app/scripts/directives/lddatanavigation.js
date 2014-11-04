@@ -11,32 +11,55 @@ angular.module('ldAdminTools')
 		showPreviousButtonDefault: true,
 		showNextButtonDefault: true
 	})
-	.directive('ldDataNavigation', function () {
+	.directive('ldDataNavigation', ['$location', 'ldDataNavigationConfig', function ($location, config) {
 		return {
-			templateUrl: 'partials/ldtablenavigation.html',
+			templateUrl: 'partials/lddatanavigation.html',
 			restrict: 'E',
 			scope: {
-				
+				data: '=',
+				viewUrl: '@',
+				currentId: '='
 			},
 			link: function postLink(scope) {
-
 				scope.disablePreviousButtonClass = '';
 				scope.disableNextButtonClass = '';
 
 				scope.showPreviousButton = scope.showPreviousButton || config.showPreviousButtonDefault;
 				scope.showNextButton = scope.showNextButton || config.showNextButtonDefault;
 
+				angular.forEach(scope.data, function(item, index) {
+					if (item.id === scope.currentId) {
+						scope.currentIndex = index;
+					}
+				});
+
+				console.log('current index: ' + scope.currentIndex);
+
 				function updateNavigation() {
-					//scope.disablePreviousButtonClass = (page <= 1 ? 'disabled' : '');
-					//scope.disableNextButtonClass = (page >= tableController.getTotalPages() ? 'disabled' : '');
+					scope.disablePreviousButtonClass = (scope.currentIndex <= 0 ? 'disabled' : '');
+					scope.disableNextButtonClass = (scope.currentIndex >= scope.data.length - 1 ? 'disabled' : '');
 				}
 
 				scope.previousEntry = function () {
+					scope.index = scope.currentIndex - 1;
 				};
 
 				scope.nextEntry = function () {
+					console.log('next');
+					scope.index = scope.currentIndex + 1;
 				};
 
+				scope.$watch('index', function(newIndex) {
+					if (angular.isUndefined(newIndex)) {
+						return;
+					}
+					console.log(newIndex);
+					var item = scope.data[newIndex];
+					var path = scope.viewUrl.replace('{0}', item.id);
+					$location.url(path);
+				});
+
+				updateNavigation();
 			}
 		};
-	});
+	}]);
