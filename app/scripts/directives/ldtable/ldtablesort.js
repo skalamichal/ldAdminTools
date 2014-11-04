@@ -76,13 +76,24 @@ angular.module('ldAdminTools')
 					scope.$apply(sort);
 				}
 
-				// watch for the table order by filters. When different column is set, update this one.
-				scope.$watch(tableController.getOrderByFilters, function (newValue) {
-					if (angular.isUndefined(newValue) || angular.isUndefined(newValue.criterion) || newValue.criterion !== criterion) {
+				scope.$on(tableController.TABLE_UPDATED, function () {
+					var orderBy = tableController.getOrderByFilters();
+					if (angular.isUndefined(orderBy) || angular.isUndefined(orderBy.criterion) || orderBy.criterion !== criterion) {
 						order = ORDER.NONE;
 					}
+					else {
+						if (criterion === orderBy.criterion) {
+							if (orderBy.reverse) {
+								order = ORDER.DESCENT;
+							}
+							else {
+								order = ORDER.ASCENT;
+							}
+						}
+					}
+
 					updateStyle();
-				}, true); // watch also object members
+				});
 
 				// bind the click handler to the element
 				element.on('click', changeSortOrder);

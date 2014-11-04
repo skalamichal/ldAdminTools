@@ -9,6 +9,9 @@
  *
  * The ldFilterService stores filters across different pages
  * Each filter is an object with following values:
+ * - dirty {Boolean} - filter updated, data need to be updated
+ * - presets {Array} - list of preset filters
+ * - preset {Object} - currently selected preset
  * - filters {Object} - values for the $filter('filter') filter, build in angular filter.
  * - orderBy {Array} - array of member used to sort the input array.
  * - ??custom - TODO
@@ -94,7 +97,7 @@ angular.module('ldAdminTools')
 			 */
 			getFilter: function (filterId) {
 				if (angular.isUndefined(filters[filterId])) {
-					filters[filterId] = {};
+					filters[filterId] = {dirty: false};
 				}
 				return filters[filterId];
 			},
@@ -136,6 +139,7 @@ angular.module('ldAdminTools')
 				}
 
 				filter.preset = preset;
+				filter.dirty = true;
 
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
@@ -181,6 +185,7 @@ angular.module('ldAdminTools')
 				for (var i = 0; i < presets.length; i++) {
 					if (presets[i].default) {
 						filter.preset = presets[i];
+						filter.dirty = true;
 						break;
 					}
 				}
@@ -201,11 +206,17 @@ angular.module('ldAdminTools')
 
 				var filter = this.getFilter(filterId);
 
+				if (!filter.dirty) {
+					return input;
+				}
+
 				var data = input;
 
 				data = applyPresetFilter(data, filter.preset);
 				data = applyFilterFilter(data, filter.filter);
 				data = applyOrderByFilter(data, filter.orderBy);
+
+				filter.dirty = false;
 
 				return data;
 			},
@@ -229,6 +240,8 @@ angular.module('ldAdminTools')
 				else if (angular.isObject(criterion)) {
 					angular.extend(filter.filter, criterion);
 				}
+
+				filter.dirty = true;
 
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
@@ -257,12 +270,16 @@ angular.module('ldAdminTools')
 					});
 				}
 
+				filter.dirty = true;
+
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
 			clearFilterFilter: function (filterId) {
 				var filter = this.getFilter(filterId);
 				delete filter.filter;
+
+				filter.dirty = true;
 
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
@@ -282,6 +299,8 @@ angular.module('ldAdminTools')
 					};
 				}
 
+				filter.dirty = true;
+
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
@@ -296,6 +315,8 @@ angular.module('ldAdminTools')
 					filter.orderBy = {};
 				}
 
+				filter.dirty = true;
+
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
@@ -303,28 +324,41 @@ angular.module('ldAdminTools')
 				var filter = this.getFilter(filterId);
 				delete filter.orderBy;
 
+				filter.dirty = true;
+
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
 			forceUpdate: function (filterId) {
 				var filter = this.getFilter(filterId);
+				filter.dirty = true;
+
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
 			forceUpdateAll: function () {
 				angular.forEach(filters, function (filter, filterId) {
+					filter.dirty = true;
 					$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 				}, this);
+			},
+
+			setDirty: function(filterId) {
+				this.getFilter(filterId).dirty = true;
+			},
+
+			isDirty: function(filterId) {
+				return !!this.getFilter(filterId).dirty;
 			},
 
 			storeFilters: function () {
 				if (localStorage.isSupported) {
 					var store = {};
-					angular.forEach(filters, function(value, key) {
+					angular.forEach(filters, function (value, key) {
 						store[key] = {
 							preset: value.preset,
 							filter: value.filter,
-							orderBy: value.filter
+							orderBy: value.orderBy
 						};
 					});
 					localStorage.set('filters', angular.toJson(store));
@@ -343,6 +377,7 @@ angular.module('ldAdminTools')
 						filters[key].preset = value.preset;
 						filters[key].filter = value.filter;
 						filters[key].orderBy = value.orderBy;
+						filters[key].dirty = true;
 					});
 				}
 			}
