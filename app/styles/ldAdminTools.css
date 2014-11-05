@@ -118,3 +118,8 @@ a.ld-menuitem:hover {
 .ld-table-info {
     font-weight: bold;
 }
+
+/* ldClickableRows default style */
+.ld-clickable {
+    cursor: pointer;
+}
