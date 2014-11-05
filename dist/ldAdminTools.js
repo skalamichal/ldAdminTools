@@ -102,7 +102,8 @@ angular.module('ldAdminTools')
 			scope: {
 				data: '=',
 				viewUrl: '@',
-				currentId: '='
+				currentId: '=',
+				filter: '=?'
 			},
 			link: function postLink(scope) {
 				scope.disablePreviousButtonClass = '';
@@ -1985,7 +1986,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('partials/lddatanavigation.html',
-    "<div class=ld-data-navigation>{{ currentIndex + 1 }} of {{ data.length }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
+    "<div class=ld-data-navigation>{{ filter.preset.name }}: {{ currentIndex + 1 }} of {{ data.length }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
   );
 
 

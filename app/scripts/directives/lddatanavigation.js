@@ -18,7 +18,8 @@ angular.module('ldAdminTools')
 			scope: {
 				data: '=',
 				viewUrl: '@',
-				currentId: '='
+				currentId: '=',
+				filter: '=?'
 			},
 			link: function postLink(scope) {
 				scope.disablePreviousButtonClass = '';
