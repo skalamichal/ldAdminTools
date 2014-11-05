@@ -33,8 +33,6 @@ angular.module('ldAdminTools')
 					}
 				});
 
-				console.log('current index: ' + scope.currentIndex);
-
 				function updateNavigation() {
 					scope.disablePreviousButtonClass = (scope.currentIndex <= 0 ? 'disabled' : '');
 					scope.disableNextButtonClass = (scope.currentIndex >= scope.data.length - 1 ? 'disabled' : '');
@@ -45,7 +43,6 @@ angular.module('ldAdminTools')
 				};
 
 				scope.nextEntry = function () {
-					console.log('next');
 					scope.index = scope.currentIndex + 1;
 				};
 
@@ -53,7 +50,6 @@ angular.module('ldAdminTools')
 					if (angular.isUndefined(newIndex)) {
 						return;
 					}
-					console.log(newIndex);
 					var item = scope.data[newIndex];
 					var path = scope.viewUrl.replace('{0}', item.id);
 					$location.url(path);

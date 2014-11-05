@@ -73,8 +73,6 @@ angular.module('ldAdminTools')
 					}
 				});
 
-				console.log('current index: ' + scope.currentIndex);
-
 				function updateNavigation() {
 					scope.disablePreviousButtonClass = (scope.currentIndex <= 0 ? 'disabled' : '');
 					scope.disableNextButtonClass = (scope.currentIndex >= scope.data.length - 1 ? 'disabled' : '');
@@ -85,7 +83,6 @@ angular.module('ldAdminTools')
 				};
 
 				scope.nextEntry = function () {
-					console.log('next');
 					scope.index = scope.currentIndex + 1;
 				};
 
@@ -93,7 +90,6 @@ angular.module('ldAdminTools')
 					if (angular.isUndefined(newIndex)) {
 						return;
 					}
-					console.log(newIndex);
 					var item = scope.data[newIndex];
 					var path = scope.viewUrl.replace('{0}', item.id);
 					$location.url(path);
@@ -1521,6 +1517,42 @@ angular.module('ldAdminTools')
 
 /**
  * @ngdoc service
+ * @name ldAdminToolsApp.ldCache
+ * @description
+ * # ldCache
+ * Service in the ldAdminToolsApp.
+ * Simple cache service
+ */
+angular.module('ldAdminTools')
+	.service('ldCache', function ldCache() {
+		var cached = [];
+
+		this.cache = function (key, data) {
+			cached[key] = data;
+		};
+
+		this.get = function (key) {
+			return cached[key];
+		};
+
+		this.clear = function (key) {
+			if (angular.isDefined(key)) {
+				var index = cached.indexOf(key);
+				if (index > 0) {
+					cached.splice(index, 1);
+				}
+			}
+			// clear all
+			else {
+				cached.splice(0, cached.length);
+			}
+		};
+	});
+
+'use strict';
+
+/**
+ * @ngdoc service
  * @name ldAdminTools.ldFilterService
  * @description
  * # ldFilterService
@@ -1533,6 +1565,7 @@ angular.module('ldAdminTools')
  * - preset {Object} - currently selected preset
  * - filters {Object} - values for the $filter('filter') filter, build in angular filter.
  * - orderBy {Array} - array of member used to sort the input array.
+ * - cache {Array} - cached filtered collection to be used in views with last filter results
  * - ??custom - TODO
  */
 angular.module('ldAdminTools')
@@ -1907,7 +1940,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('partials/lddatanavigation.html',
-    "<div class=ld-data-navigation><a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
+    "<div class=ld-data-navigation>{{ currentIndex + 1 }} of {{ data.length }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
   );
 
 

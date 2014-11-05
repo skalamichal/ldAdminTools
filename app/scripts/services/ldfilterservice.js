@@ -14,6 +14,7 @@
  * - preset {Object} - currently selected preset
  * - filters {Object} - values for the $filter('filter') filter, build in angular filter.
  * - orderBy {Array} - array of member used to sort the input array.
+ * - cache {Array} - cached filtered collection to be used in views with last filter results
  * - ??custom - TODO
  */
 angular.module('ldAdminTools')
