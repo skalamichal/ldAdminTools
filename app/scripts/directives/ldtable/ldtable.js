@@ -68,8 +68,8 @@ angular.module('ldAdminTools')
 
 			// make the copy of the ldTableSource now
 			dataCopy = makeCopy(sourceGetter($scope));
+			displaySetter($scope, dataCopy);
 			filterService.forceUpdate(filter);
-			//displaySetter($scope, dataCopy);
 
 			// setup the watcher
 			// TODO could cause issue with large data, consider to watch only display data
@@ -84,6 +84,7 @@ angular.module('ldAdminTools')
 		}
 		// if no source is defined, watch changes in display data
 		else {
+			displaySetter($scope, []);
 			dataCopy = makeCopy(displayGetter($scope));
 			// TODO watch
 		}
