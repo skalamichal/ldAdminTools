@@ -125,3 +125,8 @@ a.ld-menuitem:hover {
 .ld-data-navigation-btn {
     padding: 6px 6px;
 }
+
+/* ldClickableRows default style */
+.ld-clickable {
+    cursor: pointer;
+}
