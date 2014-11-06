@@ -5,6 +5,9 @@
  * @name ldAdminTools.directive:ldDataNavigation
  * @description
  * # ldDataNavigation
+ * Allows navigation between views by id, which is send in an array of view ids and current id. Optional is the filter send
+ * which is then displayed as 'filter name': index of total
+ * The view-url is a url string with the format 'url {0}' where the {0} is replaced with the view id.
  */
 angular.module('ldAdminTools')
 	.constant('ldDataNavigationConfig', {
@@ -16,7 +19,7 @@ angular.module('ldAdminTools')
 			templateUrl: 'partials/lddatanavigation.html',
 			restrict: 'E',
 			scope: {
-				data: '=',
+				data: '=', // array with ids
 				viewUrl: '@',
 				currentId: '=',
 				filter: '=?'
@@ -28,11 +31,9 @@ angular.module('ldAdminTools')
 				scope.showPreviousButton = scope.showPreviousButton || config.showPreviousButtonDefault;
 				scope.showNextButton = scope.showNextButton || config.showNextButtonDefault;
 
-				angular.forEach(scope.data, function(item, index) {
-					if (item.id === scope.currentId) {
-						scope.currentIndex = index;
-					}
-				});
+				scope.currentIndex = scope.data.indexOf(scope.currentId);
+
+				scope.isFilter = angular.isDefined(scope.filter) && angular.isDefined(scope.filter.preset);
 
 				function updateNavigation() {
 					scope.disablePreviousButtonClass = (scope.currentIndex <= 0 ? 'disabled' : '');
@@ -51,8 +52,7 @@ angular.module('ldAdminTools')
 					if (angular.isUndefined(newIndex)) {
 						return;
 					}
-					var item = scope.data[newIndex];
-					var path = scope.viewUrl.replace('{0}', item.id);
+					var path = scope.viewUrl.replace('{0}', scope.data[newIndex]);
 					$location.url(path);
 				});
 

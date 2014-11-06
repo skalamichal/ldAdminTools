@@ -42,6 +42,113 @@ angular.module('ldAdminTools')
 
 /**
  * @ngdoc directive
+ * @name ldAdminTools.directive:ldClickableRows
+ * @description
+ * # ldClickableRows
+ * This directive is supposed to be used on tr elements and will enhance the enclosed
+ * td elements with an ng-click directive. This is useful if you do not want to make
+ * all columns clickable for some reason. Currently, it skips the columns containing
+ * an input (checkbox, etc). Example usage: ld-clickable-rows="rowClicked(item)"
+ * - this will result in ng-click="rowClicked(item)" being added to individual td
+ * elements. It also adds ld-clickable css class to the TDs. By default, this class
+ * sets the mouse cursor to "pointer".
+ *
+ * Optionally, you can also specify the ld-clickable-rows-active attribute to apply an
+ * additional css class to the TDs besides ld-clickable. This is useful for displaying
+ * "unread" items in an inbox-like list. Example usage:
+ * ld-clickable-rows-active="{'ld-unread': !msg.read}"
+ */
+angular.module('ldAdminTools')
+	.directive('ldClickableRows', ['$compile', function ($compile) {
+		function link(scope, element, attrs) {
+			angular.forEach(element.find('td'), function(value) {
+				// avoid columns with input elements (such as checkboxes)
+				// update all the others with a custom css class and an ng-click
+				var tdElement = angular.element(value);
+				if(tdElement.find('input').length === 0) {
+					tdElement.addClass('ld-clickable').attr('ng-click', attrs.ldClickableRows);
+
+					if(angular.isDefined(attrs.ldClickableRowsActive)) {
+						tdElement.attr('ng-class', attrs.ldClickableRowsActive);
+					}
+
+					$compile(tdElement)(scope);
+				}
+			});
+		}
+		return {
+			restrict: 'A',
+			link: link
+		};
+	}]);
+
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name ldAdminTools.directive:ldDataNavigation
+ * @description
+ * # ldDataNavigation
+ */
+angular.module('ldAdminTools')
+	.constant('ldDataNavigationConfig', {
+		showPreviousButtonDefault: true,
+		showNextButtonDefault: true
+	})
+	.directive('ldDataNavigation', ['$location', 'ldDataNavigationConfig', function ($location, config) {
+		return {
+			templateUrl: 'partials/lddatanavigation.html',
+			restrict: 'E',
+			scope: {
+				data: '=',
+				viewUrl: '@',
+				currentId: '=',
+				filter: '=?'
+			},
+			link: function postLink(scope) {
+				scope.disablePreviousButtonClass = '';
+				scope.disableNextButtonClass = '';
+
+				scope.showPreviousButton = scope.showPreviousButton || config.showPreviousButtonDefault;
+				scope.showNextButton = scope.showNextButton || config.showNextButtonDefault;
+
+				angular.forEach(scope.data, function(item, index) {
+					if (item.id === scope.currentId) {
+						scope.currentIndex = index;
+					}
+				});
+
+				function updateNavigation() {
+					scope.disablePreviousButtonClass = (scope.currentIndex <= 0 ? 'disabled' : '');
+					scope.disableNextButtonClass = (scope.currentIndex >= scope.data.length - 1 ? 'disabled' : '');
+				}
+
+				scope.previousEntry = function () {
+					scope.index = scope.currentIndex - 1;
+				};
+
+				scope.nextEntry = function () {
+					scope.index = scope.currentIndex + 1;
+				};
+
+				scope.$watch('index', function(newIndex) {
+					if (angular.isUndefined(newIndex)) {
+						return;
+					}
+					var item = scope.data[newIndex];
+					var path = scope.viewUrl.replace('{0}', item.id);
+					$location.url(path);
+				});
+
+				updateNavigation();
+			}
+		};
+	}]);
+
+'use strict';
+
+/**
+ * @ngdoc directive
  * @name ldAdminTools.directive:ldFilterDropdown
  * @description
  * # ldFilterDropdown
@@ -621,6 +728,7 @@ angular.module('ldAdminTools')
 			// make the copy of the ldTableSource now
 			dataCopy = makeCopy(sourceGetter($scope));
 			displaySetter($scope, dataCopy);
+			filterService.forceUpdate(filter);
 
 			// setup the watcher
 			// TODO could cause issue with large data, consider to watch only display data
@@ -635,6 +743,7 @@ angular.module('ldAdminTools')
 		}
 		// if no source is defined, watch changes in display data
 		else {
+			displaySetter($scope, []);
 			dataCopy = makeCopy(displayGetter($scope));
 			// TODO watch
 		}
@@ -860,6 +969,7 @@ angular.module('ldAdminTools')
 			controller: 'ldTableController',
 			/*jshint unused:false*/
 			link: function (scope, element, attrs, controller) {
+
 			}
 		};
 	}]);
@@ -1390,13 +1500,24 @@ angular.module('ldAdminTools')
 					scope.$apply(sort);
 				}
 
-				// watch for the table order by filters. When different column is set, update this one.
-				scope.$watch(tableController.getOrderByFilters, function (newValue) {
-					if (angular.isUndefined(newValue) || angular.isUndefined(newValue.criterion) || newValue.criterion !== criterion) {
+				scope.$on(tableController.TABLE_UPDATED, function () {
+					var orderBy = tableController.getOrderByFilters();
+					if (angular.isUndefined(orderBy) || angular.isUndefined(orderBy.criterion) || orderBy.criterion !== criterion) {
 						order = ORDER.NONE;
 					}
+					else {
+						if (criterion === orderBy.criterion) {
+							if (orderBy.reverse) {
+								order = ORDER.DESCENT;
+							}
+							else {
+								order = ORDER.ASCENT;
+							}
+						}
+					}
+
 					updateStyle();
-				}, true); // watch also object members
+				});
 
 				// bind the click handler to the element
 				element.on('click', changeSortOrder);
@@ -1442,6 +1563,67 @@ angular.module('ldAdminTools')
 
 /**
  * @ngdoc service
+ * @name ldAdminToolsApp.ldCache
+ * @description
+ * # ldCache
+ * Service in the ldAdminToolsApp.
+ * Simple cache service
+ */
+angular.module('ldAdminTools')
+	.constant('ldCacheConfig', {
+		limit: 10,
+		useLocalStorage: true
+	})
+	.service('ldCache', ['ldCacheConfig', 'localStorageService', function ldCache(config, localStorage) {
+		var cached = {};
+
+		function readFromLocalStorage(key) {
+			if (localStorage.isSupported()) {
+				return localStorage.get('ldCache_' + key);
+			}
+		}
+
+		function removeFromLocalStorage(key) {
+			if (localStorage.isSupported()) {
+				localStorage.remove(key);
+			}
+		}
+
+		this.cache = function (key, data) {
+			cached[key] = data;
+
+			if (localStorage.isSupported()) {
+				localStorage.set('ldCache_' + key, data);
+			}
+		};
+
+		this.get = function (key) {
+			if (angular.isUndefined(cached[key])) {
+				// look in localStorage
+				cached[key] = readFromLocalStorage(key);
+			}
+			return cached[key];
+		};
+
+		this.clear = function (key) {
+			if (angular.isDefined(key) && angular.isDefined(cached[key])) {
+				delete cached[key];
+				removeFromLocalStorage(key);
+			}
+			// clear all
+			else {
+				angular.forEach(cached, function(value, key) {
+					removeFromLocalStorage(key);
+				});
+				cached = {};
+			}
+		};
+	}]);
+
+'use strict';
+
+/**
+ * @ngdoc service
  * @name ldAdminTools.ldFilterService
  * @description
  * # ldFilterService
@@ -1449,8 +1631,12 @@ angular.module('ldAdminTools')
  *
  * The ldFilterService stores filters across different pages
  * Each filter is an object with following values:
+ * - dirty {Boolean} - filter updated, data need to be updated
+ * - presets {Array} - list of preset filters
+ * - preset {Object} - currently selected preset
  * - filters {Object} - values for the $filter('filter') filter, build in angular filter.
  * - orderBy {Array} - array of member used to sort the input array.
+ * - cache {Array} - cached filtered collection to be used in views with last filter results
  * - ??custom - TODO
  */
 angular.module('ldAdminTools')
@@ -1534,7 +1720,7 @@ angular.module('ldAdminTools')
 			 */
 			getFilter: function (filterId) {
 				if (angular.isUndefined(filters[filterId])) {
-					filters[filterId] = {};
+					filters[filterId] = {dirty: false};
 				}
 				return filters[filterId];
 			},
@@ -1576,6 +1762,7 @@ angular.module('ldAdminTools')
 				}
 
 				filter.preset = preset;
+				filter.dirty = true;
 
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
@@ -1621,6 +1808,7 @@ angular.module('ldAdminTools')
 				for (var i = 0; i < presets.length; i++) {
 					if (presets[i].default) {
 						filter.preset = presets[i];
+						filter.dirty = true;
 						break;
 					}
 				}
@@ -1641,11 +1829,17 @@ angular.module('ldAdminTools')
 
 				var filter = this.getFilter(filterId);
 
+				if (!filter.dirty) {
+					return input;
+				}
+
 				var data = input;
 
 				data = applyPresetFilter(data, filter.preset);
 				data = applyFilterFilter(data, filter.filter);
 				data = applyOrderByFilter(data, filter.orderBy);
+
+				filter.dirty = false;
 
 				return data;
 			},
@@ -1669,6 +1863,8 @@ angular.module('ldAdminTools')
 				else if (angular.isObject(criterion)) {
 					angular.extend(filter.filter, criterion);
 				}
+
+				filter.dirty = true;
 
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
@@ -1697,12 +1893,16 @@ angular.module('ldAdminTools')
 					});
 				}
 
+				filter.dirty = true;
+
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
 			clearFilterFilter: function (filterId) {
 				var filter = this.getFilter(filterId);
 				delete filter.filter;
+
+				filter.dirty = true;
 
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
@@ -1722,6 +1922,8 @@ angular.module('ldAdminTools')
 					};
 				}
 
+				filter.dirty = true;
+
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
@@ -1736,6 +1938,8 @@ angular.module('ldAdminTools')
 					filter.orderBy = {};
 				}
 
+				filter.dirty = true;
+
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
@@ -1743,41 +1947,73 @@ angular.module('ldAdminTools')
 				var filter = this.getFilter(filterId);
 				delete filter.orderBy;
 
+				filter.dirty = true;
+
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
 			forceUpdate: function (filterId) {
 				var filter = this.getFilter(filterId);
+				filter.dirty = true;
+
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
 			forceUpdateAll: function () {
 				angular.forEach(filters, function (filter, filterId) {
+					filter.dirty = true;
 					$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 				}, this);
 			},
 
+			setDirty: function(filterId) {
+				this.getFilter(filterId).dirty = true;
+			},
+
+			isDirty: function(filterId) {
+				return !!this.getFilter(filterId).dirty;
+			},
+
 			storeFilters: function () {
 				if (localStorage.isSupported) {
-					localStorage.set('filters', angular.toJson(filters));
+					var store = {};
+					angular.forEach(filters, function (value, key) {
+						store[key] = {
+							preset: value.preset,
+							filter: value.filter,
+							orderBy: value.orderBy
+						};
+					});
+					localStorage.set('filters', angular.toJson(store));
 				}
 			},
 
 			loadFilters: function () {
 				if (localStorage.isSupported) {
-					filters = angular.fromJson(localStorage.get('filters'));
-				}
+					var loaded = angular.fromJson(localStorage.get('filters'));
 
-				if (angular.isDefined(filters) && filters === null) {
-					filters = {};
-				}
+					if (angular.isDefined(loaded) && loaded === null) {
+						loaded = {};
+					}
 
+					angular.forEach(loaded, function (value, key) {
+						filters[key].preset = value.preset;
+						filters[key].filter = value.filter;
+						filters[key].orderBy = value.orderBy;
+						filters[key].dirty = true;
+					});
+				}
 			}
 		};
 	}]);
 
 angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
+
+  $templateCache.put('partials/lddatanavigation.html',
+    "<div class=ld-data-navigation>{{ filter.preset.name }}: {{ currentIndex + 1 }} of {{ data.length }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
+  );
+
 
   $templateCache.put('partials/lddropdown.html',
     "<div class=ld-dropdown dropdown><a style=cursor:pointer dropdown-toggle role=button>{{ selected.name }} <i class=\"fa fa-caret-down\"></i></a><ul class=dropdown-menu><li ng-repeat=\"item in list\" ng-class=\"{'divider' : item.divider}\"><a ng-if=!item.divider ng-click=select(item);>{{ item.name }}</a></li></ul></div>"

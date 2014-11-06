@@ -41,6 +41,9 @@ angular.module('ldAdminTools')
 		 * @returns {Array}
 		 */
 		function makeCopy(src) {
+			if (angular.isUndefined(src)) {
+				src = [];
+			}
 			filteredRows = totalRows = src.length;
 			return [].concat(src);
 		}
@@ -84,7 +87,6 @@ angular.module('ldAdminTools')
 		}
 		// if no source is defined, watch changes in display data
 		else {
-			displaySetter($scope, []);
 			dataCopy = makeCopy(displayGetter($scope));
 			// TODO watch
 		}

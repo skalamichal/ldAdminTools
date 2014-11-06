@@ -117,3 +117,16 @@ a.ld-menuitem:hover {
 .ld-table-info {
     font-weight: bold;
 }
+
+.ld-data-navigation {
+    display: inline-block;
+}
+
+.ld-data-navigation-btn {
+    padding: 6px 6px;
+}
+
+/* ldClickableRows default style */
+.ld-clickable {
+    cursor: pointer;
+}

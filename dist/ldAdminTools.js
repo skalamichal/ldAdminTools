@@ -89,6 +89,9 @@ angular.module('ldAdminTools')
  * @name ldAdminTools.directive:ldDataNavigation
  * @description
  * # ldDataNavigation
+ * Allows navigation between views by id, which is send in an array of view ids and current id. Optional is the filter send
+ * which is then displayed as 'filter name': index of total
+ * The view-url is a url string with the format 'url {0}' where the {0} is replaced with the view id.
  */
 angular.module('ldAdminTools')
 	.constant('ldDataNavigationConfig', {
@@ -100,7 +103,7 @@ angular.module('ldAdminTools')
 			templateUrl: 'partials/lddatanavigation.html',
 			restrict: 'E',
 			scope: {
-				data: '=',
+				data: '=', // array with ids
 				viewUrl: '@',
 				currentId: '=',
 				filter: '=?'
@@ -112,11 +115,9 @@ angular.module('ldAdminTools')
 				scope.showPreviousButton = scope.showPreviousButton || config.showPreviousButtonDefault;
 				scope.showNextButton = scope.showNextButton || config.showNextButtonDefault;
 
-				angular.forEach(scope.data, function(item, index) {
-					if (item.id === scope.currentId) {
-						scope.currentIndex = index;
-					}
-				});
+				scope.currentIndex = scope.data.indexOf(scope.currentId);
+
+				scope.isFilter = angular.isDefined(scope.filter) && angular.isDefined(scope.filter.preset);
 
 				function updateNavigation() {
 					scope.disablePreviousButtonClass = (scope.currentIndex <= 0 ? 'disabled' : '');
@@ -135,8 +136,7 @@ angular.module('ldAdminTools')
 					if (angular.isUndefined(newIndex)) {
 						return;
 					}
-					var item = scope.data[newIndex];
-					var path = scope.viewUrl.replace('{0}', item.id);
+					var path = scope.viewUrl.replace('{0}', scope.data[newIndex]);
 					$location.url(path);
 				});
 
@@ -700,6 +700,9 @@ angular.module('ldAdminTools')
 		 * @returns {Array}
 		 */
 		function makeCopy(src) {
+			if (angular.isUndefined(src)) {
+				src = [];
+			}
 			filteredRows = totalRows = src.length;
 			return [].concat(src);
 		}
@@ -743,7 +746,6 @@ angular.module('ldAdminTools')
 		}
 		// if no source is defined, watch changes in display data
 		else {
-			displaySetter($scope, []);
 			dataCopy = makeCopy(displayGetter($scope));
 			// TODO watch
 		}
@@ -1570,30 +1572,89 @@ angular.module('ldAdminTools')
  * Simple cache service
  */
 angular.module('ldAdminTools')
-	.service('ldCache', function ldCache() {
-		var cached = [];
+	.constant('ldCacheConfig', {
+		limit: 10,
+		useLocalStorage: true,
+		prefix: 'ldCache_'
+	})
+	.service('ldCache', ['ldCacheConfig', 'localStorageService', function ldCache(config, localStorage) {
+		// cache storage
+		var cached = {};
+
+		// the prefix for local storage keys
+		var prefix = config.prefix;
+
+		/**
+		 * Read entry from local storage by the key
+		 * @param key
+		 * @returns {*}
+		 */
+		function readFromLocalStorage(key) {
+			if (localStorage.isSupported) {
+				return localStorage.get(prefix + key);
+			}
+		}
+
+		/**
+		 * Remove entry from the local storage
+		 * @param key
+		 */
+		function removeFromLocalStorage(key) {
+			if (localStorage.isSupported) {
+				localStorage.remove(prefix + key);
+			}
+		}
+
+		/**
+		 * Write entry to the local storage.
+		 * @param key
+		 * @param data
+		 */
+		function writeToLocalStorage(key, data) {
+			if (localStorage.isSupported) {
+				localStorage.set(prefix + key, data);
+			}
+		}
+
+		/**
+		 * Clear all cached entries from the local storage
+		 */
+		function removeAllFromLocalStorage() {
+			if (localStorage.isSupported) {
+				var keys = localStorage.keys();
+				angular.forEach(keys, function (key) {
+					if (key.indexOf(prefix) !== -1) {
+						localStorage.remove(key);
+					}
+				});
+			}
+		}
 
 		this.cache = function (key, data) {
 			cached[key] = data;
+			writeToLocalStorage(key, data);
 		};
 
 		this.get = function (key) {
+			if (angular.isUndefined(cached[key])) {
+				// look in localStorage
+				cached[key] = readFromLocalStorage(key);
+			}
 			return cached[key];
 		};
 
 		this.clear = function (key) {
-			if (angular.isDefined(key)) {
-				var index = cached.indexOf(key);
-				if (index > 0) {
-					cached.splice(index, 1);
-				}
+			if (angular.isDefined(key) && angular.isDefined(cached[key])) {
+				delete cached[key];
+				removeFromLocalStorage(key);
 			}
 			// clear all
 			else {
-				cached.splice(0, cached.length);
+				removeAllFromLocalStorage();
+				cached = {};
 			}
 		};
-	});
+	}]);
 
 'use strict';
 
@@ -1986,7 +2047,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('partials/lddatanavigation.html',
-    "<div class=ld-data-navigation>{{ filter.preset.name }}: {{ currentIndex + 1 }} of {{ data.length }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
+    "<div class=ld-data-navigation><span ng-if=isFilter>{{ filter.preset.name }}:</span> {{ currentIndex + 1 }} of {{ data.length }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
   );
 
 
