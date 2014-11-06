@@ -50,3 +50,26 @@ boolean value, which defines if menu is collapsed, useful for responsive layouts
 object with menu options - to be done    
 *menu-template* [optional]    
 custom defined template    
+
+####ldClickableRows
+A simple directive that allows you to make table rows clickable. While you could simply put the `ng-click` directive on a `<tr>` element, that would make the whole row clickable, which is not always desirable (for example if you have input columns, such as checkboxes, on your rows). This directive should be placed on a `<tr>` element, and will add `ng-click` to the individual `<td>` elements inside the row, skipping those containing an `<input>`.
+
+Example usage:
+
+```html
+<tr ng-repeat="company in companies" ld-clickable-rows="rowClicked(company)">
+  ...
+</tr>
+```
+
+This will result in `ng-click="rowClicked(company)` being added to each of the `<td>` elements inside the row (except for those with inputs) as well as css class `ld-clickable` being applied to those `<td>`s. By default, `ld-clickable` changes the mouse cursor to a hand pointer.
+
+Optionally, ld-clickable-rows-active allows you to specify additional - conditional - CSS class to the `<td>` elements besides ld-clickable. This is useful for displaying "unread" items in an inbox-like list, or similar. Example:
+
+```html
+<tr ng-repeat="message in messages" ld-clickable-rows="messageClicked(message)" ld-clickable-rows-active="{'ld-unread': !message.read}" ng-class="{'ld-unread-row': !message.read && !message.selected, 'warning': message.selected }">
+  <td><input type="checkbox" ng-model="message.selected"></td>
+  <td>{{message.subject}}</td>
+  <td>{{message.date | date}}</td>
+</tr>
+```
