@@ -24,11 +24,12 @@
 <script src="bower_components/angular/angular.js"></script>
 <script src="bower_components/angular-recursion/angular-recursion.js"></script>
 <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+<script src="bower_components/angular-local-storage/dist/angular-local-storage.js"></script>
 <script src="ldAdminTools.js"></script>
 
 <script type="text/javascript">
 
-    var app = angular.module('demo', ['ui.bootstrap', 'ldAdminTools']);
+    var app = angular.module('demo', ['ui.bootstrap', 'LocalStorageModule', 'ldAdminTools']);
     app.controller('demoCtrl', function ($scope) {
         $scope.menuOpened = true;
         $scope.animate = true;

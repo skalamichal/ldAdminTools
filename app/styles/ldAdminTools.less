@@ -1,3 +1,6 @@
+// Core variables and mixins
+@import (reference) "../../bower_components/bootstrap/less/bootstrap.less";
+
 /* Sidebar Menu Styles */
 
 .navbar-static-side ul li {
@@ -70,11 +73,11 @@ a.ld-menuitem:hover {
 }
 
 .ld-slide {
-    display: 'none';
+    display: none;
 }
 
 .ld-slide.in {
-    display: 'block';
+    display: block;
 }
 
 .ld-sliding-left {
@@ -129,4 +132,15 @@ a.ld-menuitem:hover {
 /* ldClickableRows default style */
 .ld-clickable {
     cursor: pointer;
+}
+
+.ld-input-group {
+    display: inline-block;
+    margin-bottom: 0;
+    vertical-align: middle;
+
+    .ld-form-control {
+        &:extend(.form-control);
+        &:extend(.alert-danger);
+    }
 }
