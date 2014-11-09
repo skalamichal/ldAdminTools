@@ -281,8 +281,8 @@ module.exports = function (grunt) {
 			less: {
 				build: {
 					options: {
-						paths: 'bower_components/bootstrap/less/**/*',
-						cleancss: true,
+						paths: './bower_components/bootstrap/less/**/*',
+						//cleancss: true,
 						sourceMap: true,
 						sourceMapFilename: '<%= library.dist %>/ldAdminTools.css.map',
 						sourceMapBasepath: '<%= library.dist %>/styles/'

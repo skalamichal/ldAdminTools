@@ -134,13 +134,14 @@ a.ld-menuitem:hover {
     cursor: pointer;
 }
 
-.ld-input-group {
-    display: inline-block;
-    margin-bottom: 0;
-    vertical-align: middle;
+.ld-form-control {
+    &:extend(.form-control);
+}
 
-    .ld-form-control {
-        &:extend(.form-control);
-        &:extend(.alert-danger);
-    }
+.ld-form-control {
+    // Customize the `:focus` state to imitate native WebKit styles.
+    .form-control-focus();
+
+    // Placeholder
+    .placeholder();
 }

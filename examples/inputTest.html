@@ -1,19 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head lang="en">
-	<meta charset="UTF-8">
-	<title>Table Test</title>
-	<link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css"/>
-	<link rel="stylesheet" type="text/css" href="bower_components/font-awesome/css/font-awesome.css"/>
-	<link rel="stylesheet" type="text/css" href="ldAdminTools.css"/>
+    <meta charset="UTF-8">
+    <title>Input Test</title>
+    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="bower_components/font-awesome/css/font-awesome.css"/>
+    <link rel="stylesheet" type="text/css" href="ldAdminTools.css"/>
 </head>
-<body ng-app="TableApp">
+<body ng-app="InputApp">
 
 <div style="margin: 20px" ng-controller="testController">
 
-<div class="ld-input-group">
-	<input class="ld-form-control" type="text">
-</div>
+    <div class="ld-input-group">
+        <input class="ld-form-control" type="text">
+    </div>
+
+    <div class="ld-input-group">
+        <input class="ld-form-control" type="text">
+    </div>
+
+    <input class="form-control" type="text">
 
 </div>
 
@@ -27,9 +33,9 @@
 
 <script type="text/javascript">
 
-	angular.module('TableApp', ['ui.bootstrap', 'RecursionHelper', 'LocalStorageModule', 'ldAdminTools'])
-			.controller('testController', ['$scope', 'ldFilterService', function (scope, filterService) {
-			}]);
+    angular.module('InputApp', ['ui.bootstrap', 'RecursionHelper', 'LocalStorageModule', 'ldAdminTools'])
+            .controller('testController', ['$scope', 'ldFilterService', function (scope, filterService) {
+            }]);
 
 </script>
 
