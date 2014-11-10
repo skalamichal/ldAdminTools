@@ -189,6 +189,108 @@ angular.module('ldAdminTools')
 
 /**
  * @ngdoc directive
+ * @name ldAdminToolsApp.directive:ldExpandableInput
+ * @description
+ * # ldExpandableInput
+ */
+angular.module('ldAdminTools')
+	.constant('ldExpandableInputConfig', {
+		placeholderDefault: 'Enter value...',
+		closeTextDefault: 'Close',
+		openIconDefault: 'fa-toggle-on',
+		closeIconDefault: 'fa-toggle-off',
+		clearIconDefault: 'fa-remove'
+	})
+	.directive('ldExpandableInput', ['ldExpandableInputConfig', function (config) {
+		return {
+			templateUrl: 'partials/ldexpandableinput.html',
+			restrict: 'E',
+			require: '^ngModel',
+			scope: {
+				model: '=ngModel',
+				placeholder: '@?',
+				closeText: '@',
+				expanded: '=?',
+				openIcon: '@',
+				closeIcon: '@',
+				clearIcon: '@',
+				onClear: '&?',
+				onToggle: '&?'
+			},
+			link: function postLink(scope) {
+				function setIconLeft() {
+					if (scope.isExpanded) {
+						return angular.isUndefined(scope.closeIcon) ? config.closeIconDefault : scope.closeIcon;
+					}
+					else {
+						return angular.isUndefined(scope.openIcon) ? config.openIconDefault : scope.openIcon;
+					}
+				}
+
+				function updateIcons() {
+					scope.iconLeft = setIconLeft();
+					scope.iconRight = angular.isUndefined(scope.clearIcon) ? config.clearIconDefault : scope.clearIcon;
+				}
+
+				scope.isExpanded = !!scope.expanded;
+				scope.inputValue = scope.model;
+
+				scope.$watch('placeholder', function (newValue) {
+					scope.placeholder = angular.isUndefined(scope.placeholder) ? config.placeholderDefault : scope.placeholder;
+				});
+
+				scope.$watch('closeText', function (newValue) {
+					scope.closeText = angular.isDefined(newValue) ? newValue : config.closeTextDefault;
+				});
+
+				scope.$watch('inputValue', function (newValue) {
+					scope.model = newValue;
+				});
+
+				scope.$watch('model', function (newValue) {
+					scope.inputValue = newValue;
+				});
+
+				scope.$watch('isExpanded', function (newValue) {
+					scope.expanded = !!newValue;
+					updateIcons();
+				});
+
+				scope.$watch('expanded', function (newValue) {
+					scope.isExpanded = !!newValue;
+					updateIcons();
+				});
+
+				scope.clear = function () {
+					scope.inputValue = '';
+
+					if (angular.isDefined(scope.onClear)) {
+						scope.onClear()();
+					}
+				};
+
+				scope.toggle = function () {
+					scope.isExpanded = !scope.isExpanded;
+					if (angular.isDefined(scope.onToggle)) {
+						scope.onToggle()(scope.isExpanded);
+					}
+				};
+
+				scope.close = function () {
+					scope.clear();
+					scope.toggle();
+				};
+
+				// init
+				updateIcons();
+			}
+		};
+	}]);
+
+'use strict';
+
+/**
+ * @ngdoc directive
  * @name ldAdminTools.directive:ldInputFocus
  * @description
  * # ldInputFocus
@@ -2079,6 +2181,11 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('partials/lddropdown.html',
     "<div class=ld-dropdown dropdown><a style=cursor:pointer dropdown-toggle role=button>{{ selected.name }} <i class=\"fa fa-caret-down\"></i></a><ul class=dropdown-menu><li ng-repeat=\"item in list\" ng-class=\"{'divider' : item.divider}\"><a ng-if=!item.divider ng-click=select(item);>{{ item.name }}</a></li></ul></div>"
+  );
+
+
+  $templateCache.put('partials/ldexpandableinput.html',
+    "<div class=ld-expandable-input><div class=ld-input-group><span class=ld-input-group-icon ng-if=\"iconLeft.length>0\" ng-click=toggle()><i class=\"fa fa-fw {{ iconLeft }} fa-lg\"></i></span> <input class=\"form-control ld-form-control\" ng-model=inputValue placeholder=\"{{ placeholder }}\" ng-show=isExpanded> <span class=ld-input-group-icon ng-if=\"iconRight.length>0\" ng-show=\"inputValue && isExpanded\" ng-click=clear()><i class=\"fa fa-fw {{ iconRight }} fa-lg\"></i></span></div><div ng-if=isExpanded class=ld-expandable-close><a href=\"\" ng-click=close()>{{ closeText }}</a></div></div>"
   );
 
 

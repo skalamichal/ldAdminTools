@@ -4,144 +4,196 @@
 /* Sidebar Menu Styles */
 
 .navbar-static-side ul li {
-    border-bottom: 1px solid #e7e7e7;
+	border-bottom: 1px solid #e7e7e7;
 }
 
 .sidebar-search {
-    padding: 15px;
+	padding: 15px;
 }
 
 .nav-second-level li,
 .nav-third-level li {
-    border-bottom: none !important;
+	border-bottom: none !important;
 }
 
 .nav-first-level li a {
-    padding-left: 15px;
+	padding-left: 15px;
 }
 
 .nav-second-level li a {
-    padding-left: 37px;
+	padding-left: 37px;
 }
 
 .nav-third-level li a {
-    padding-left: 52px;
+	padding-left: 52px;
 }
 
 .navbar-static-side {
-    z-index: 1;
-    position: absolute;
-    width: 250px;
-    margin-top: 51px;
-    background-color: #f8f8f8;
+	z-index: 1;
+	position: absolute;
+	width: 250px;
+	margin-top: 51px;
+	background-color: #f8f8f8;
 }
 
 @media (max-width: 767px) {
-    .navbar-static-side {
-        border-right: 1px solid #e7e7e7;
-        background-color: #f8f8f8;
-        border-bottom: 1px solid #e7e7e7;
-    }
+	.navbar-static-side {
+		border-right: 1px solid #e7e7e7;
+		background-color: #f8f8f8;
+		border-bottom: 1px solid #e7e7e7;
+	}
 }
 
 /* submenu styles */
 
 .ld-submenu {
-    display: none;
+	display: none;
 }
 
 .open > .ld-submenu {
-    display: block;
+	display: block;
 }
 
 /* Cursor for menu items */
 
 a.ld-menuitem {
-    cursor: pointer;
-    position: relative;
-    display: block;
-    padding: 10px 15px;
+	cursor: pointer;
+	position: relative;
+	display: block;
+	padding: 10px 15px;
 }
 
 a.ld-menuitem:hover {
-    text-decoration: none;
+	text-decoration: none;
 }
 
 .ld-right {
-    float: right;
-    padding-top: 2px;
+	float: right;
+	padding-top: 2px;
 }
 
 .ld-slide {
-    display: none;
+	display: none;
 }
 
 .ld-slide.in {
-    display: block;
+	display: block;
 }
 
 .ld-sliding-left {
-    -webkit-transition: left 0.35s ease;
-    -moz-transition: left 0.35s ease;
-    -o-transition: left 0.35s ease;
-    transition: left 0.35s ease;
+	-webkit-transition: left 0.35s ease;
+	-moz-transition: left 0.35s ease;
+	-o-transition: left 0.35s ease;
+	transition: left 0.35s ease;
 }
 
 /* ld-filter-dropdown style */
 .ld-dropdown {
-    position: relative;
-    display: inline-block;
+	position: relative;
+	display: inline-block;
 }
 
 /* ld-table-pagination styles */
 .ld-table-pagination {
-    line-height: 0px;
-    display: inline-block;
-    vertical-align: middle;
+	line-height: 0px;
+	display: inline-block;
+	vertical-align: middle;
 }
 
 .ld-pagination {
-    margin: 0px !important;
+	margin: 0px !important;
 }
 
 .ld-table-navigation {
-    display: inline-block;
+	display: inline-block;
 }
 
 .ld-table-navigation-btn {
-    padding: 6px 6px;
+	padding: 6px 6px;
 }
 
 .ld-table-navigation-dropdown {
-    position: relative;
-    display: inline-block;
+	position: relative;
+	display: inline-block;
 }
 
 .ld-table-info {
-    font-weight: bold;
+	font-weight: bold;
 }
 
 .ld-data-navigation {
-    display: inline-block;
+	display: inline-block;
 }
 
 .ld-data-navigation-btn {
-    padding: 6px 6px;
+	padding: 6px 6px;
 }
 
 /* ldClickableRows default style */
 .ld-clickable {
-    cursor: pointer;
+	cursor: pointer;
 }
 
-.ld-form-control {
-    &:extend(.form-control);
+/* ld input group updates */
+
+.ld-input-group {
+	display: table-cell;
+	width: 100%;
+	height: @input-height-base;
+	position: relative;
 }
 
-.ld-form-control {
-    // Customize the `:focus` state to imitate native WebKit styles.
-    .form-control-focus();
+.ld-input-group-icon {
 
-    // Placeholder
-    .placeholder();
+	&:extend(.btn);
+
+	position: absolute;
+	height: @input-height-base; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
+	padding: @padding-base-vertical @padding-base-horizontal/2;
+	font-size: @font-size-base;
+	line-height: @line-height-base;
+	color: @input-color;
+	background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
+
+	&:last-child:not(:first-child) {
+		top: 0;
+		right: 0;
+	}
+
+	// Sizing
+	&.input-sm {
+		padding: @padding-small-vertical @padding-small-horizontal;
+		font-size: @font-size-small;
+	}
+
+	&.input-lg {
+		padding: @padding-large-vertical @padding-large-horizontal;
+		font-size: @font-size-large;
+	}
+}
+
+.ld-input-group .ld-form-control {
+	padding: @padding-base-vertical @padding-base-horizontal*3;
+
+	&.input-sm {
+		padding: @padding-small-vertical @padding-small-horizontal*3;
+	}
+
+	&.input-lg {
+		padding: @padding-large-vertical @padding-large-horizontal*3;
+	}
+}
+
+.ld-expandable-input {
+	display: table;
+	height: @input-height-base;
+	width: 100%;
+}
+
+.ld-expandable-close {
+	display: table-cell;
+	height: @input-height-base; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
+	padding: @padding-base-vertical @padding-base-horizontal;
+	font-size: @font-size-base;
+	line-height: @line-height-base;
 }
