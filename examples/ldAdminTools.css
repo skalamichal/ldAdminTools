@@ -175,7 +175,7 @@ a.ld-menuitem:hover {
 /* ld-filter-dropdown style */
 .ld-dropdown {
   position: relative;
-  display: inline-block;
+  display: inline;
 }
 /* ld-table-pagination styles */
 .ld-table-pagination {
@@ -225,6 +225,9 @@ a.ld-menuitem:hover {
   color: #555555;
   background-image: none;
 }
+.ld-input-group-icon:first-child {
+  display: inline-block;
+}
 .ld-input-group-icon:last-child:not(:first-child) {
   top: 0;
   right: 0;
@@ -247,9 +250,9 @@ a.ld-menuitem:hover {
   padding: 10px 48px;
 }
 .ld-expandable-input {
-  display: table;
+  display: inline;
   height: 34px;
-  width: 100%;
+  width: auto;
 }
 .ld-expandable-close {
   display: table-cell;

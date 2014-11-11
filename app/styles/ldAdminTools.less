@@ -90,7 +90,7 @@ a.ld-menuitem:hover {
 /* ld-filter-dropdown style */
 .ld-dropdown {
 	position: relative;
-	display: inline-block;
+	display: inline;
 }
 
 /* ld-table-pagination styles */
@@ -155,6 +155,10 @@ a.ld-menuitem:hover {
 	color: @input-color;
 	background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
 
+	&:first-child {
+		display: inline-block;
+	}
+
 	&:last-child:not(:first-child) {
 		top: 0;
 		right: 0;
@@ -185,9 +189,9 @@ a.ld-menuitem:hover {
 }
 
 .ld-expandable-input {
-	display: table;
+	display: inline;
 	height: @input-height-base;
-	width: 100%;
+	width: auto;
 }
 
 .ld-expandable-close {

@@ -196,11 +196,13 @@ angular.module('ldAdminTools')
 angular.module('ldAdminTools')
 	.constant('ldExpandableInputConfig', {
 		placeholderDefault: 'Enter value...',
+		closeTextDefault: 'Close',
 		openIconDefault: 'fa-toggle-on',
 		closeIconDefault: 'fa-toggle-off',
-		clearIconDefault: 'fa-remove'
+		clearIconDefault: 'fa-remove',
+		closeOnToggleDefault: false
 	})
-	.directive('ldExpandableInput', ['ldExpandableInputConfig', function (config) {
+	.directive('ldExpandableInput', ['$parse', '$timeout', 'ldExpandableInputConfig', function ($parse, $timeout, config) {
 		return {
 			templateUrl: 'partials/ldexpandableinput.html',
 			restrict: 'E',
@@ -208,16 +210,19 @@ angular.module('ldAdminTools')
 			scope: {
 				model: '=ngModel',
 				placeholder: '@?',
-				expanded: '=?',
+				closeText: '@',
+				opened: '=?',
 				openIcon: '@',
 				closeIcon: '@',
 				clearIcon: '@',
 				onClear: '&?',
-				onToggle: '&?'
+				onOpen: '&?',
+				onClose: '&?'
 			},
 			link: function postLink(scope) {
+
 				function setIconLeft() {
-					if (scope.isExpanded) {
+					if (scope.isOpened) {
 						return angular.isUndefined(scope.closeIcon) ? config.closeIconDefault : scope.closeIcon;
 					}
 					else {
@@ -230,10 +235,17 @@ angular.module('ldAdminTools')
 					scope.iconRight = angular.isUndefined(scope.clearIcon) ? config.clearIconDefault : scope.clearIcon;
 				}
 
-				scope.isExpanded = !!scope.expanded;
+				scope.isOpened = !!scope.isOpened;
 				scope.inputValue = scope.model;
-				scope.placeholderText = angular.isUndefined(scope.placeholder) ? config.placeholderDefault : scope.placeholder;
-				scope.closeText = 'Close';
+				scope.isFocus = false;
+
+				scope.$watch('placeholder', function (newValue) {
+					scope.placeholder = angular.isUndefined(newValue) ? config.placeholderDefault : newValue;
+				});
+
+				scope.$watch('closeText', function (newValue) {
+					scope.closeText = angular.isDefined(newValue) ? newValue : config.closeTextDefault;
+				});
 
 				scope.$watch('inputValue', function (newValue) {
 					scope.model = newValue;
@@ -243,28 +255,42 @@ angular.module('ldAdminTools')
 					scope.inputValue = newValue;
 				});
 
-				scope.$watch('isExpanded', function (newValue) {
-					scope.expanded = !!newValue;
+				scope.$watch('isOpened', function (newValue) {
+					scope.opened = !!newValue;
+					scope.isFocus = scope.opened;
 					updateIcons();
 				});
 
-				scope.$watch('expanded', function (newValue) {
-					scope.isExpanded = !!newValue;
+				scope.$watch('opened', function (newValue) {
+					scope.isOpened = !!newValue;
+					scope.isFocus = scope.isOpened;
 					updateIcons();
 				});
 
-				scope.clear = function() {
+				scope.clear = function () {
 					scope.inputValue = '';
+					scope.isFocus = true;
 
-					if (angular.isDefined(scope.onClear)) {
+					if (angular.isFunction(scope.onClear())) {
 						scope.onClear()();
 					}
 				};
 
-				scope.toggle = function() {
-					scope.isExpanded = !scope.isExpanded;
-					if (angular.isDefined(scope.onToggle)) {
-						scope.onToggle()(scope.isExpanded);
+				scope.open = function () {
+					scope.isOpened = true;
+
+					if (angular.isFunction(scope.onOpen())) {
+						scope.onOpen()();
+					}
+				};
+
+				scope.close = function () {
+					scope.isOpened = false;
+
+					scope.clear();
+
+					if (angular.isFunction(scope.onClose())) {
+						scope.onClose()();
 					}
 				};
 
@@ -497,54 +523,56 @@ angular.module('ldAdminTools')
  * @name directive:ldResize
  * @description
  * # resize directive to handle window resize
- * @param onResize - method called when window is resized
+ * The ld-resize parametes is a method to be called when window is resized
  */
 
 angular.module('ldAdminTools')
-.directive('ldResize', ['$window', function ($window) {
-	return {
-		restrict: 'EA',
-		scope: {
-			'ldOnResize': '&'
-		},
-		link: function (scope) {
-			// wrap the $window to angular jqLite element
-			var w = angular.element($window);
+	.directive('ldResize', ['$window', '$parse', function ($window, $parse) {
+		return {
+			restrict: 'EA',
+			link: function (scope, element, attrs) {
+				// wrap the $window to angular jqLite element
+				var w = angular.element($window);
 
-			// method to be called when window is resized
-			var resizeMethod = scope.ldOnResize();
+				// method to be called when window is resized
+				var resizeMethodGetter = $parse(attrs.ldResize);
+				var resizeMethod = resizeMethodGetter(scope);
 
-			// initialize the "current" size object
-			scope.size = {
-				width: -1,
-				height: -1
-			};
+				if (angular.isUndefined(resizeMethod)) {
+					return;
+				}
 
-			// update the size with the current window size
-			scope.updateSize = function () {
-				scope.size.width = ($window.innerWidth > 0) ? $window.innerWidth : this.screen.width;
-				scope.size.height = ($window.innerHeight > 0) ? $window.innerHeight : this.screen.height;
-			};
+				// initialize the "current" size object
+				scope.size = {
+					width: -1,
+					height: -1
+				};
 
-			// watch for the size changes
-			scope.$watchCollection('size', function (newValue) {
-				// call the ldOnResize method
-				resizeMethod(newValue.width, newValue.height);
-			});
+				// update the size with the current window size
+				scope.updateSize = function () {
+					scope.size.width = ($window.innerWidth > 0) ? $window.innerWidth : this.screen.width;
+					scope.size.height = ($window.innerHeight > 0) ? $window.innerHeight : this.screen.height;
+				};
 
-			// bind to the window onResize event
-			w.bind('resize', function () {
-				// execute the updateSize withing in angular framework
-				scope.$apply(function () {
-					scope.updateSize();
+				// watch for the size changes
+				scope.$watchCollection('size', function (newValue) {
+					// call the ldOnResize method
+					resizeMethod(newValue.width, newValue.height);
 				});
-			});
 
-			// initialize
-			scope.updateSize();
-		}
-	};
-}]);
+				// bind to the window onResize event
+				w.bind('resize', function () {
+					// execute the updateSize withing in angular framework
+					scope.$apply(function () {
+						scope.updateSize();
+					});
+				});
+
+				// initialize
+				scope.updateSize();
+			}
+		};
+	}]);
 'use strict';
 
 /**
@@ -1501,23 +1529,24 @@ angular.module('ldAdminTools')
 
  */
 angular.module('ldAdminTools')
-	.directive('ldTableSearch', ['$timeout', function ($timeout) {
+	.directive('ldTableSearch', ['$timeout', '$parse', function ($timeout, $parse) {
 		return {
 			restrict: 'A',
 			require: ['^ldTable', 'ngModel'],
-			scope: {
-				predicate: '=?ldTableSearch', // the property to filter
-				model: '=ngModel'             // the value to look for
-			},
 			link: function (scope, element, attrs, controllers) {
 				var tableController = controllers[0];
+				var modelController = controllers[1];
 				var promise;
 
+				var predicateGet = $parse(attrs.ldTableSearch);
+				var predicate;
+
 				// watch the predicate value so we can change filter at runtime
-				scope.$watch('predicate', function (newValue, oldValue) {
+				scope.$watch(predicateGet, function (newValue, oldValue) {
 					if (newValue !== oldValue) {
+						predicate = newValue;
 						tableController.removeSearchFilter(oldValue);
-						tableController.setSearchFilter(scope.model || '', newValue);
+						tableController.setSearchFilter(modelController.$viewValue || '', predicate);
 					}
 				});
 
@@ -1529,13 +1558,15 @@ angular.module('ldAdminTools')
 					}
 
 					promise = $timeout(function () {
-						tableController.setSearchFilter(scope.model || '', scope.predicate);
+						tableController.setSearchFilter(modelController.$viewValue || '', predicate);
 						promise = null;
 					}, 200);
 				}
 
 				// watch for the input changes
-				scope.$watch('model', inputChanged);
+				scope.$watch(function() {
+					return modelController.$viewValue
+				}, inputChanged);
 			}
 		};
 	}])
@@ -2172,7 +2203,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/ldexpandableinput.html',
-    "<div class=ld-expandable-input><div class=ld-input-group><span class=ld-input-group-icon ng-if=\"iconLeft.length>0\" ng-click=toggle()><i class=\"fa fa-fw {{ iconLeft }} fa-lg\"></i></span> <input class=\"form-control ld-form-control\" ng-model=inputValue placeholder=\"{{ placeholderText }}\" ng-show=isExpanded> <span class=ld-input-group-icon ng-if=\"iconRight.length>0\" ng-show=\"inputValue && isExpanded\" ng-click=clear()><i class=\"fa fa-fw {{ iconRight }} fa-lg\"></i></span></div><div class=ld-expandable-close><a href=\"\" ng-click=close()>{{ closeText }}</a></div></div>"
+    "<div class=ld-expandable-input><div class=ld-input-group><span class=ld-input-group-icon ng-style=\"{cursor: isOpened ? 'context-menu': 'pointer'}\" ng-if=\"iconLeft.length>0\" ng-click=open()><i class=\"fa fa-fw {{ iconLeft }} fa-lg\"></i></span> <input class=\"form-control ld-form-control\" ng-model=inputValue placeholder=\"{{ placeholder }}\" ng-show=isOpened ld-input-focus=isFocus ng-blur=\"isFocus=false\"> <span class=ld-input-group-icon ng-if=\"iconRight.length>0\" ng-show=\"inputValue && isOpened\" ng-click=clear()><i class=\"fa fa-fw {{ iconRight }} fa-lg\"></i></span></div><div ng-if=isOpened class=ld-expandable-close><a href=\"\" ng-click=close()>{{ closeText }}</a></div></div>"
   );
 
 

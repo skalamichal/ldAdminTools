@@ -12,23 +12,24 @@
 
  */
 angular.module('ldAdminTools')
-	.directive('ldTableSearch', ['$timeout', function ($timeout) {
+	.directive('ldTableSearch', ['$timeout', '$parse', function ($timeout, $parse) {
 		return {
 			restrict: 'A',
 			require: ['^ldTable', 'ngModel'],
-			scope: {
-				predicate: '=?ldTableSearch', // the property to filter
-				model: '=ngModel'             // the value to look for
-			},
 			link: function (scope, element, attrs, controllers) {
 				var tableController = controllers[0];
+				var modelController = controllers[1];
 				var promise;
 
+				var predicateGet = $parse(attrs.ldTableSearch);
+				var predicate;
+
 				// watch the predicate value so we can change filter at runtime
-				scope.$watch('predicate', function (newValue, oldValue) {
+				scope.$watch(predicateGet, function (newValue, oldValue) {
 					if (newValue !== oldValue) {
+						predicate = newValue;
 						tableController.removeSearchFilter(oldValue);
-						tableController.setSearchFilter(scope.model || '', newValue);
+						tableController.setSearchFilter(modelController.$viewValue || '', predicate);
 					}
 				});
 
@@ -40,13 +41,15 @@ angular.module('ldAdminTools')
 					}
 
 					promise = $timeout(function () {
-						tableController.setSearchFilter(scope.model || '', scope.predicate);
+						tableController.setSearchFilter(modelController.$viewValue || '', predicate);
 						promise = null;
 					}, 200);
 				}
 
 				// watch for the input changes
-				scope.$watch('model', inputChanged);
+				scope.$watch(function() {
+					return modelController.$viewValue
+				}, inputChanged);
 			}
 		};
 	}])

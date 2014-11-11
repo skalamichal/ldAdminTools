@@ -12,9 +12,10 @@ angular.module('ldAdminTools')
 		closeTextDefault: 'Close',
 		openIconDefault: 'fa-toggle-on',
 		closeIconDefault: 'fa-toggle-off',
-		clearIconDefault: 'fa-remove'
+		clearIconDefault: 'fa-remove',
+		closeOnToggleDefault: false
 	})
-	.directive('ldExpandableInput', ['ldExpandableInputConfig', function (config) {
+	.directive('ldExpandableInput', ['$parse', '$timeout', 'ldExpandableInputConfig', function ($parse, $timeout, config) {
 		return {
 			templateUrl: 'partials/ldexpandableinput.html',
 			restrict: 'E',
@@ -23,16 +24,18 @@ angular.module('ldAdminTools')
 				model: '=ngModel',
 				placeholder: '@?',
 				closeText: '@',
-				expanded: '=?',
+				opened: '=?',
 				openIcon: '@',
 				closeIcon: '@',
 				clearIcon: '@',
 				onClear: '&?',
-				onToggle: '&?'
+				onOpen: '&?',
+				onClose: '&?'
 			},
 			link: function postLink(scope) {
+
 				function setIconLeft() {
-					if (scope.isExpanded) {
+					if (scope.isOpened) {
 						return angular.isUndefined(scope.closeIcon) ? config.closeIconDefault : scope.closeIcon;
 					}
 					else {
@@ -45,11 +48,12 @@ angular.module('ldAdminTools')
 					scope.iconRight = angular.isUndefined(scope.clearIcon) ? config.clearIconDefault : scope.clearIcon;
 				}
 
-				scope.isExpanded = !!scope.expanded;
+				scope.isOpened = !!scope.isOpened;
 				scope.inputValue = scope.model;
+				scope.isFocus = false;
 
 				scope.$watch('placeholder', function (newValue) {
-					scope.placeholder = angular.isUndefined(scope.placeholder) ? config.placeholderDefault : scope.placeholder;
+					scope.placeholder = angular.isUndefined(newValue) ? config.placeholderDefault : newValue;
 				});
 
 				scope.$watch('closeText', function (newValue) {
@@ -64,34 +68,43 @@ angular.module('ldAdminTools')
 					scope.inputValue = newValue;
 				});
 
-				scope.$watch('isExpanded', function (newValue) {
-					scope.expanded = !!newValue;
+				scope.$watch('isOpened', function (newValue) {
+					scope.opened = !!newValue;
+					scope.isFocus = scope.opened;
 					updateIcons();
 				});
 
-				scope.$watch('expanded', function (newValue) {
-					scope.isExpanded = !!newValue;
+				scope.$watch('opened', function (newValue) {
+					scope.isOpened = !!newValue;
+					scope.isFocus = scope.isOpened;
 					updateIcons();
 				});
 
 				scope.clear = function () {
 					scope.inputValue = '';
+					scope.isFocus = true;
 
-					if (angular.isDefined(scope.onClear)) {
+					if (angular.isFunction(scope.onClear())) {
 						scope.onClear()();
 					}
 				};
 
-				scope.toggle = function () {
-					scope.isExpanded = !scope.isExpanded;
-					if (angular.isDefined(scope.onToggle)) {
-						scope.onToggle()(scope.isExpanded);
+				scope.open = function () {
+					scope.isOpened = true;
+
+					if (angular.isFunction(scope.onOpen())) {
+						scope.onOpen()();
 					}
 				};
 
 				scope.close = function () {
+					scope.isOpened = false;
+
 					scope.clear();
-					scope.toggle();
+
+					if (angular.isFunction(scope.onClose())) {
+						scope.onClose()();
+					}
 				};
 
 				// init

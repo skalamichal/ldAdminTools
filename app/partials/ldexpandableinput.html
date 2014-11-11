@@ -1,13 +1,13 @@
 <div class="ld-expandable-input">
 	<div class="ld-input-group">
-		<span class="ld-input-group-icon" ng-if="iconLeft.length>0" ng-click="toggle()"><i
+		<span class="ld-input-group-icon" ng-style="{cursor: isOpened ? 'context-menu': 'pointer'}" ng-if="iconLeft.length>0" ng-click="open()"><i
 				class="fa fa-fw {{ iconLeft }} fa-lg"></i></span>
 		<input class="form-control ld-form-control" type="text" ng-model="inputValue"
-			   placeholder="{{ placeholder }}" ng-show="isExpanded">
-		<span class="ld-input-group-icon" ng-if="iconRight.length>0" ng-show="inputValue && isExpanded"
+			   placeholder="{{ placeholder }}" ng-show="isOpened" ld-input-focus="isFocus" ng-blur="isFocus=false">
+		<span class="ld-input-group-icon" ng-if="iconRight.length>0" ng-show="inputValue && isOpened"
 			  ng-click="clear()"><i class="fa fa-fw {{ iconRight }} fa-lg"></i></span>
 	</div>
-	<div ng-if="isExpanded" class="ld-expandable-close">
+	<div ng-if="isOpened" class="ld-expandable-close">
 		<a href="" ng-click="close()">{{ closeText }}</a>
 	</div>
 </div>

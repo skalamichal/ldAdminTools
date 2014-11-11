@@ -11,13 +11,23 @@
 
 <div style="margin: 20px" ng-controller="testController">
 
-	<ld-expandable-input ng-model="inputValue" expanded="expanded" on-clear="clear" on-toggle="expand" close-text="Cancel"></ld-expandable-input>
-
+	<div style="display: inline-block">
+		<div style="width: 40%; display: inline-block">
+			<ld-expandable-input ng-model="inputValue" opened="opened" on-clear="clear"
+								 close-text="Cancel"></ld-expandable-input>
+		</div>
+		<div style="width: 40%; display: inline-block">
+			<ld-expandable-input ng-model="inputValue" opened="opened" on-clear="clear"
+								 close-text="Cancel"></ld-expandable-input>
+		</div>
+	</div>
 	{{ inputValue }}
 	<br/>
 	<a href="" ng-click="inputValue='Michal'">Reset to Michal</a>
 	<br/>
-	<a href="" ng-click="expanded = !expanded">{{ expanded ? 'Close' : 'Open' }}</a>
+	<a href="" ng-click="opened = !opened">{{ opened ? 'Close' : 'Open' }}</a>
+	<br/>
+	<a href="" ng-click="expand('a')">Call expand</a>
 
 </div>
 
@@ -32,15 +42,15 @@
 <script type="text/javascript">
 
 	angular.module('InputApp', ['ui.bootstrap', 'RecursionHelper', 'LocalStorageModule', 'ldAdminTools'])
-	.controller('testController', ['$scope', 'ldFilterService', function (scope, filterService) {
-		scope.clear = function() {
-			console.log('Clear called');
-		};
+			.controller('testController', ['$scope', 'ldFilterService', function (scope, filterService) {
+				scope.clear = function () {
+					console.log('Clear called');
+				};
 
-		scope.expand = function(expanded) {
-			console.log('Expand called: ' + expanded);
-		};
-	}]);
+				scope.open = function (opened) {
+					console.log('Expand called: ' + opened);
+				};
+			}]);
 
 </script>
 
