@@ -95,6 +95,8 @@ angular.module('ldAdminTools')
  */
 angular.module('ldAdminTools')
 	.constant('ldDataNavigationConfig', {
+		messageDefault: '{0} of {1}',   // the page of pages message, where the {0} is replaced by current page number and
+										// {1} with the total pages
 		showPreviousButtonDefault: true,
 		showNextButtonDefault: true
 	})
@@ -109,6 +111,8 @@ angular.module('ldAdminTools')
 				filter: '=?'
 			},
 			link: function postLink(scope) {
+				var message = scope.message || config.messageDefault;
+
 				scope.disablePreviousButtonClass = '';
 				scope.disableNextButtonClass = '';
 
@@ -122,6 +126,10 @@ angular.module('ldAdminTools')
 				function updateNavigation() {
 					scope.disablePreviousButtonClass = (scope.currentIndex <= 0 ? 'disabled' : '');
 					scope.disableNextButtonClass = (scope.currentIndex >= scope.data.length - 1 ? 'disabled' : '');
+
+					var msg = message.replace('{0}', scope.currentIndex + 1);
+					msg = msg.replace('{1}', scope.data.length);
+					scope.message = msg;
 				}
 
 				scope.previousEntry = function () {
@@ -1284,6 +1292,9 @@ angular.module('ldAdminTools')
 				scope.nextPage = function () {
 					tableController.setPage(tableController.getCurrentPage() + 1);
 				};
+
+				// update first
+				updateNavigation();
 			}
 		};
 	}]);
@@ -1298,6 +1309,8 @@ angular.module('ldAdminTools')
  */
 angular.module('ldAdminTools')
 	.constant('ldTableNavigationDropdownConfig', {
+		descriptionDefault: 'Page {0} of {1}',  // default description, where {0} is replaced with the current page number
+												// and {1} with the total page count
 		firstPageTextDefault: 'First Page',
 		lastPageTextDefault: 'Last Page',
 		pageTextDefault: 'Page {0}',
@@ -1310,7 +1323,7 @@ angular.module('ldAdminTools')
 			require: '^ldTable',
 			templateUrl: 'partials/ldtablenavigationdropdown.html',
 			scope: {
-				description: '=',
+				description: '@',
 				firstPageText: '@',
 				lastPageText: '@',
 				pageText: '@',
@@ -1325,6 +1338,7 @@ angular.module('ldAdminTools')
 				scope.previousPageText = scope.previousPageText || config.previousPageTextDefault;
 				scope.nextPageText = scope.nextPageText || config.nextPageTextDefault;
 				var pageText = scope.pageText || config.pageTextDefault;
+				var descriptionText = scope.description || config.descriptionDefault;
 
 				// display text
 				scope.firstPage = scope.firstPageText;
@@ -1342,6 +1356,9 @@ angular.module('ldAdminTools')
 					scope.lastPageClass = (totalPages > 1 && currentPage < totalPages) ? '' : 'disabled';
 					scope.previousPageClass = (currentPage > 1) ? '' : 'disabled';
 					scope.nextPageClass = (currentPage < totalPages) ? '' : 'disabled';
+					var desc = descriptionText.replace('{0}', currentPage);
+					desc = desc.replace('{1}', totalPages);
+					scope.descriptionText = desc;
 				}
 
 				function makePage(page, currentPage) {
@@ -1373,6 +1390,13 @@ angular.module('ldAdminTools')
 					scope.pages = pages;
 				}
 
+				function update() {
+					scope.totalPages = tableController.getTotalPages();
+					scope.currentPage = tableController.getCurrentPage();
+					updateStyles();
+					makePages();
+				}
+
 				scope.gotoPage = function (page) {
 					if (tableController.getCurrentPage() !== page) {
 						tableController.setPage(page);
@@ -1380,12 +1404,12 @@ angular.module('ldAdminTools')
 				};
 
 				scope.$on(tableController.TABLE_UPDATED, function () {
-					console.log('table updated: ' + tableController.getFilter());
-					scope.totalPages = tableController.getTotalPages();
-					scope.currentPage = tableController.getCurrentPage();
-					updateStyles();
-					makePages();
+					update();
 				});
+
+				// update first
+				update();
+
 			}
 		};
 	}]);
@@ -2151,7 +2175,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('partials/lddatanavigation.html',
-    "<div class=ld-data-navigation><span ng-if=isFilter>{{ filter.preset.name }}:</span> {{ currentIndex + 1 }} of {{ data.length }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
+    "<div class=ld-data-navigation><span ng-if=isFilter>{{ filter.preset.name }}:</span> {{ message }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
   );
 
 
@@ -2191,7 +2215,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/ldtablenavigationdropdown.html',
-    "<div class=ld-table-navigation-dropdown dropdown><a href=\"\" dropdown-toggle style=cursor:pointer role=button>{{ description }} {{ currentPage }} of {{ totalPages }} <i class=\"fa fa-fw fa-caret-down\"></i></a><ul class=\"dropdown-menu dropdown-menu-right\"><li ng-class=firstPageClass><a href=\"\" ng-click=gotoPage(1)><i class=\"fa fa-fw fa-angle-double-left fa-lg\"></i>{{ firstPage }}</a></li><li ng-class=previousPageClass><a href=\"\" ng-click=\"gotoPage(currentPage - 1)\"><i class=\"fa fa-fw fa-angle-left fa-lg\"></i>{{ previousPage }}</a></li><li ng-repeat=\"page in pages\" ng-class=\"page.active ? 'divider' : ''\"><a href=\"\" ng-if=!page.active ng-click=gotoPage(page.page)><i class=\"fa fa-fw fa-lg\" ng-class=\"page.active ? 'fa-caret-right' : ''\"></i>{{ page.text }}</a></li><li ng-class=nextPageClass><a href=\"\" ng-click=\"gotoPage(currentPage + 1)\"><i class=\"fa fa-fw fa-angle-right fa-lg\"></i>{{ nextPage }}</a></li><li ng-class=lastPageClass><a href=\"\" ng-click=gotoPage(totalPages)><i class=\"fa fa-fw fa-angle-double-right fa-lg\"></i>{{ lastPage }}</a></li></ul></div>"
+    "<div class=ld-table-navigation-dropdown dropdown><a href=\"\" dropdown-toggle style=cursor:pointer role=button>{{ descriptionText }} <i class=\"fa fa-fw fa-caret-down\"></i></a><ul class=\"dropdown-menu dropdown-menu-right\"><li ng-class=firstPageClass><a href=\"\" ng-click=gotoPage(1)><i class=\"fa fa-fw fa-angle-double-left fa-lg\"></i>{{ firstPage }}</a></li><li ng-class=previousPageClass><a href=\"\" ng-click=\"gotoPage(currentPage - 1)\"><i class=\"fa fa-fw fa-angle-left fa-lg\"></i>{{ previousPage }}</a></li><li ng-repeat=\"page in pages\" ng-class=\"page.active ? 'divider' : ''\"><a href=\"\" ng-if=!page.active ng-click=gotoPage(page.page)><i class=\"fa fa-fw fa-lg\" ng-class=\"page.active ? 'fa-caret-right' : ''\"></i>{{ page.text }}</a></li><li ng-class=nextPageClass><a href=\"\" ng-click=\"gotoPage(currentPage + 1)\"><i class=\"fa fa-fw fa-angle-right fa-lg\"></i>{{ nextPage }}</a></li><li ng-class=lastPageClass><a href=\"\" ng-click=gotoPage(totalPages)><i class=\"fa fa-fw fa-angle-double-right fa-lg\"></i>{{ lastPage }}</a></li></ul></div>"
   );
 
 

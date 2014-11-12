@@ -46,6 +46,9 @@ angular.module('ldAdminTools')
 				scope.nextPage = function () {
 					tableController.setPage(tableController.getCurrentPage() + 1);
 				};
+
+				// update first
+				updateNavigation();
 			}
 		};
 	}]);

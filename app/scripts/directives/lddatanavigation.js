@@ -11,6 +11,8 @@
  */
 angular.module('ldAdminTools')
 	.constant('ldDataNavigationConfig', {
+		messageDefault: '{0} of {1}',   // the page of pages message, where the {0} is replaced by current page number and
+										// {1} with the total pages
 		showPreviousButtonDefault: true,
 		showNextButtonDefault: true
 	})
@@ -25,6 +27,8 @@ angular.module('ldAdminTools')
 				filter: '=?'
 			},
 			link: function postLink(scope) {
+				var message = scope.message || config.messageDefault;
+
 				scope.disablePreviousButtonClass = '';
 				scope.disableNextButtonClass = '';
 
@@ -38,6 +42,10 @@ angular.module('ldAdminTools')
 				function updateNavigation() {
 					scope.disablePreviousButtonClass = (scope.currentIndex <= 0 ? 'disabled' : '');
 					scope.disableNextButtonClass = (scope.currentIndex >= scope.data.length - 1 ? 'disabled' : '');
+
+					var msg = message.replace('{0}', scope.currentIndex + 1);
+					msg = msg.replace('{1}', scope.data.length);
+					scope.message = msg;
 				}
 
 				scope.previousEntry = function () {

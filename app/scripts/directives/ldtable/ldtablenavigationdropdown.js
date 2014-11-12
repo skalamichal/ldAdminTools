@@ -9,6 +9,8 @@
  */
 angular.module('ldAdminTools')
 	.constant('ldTableNavigationDropdownConfig', {
+		descriptionDefault: 'Page {0} of {1}',  // default description, where {0} is replaced with the current page number
+												// and {1} with the total page count
 		firstPageTextDefault: 'First Page',
 		lastPageTextDefault: 'Last Page',
 		pageTextDefault: 'Page {0}',
@@ -21,7 +23,7 @@ angular.module('ldAdminTools')
 			require: '^ldTable',
 			templateUrl: 'partials/ldtablenavigationdropdown.html',
 			scope: {
-				description: '=',
+				description: '@',
 				firstPageText: '@',
 				lastPageText: '@',
 				pageText: '@',
@@ -36,6 +38,7 @@ angular.module('ldAdminTools')
 				scope.previousPageText = scope.previousPageText || config.previousPageTextDefault;
 				scope.nextPageText = scope.nextPageText || config.nextPageTextDefault;
 				var pageText = scope.pageText || config.pageTextDefault;
+				var descriptionText = scope.description || config.descriptionDefault;
 
 				// display text
 				scope.firstPage = scope.firstPageText;
@@ -53,6 +56,9 @@ angular.module('ldAdminTools')
 					scope.lastPageClass = (totalPages > 1 && currentPage < totalPages) ? '' : 'disabled';
 					scope.previousPageClass = (currentPage > 1) ? '' : 'disabled';
 					scope.nextPageClass = (currentPage < totalPages) ? '' : 'disabled';
+					var desc = descriptionText.replace('{0}', currentPage);
+					desc = desc.replace('{1}', totalPages);
+					scope.descriptionText = desc;
 				}
 
 				function makePage(page, currentPage) {
@@ -84,6 +90,13 @@ angular.module('ldAdminTools')
 					scope.pages = pages;
 				}
 
+				function update() {
+					scope.totalPages = tableController.getTotalPages();
+					scope.currentPage = tableController.getCurrentPage();
+					updateStyles();
+					makePages();
+				}
+
 				scope.gotoPage = function (page) {
 					if (tableController.getCurrentPage() !== page) {
 						tableController.setPage(page);
@@ -91,12 +104,12 @@ angular.module('ldAdminTools')
 				};
 
 				scope.$on(tableController.TABLE_UPDATED, function () {
-					console.log('table updated: ' + tableController.getFilter());
-					scope.totalPages = tableController.getTotalPages();
-					scope.currentPage = tableController.getCurrentPage();
-					updateStyles();
-					makePages();
+					update();
 				});
+
+				// update first
+				update();
+
 			}
 		};
 	}]);

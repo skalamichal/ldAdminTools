@@ -1,5 +1,5 @@
 <div class="ld-data-navigation">
-    <span ng-if="isFilter">{{ filter.preset.name }}:</span> {{ currentIndex + 1 }} of {{ data.length }}
+    <span ng-if="isFilter">{{ filter.preset.name }}:</span> {{ message }}
     <a href="" class="btn btn-link ld-data-navigation-btn" ng-if="showPreviousButton" ng-class="disablePreviousButtonClass" ng-click="previousEntry()"><i class="fa fa-fw fa-chevron-left fa-lg"></i></a>
     <a href="" class="btn btn-link ld-data-navigation-btn" ng-if="showNextButton" ng-class="disableNextButtonClass" ng-click="nextEntry()"><i class="fa fa-fw fa-chevron-right fa-lg"></i></a>
 </div>
