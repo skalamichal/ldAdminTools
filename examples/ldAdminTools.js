@@ -1563,6 +1563,12 @@ angular.module('ldAdminTools')
 					}, 200);
 				}
 
+				scope.$watch(function() {
+					return tableController.getSearchFilters();
+				}, function(newValue, oldValue) {
+					console.log(newValue);
+				});
+
 				// watch for the input changes
 				scope.$watch(function() {
 					return modelController.$viewValue
@@ -2203,7 +2209,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/ldexpandableinput.html',
-    "<div class=ld-expandable-input><div class=ld-input-group><span class=ld-input-group-icon ng-style=\"{cursor: isOpened ? 'context-menu': 'pointer'}\" ng-if=\"iconLeft.length>0\" ng-click=open()><i class=\"fa fa-fw {{ iconLeft }} fa-lg\"></i></span> <input class=\"form-control ld-form-control\" ng-model=inputValue placeholder=\"{{ placeholder }}\" ng-show=isOpened ld-input-focus=isFocus ng-blur=\"isFocus=false\"> <span class=ld-input-group-icon ng-if=\"iconRight.length>0\" ng-show=\"inputValue && isOpened\" ng-click=clear()><i class=\"fa fa-fw {{ iconRight }} fa-lg\"></i></span></div><div ng-if=isOpened class=ld-expandable-close><a href=\"\" ng-click=close()>{{ closeText }}</a></div></div>"
+    "<div class=ld-expandable-input><div class=ld-input-group><span class=ld-input-group-btn ng-class=\"{'relative' : !isOpened}\" ng-style=\"{cursor: isOpened ? 'context-menu': 'pointer'}\" ng-if=\"iconLeft.length>0\" ng-click=open()><i class=\"fa fa-fw {{ iconLeft }} fa-lg\"></i></span> <input class=\"form-control ld-form-control\" ng-model=inputValue placeholder=\"{{ placeholder }}\" ng-show=isOpened ld-input-focus=isFocus ng-blur=\"isFocus=false\"> <span class=ld-input-group-btn ng-if=\"iconRight.length>0\" ng-show=\"inputValue && isOpened\" ng-click=clear()><i class=\"fa fa-fw {{ iconRight }} fa-lg\"></i></span></div><div ng-if=isOpened class=ld-expandable-close><a href=\"\" ng-click=close()>{{ closeText }}</a></div></div>"
   );
 
 

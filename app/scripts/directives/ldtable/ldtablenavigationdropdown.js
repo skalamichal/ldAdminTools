@@ -91,6 +91,7 @@ angular.module('ldAdminTools')
 				};
 
 				scope.$on(tableController.TABLE_UPDATED, function () {
+					console.log('table updated: ' + tableController.getFilter());
 					scope.totalPages = tableController.getTotalPages();
 					scope.currentPage = tableController.getCurrentPage();
 					updateStyles();

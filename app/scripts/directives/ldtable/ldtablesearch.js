@@ -46,6 +46,11 @@ angular.module('ldAdminTools')
 					}, 200);
 				}
 
+				scope.$on(tableController.TABLE_UPDATED, function() {
+					var filter = tableController.getSearchFilters();
+					console.log(filter);
+				});
+
 				// watch for the input changes
 				scope.$watch(function() {
 					return modelController.$viewValue

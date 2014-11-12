@@ -21,7 +21,7 @@
   line-height: 1.33;
   border-radius: 6px;
 }
-.ld-input-group-icon {
+.ld-expandable-input .ld-input-group .ld-input-group-btn {
   display: inline-block;
   margin-bottom: 0;
   font-weight: normal;
@@ -210,13 +210,27 @@ a.ld-menuitem:hover {
   cursor: pointer;
 }
 /* ld input group updates */
-.ld-input-group {
+.ld-expandable-input {
+  display: table;
+  width: 100%;
+  position: relative;
+  height: 34px;
+}
+.ld-expandable-input .ld-input-group {
+  position: relative;
   display: table-cell;
   width: 100%;
-  height: 34px;
-  position: relative;
 }
-.ld-input-group-icon {
+.ld-expandable-input .ld-input-group .ld-form-control {
+  padding: 6px 36px;
+}
+.ld-expandable-input .ld-input-group .ld-form-control.input-sm {
+  padding: 5px 30px;
+}
+.ld-expandable-input .ld-input-group .ld-form-control.input-lg {
+  padding: 10px 48px;
+}
+.ld-expandable-input .ld-input-group .ld-input-group-btn {
   position: absolute;
   height: 34px;
   padding: 6px 6px;
@@ -225,40 +239,33 @@ a.ld-menuitem:hover {
   color: #555555;
   background-image: none;
 }
-.ld-input-group-icon:first-child {
-  display: inline-block;
+.ld-expandable-input .ld-input-group .ld-input-group-btn.relative {
+  position: relative;
 }
-.ld-input-group-icon:last-child:not(:first-child) {
+.ld-expandable-input .ld-input-group .ld-input-group-btn:last-child:not(:first-child) {
   top: 0;
   right: 0;
 }
-.ld-input-group-icon.input-sm {
+.ld-expandable-input .ld-input-group .ld-input-group-btn.input-sm {
   padding: 5px 10px;
   font-size: 12px;
 }
-.ld-input-group-icon.input-lg {
+.ld-expandable-input .ld-input-group .ld-input-group-btn.input-lg {
   padding: 10px 16px;
   font-size: 18px;
 }
-.ld-input-group .ld-form-control {
-  padding: 6px 36px;
-}
-.ld-input-group .ld-form-control.input-sm {
-  padding: 5px 30px;
-}
-.ld-input-group .ld-form-control.input-lg {
-  padding: 10px 48px;
-}
-.ld-expandable-input {
-  display: inline;
-  height: 34px;
-  width: auto;
-}
-.ld-expandable-close {
+.ld-expandable-input .ld-expandable-close {
   display: table-cell;
   height: 34px;
   padding: 6px 12px;
   font-size: 14px;
   line-height: 1.42857143;
+}
+.ld-input-inline .ld-expandable-input {
+  display: inline-table;
+  width: auto;
+}
+.ld-input-inline .ld-expandable-input .ld-input-group {
+  display: inline-block;
 }
 /*# sourceMappingURL=dist/ldAdminTools.css.map */

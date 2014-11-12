@@ -48,7 +48,7 @@ angular.module('ldAdminTools')
 					scope.iconRight = angular.isUndefined(scope.clearIcon) ? config.clearIconDefault : scope.clearIcon;
 				}
 
-				scope.isOpened = !!scope.isOpened;
+				scope.isOpened = !!scope.opened;
 				scope.inputValue = scope.model;
 				scope.isFocus = false;
 

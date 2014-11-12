@@ -11,16 +11,20 @@
 
 <div style="margin: 20px" ng-controller="testController">
 
-	<div style="display: inline-block">
-		<div style="width: 40%; display: inline-block">
-			<ld-expandable-input ng-model="inputValue" opened="opened" on-clear="clear"
+	<div class="ld-input-inline">
+		<ld-expandable-input ng-model="inputValue" opened="opened" on-clear="clear"
 								 close-text="Cancel"></ld-expandable-input>
-		</div>
-		<div style="width: 40%; display: inline-block">
-			<ld-expandable-input ng-model="inputValue" opened="opened" on-clear="clear"
+		<ld-expandable-input ng-model="inputValue" opened="opened" on-clear="clear"
 								 close-text="Cancel"></ld-expandable-input>
-		</div>
 	</div>
+
+	<div>
+		<ld-expandable-input Est" opened="opened" on-clear="clear"
+							 close-text="Cancel"></ld-expandable-input>
+		<ld-expandable-input ng-model="inputValue" opened="opened" on-clear="clear"
+							 close-text="Cancel"></ld-expandable-input>
+	</div>
+
 	{{ inputValue }}
 	<br/>
 	<a href="" ng-click="inputValue='Michal'">Reset to Michal</a>

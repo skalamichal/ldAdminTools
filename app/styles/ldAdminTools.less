@@ -136,68 +136,80 @@ a.ld-menuitem:hover {
 
 /* ld input group updates */
 
-.ld-input-group {
-	display: table-cell;
-	width: 100%;
-	height: @input-height-base;
-	position: relative;
-}
-
-.ld-input-group-icon {
-
-	&:extend(.btn);
-
-	position: absolute;
-	height: @input-height-base; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
-	padding: @padding-base-vertical @padding-base-horizontal/2;
-	font-size: @font-size-base;
-	line-height: @line-height-base;
-	color: @input-color;
-	background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
-
-	&:first-child {
-		display: inline-block;
-	}
-
-	&:last-child:not(:first-child) {
-		top: 0;
-		right: 0;
-	}
-
-	// Sizing
-	&.input-sm {
-		padding: @padding-small-vertical @padding-small-horizontal;
-		font-size: @font-size-small;
-	}
-
-	&.input-lg {
-		padding: @padding-large-vertical @padding-large-horizontal;
-		font-size: @font-size-large;
-	}
-}
-
-.ld-input-group .ld-form-control {
-	padding: @padding-base-vertical @padding-base-horizontal*3;
-
-	&.input-sm {
-		padding: @padding-small-vertical @padding-small-horizontal*3;
-	}
-
-	&.input-lg {
-		padding: @padding-large-vertical @padding-large-horizontal*3;
-	}
-}
-
 .ld-expandable-input {
-	display: inline;
+	display: table;
+	width: 100%;
+	position: relative;
 	height: @input-height-base;
-	width: auto;
+
+	.ld-input-group {
+		position: relative;
+		display: table-cell;
+		width: 100%;
+
+		.ld-form-control {
+			padding: @padding-base-vertical @padding-base-horizontal*3;
+
+			&.input-sm {
+				padding: @padding-small-vertical @padding-small-horizontal*3;
+			}
+
+			&.input-lg {
+				padding: @padding-large-vertical @padding-large-horizontal*3;
+			}
+		}
+
+		.ld-input-group-btn {
+
+			&:extend(.btn);
+
+			position: absolute;
+			height: @input-height-base; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
+			padding: @padding-base-vertical @padding-base-horizontal/2;
+			font-size: @font-size-base;
+			line-height: @line-height-base;
+			color: @input-color;
+			background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
+
+			// switch to relative position instead of absolute
+			&.relative {
+				position: relative;
+			}
+
+			&:last-child:not(:first-child) {
+				top: 0;
+				right: 0;
+			}
+
+			// Sizing
+			&.input-sm {
+				padding: @padding-small-vertical @padding-small-horizontal;
+				font-size: @font-size-small;
+			}
+
+			&.input-lg {
+				padding: @padding-large-vertical @padding-large-horizontal;
+				font-size: @font-size-large;
+			}
+		}
+	}
+
+	.ld-expandable-close {
+		display: table-cell;
+		height: @input-height-base; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
+		padding: @padding-base-vertical @padding-base-horizontal;
+		font-size: @font-size-base;
+		line-height: @line-height-base;
+	}
 }
 
-.ld-expandable-close {
-	display: table-cell;
-	height: @input-height-base; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
-	padding: @padding-base-vertical @padding-base-horizontal;
-	font-size: @font-size-base;
-	line-height: @line-height-base;
+.ld-input-inline {
+	.ld-expandable-input {
+		display: inline-table;
+		width: auto;
+
+		.ld-input-group {
+			display: inline-block;
+		}
+	}
 }

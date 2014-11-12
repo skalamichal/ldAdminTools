@@ -235,7 +235,7 @@ angular.module('ldAdminTools')
 					scope.iconRight = angular.isUndefined(scope.clearIcon) ? config.clearIconDefault : scope.clearIcon;
 				}
 
-				scope.isOpened = !!scope.isOpened;
+				scope.isOpened = !!scope.opened;
 				scope.inputValue = scope.model;
 				scope.isFocus = false;
 
@@ -1183,54 +1183,6 @@ angular.module('ldAdminTools')
 
 /**
  * @ngdoc directive
- * @name ldAdminTools.directive:ldTableFilter
- * @description
- * # ldTableFilter
- * The ld-table-filter allows to use custom search for the table. The value is a filter object with following data:
- * - name {String}- the filter name (not required here!!!)
- * - filters {Object} optional - with predicate: value pairs
- * - clear {Array} optional - predicates as values, if defined and empty clear the filter (!!!)
- * - divider {Boolean} - if true, the item is a divider in dropdown (not required here!!!) */
-angular.module('ldAdminTools')
-	.directive('ldTableFilter', ['$parse', function ($parse) {
-		return {
-			restrict: 'A',
-			require: '^ldTable',
-			link: function (scope, element, attrs, tableController) {
-
-				var filterGetter = $parse(attrs.ldTableFilter);
-
-				scope.$watch(filterGetter, function (newValue) {
-					if (angular.isDefined(newValue)) {
-
-						// if the clear object is defined, first clear the old filter
-						if (angular.isDefined(newValue.clear)) {
-							// clear all filters
-							if (newValue.clear.length === 0) {
-								tableController.clearSearchFilter();
-							}
-							// remove filters
-							else {
-								angular.forEach(newValue.clear, function (predicate) {
-									tableController.removeSearchFilter(predicate);
-								});
-							}
-						}
-
-						// if filters are defined, apply them
-						if (angular.isDefined(newValue.filters)) {
-							tableController.setSearchFilter(newValue.filters);
-						}
-					}
-				}, true);
-
-			}
-		};
-	}]);
-'use strict';
-
-/**
- * @ngdoc directive
  * @name ldAdminTools.directive:ldTableInfo
  * @description
  * # ldTableInfo
@@ -1428,6 +1380,7 @@ angular.module('ldAdminTools')
 				};
 
 				scope.$on(tableController.TABLE_UPDATED, function () {
+					console.log('table updated: ' + tableController.getFilter());
 					scope.totalPages = tableController.getTotalPages();
 					scope.currentPage = tableController.getCurrentPage();
 					updateStyles();
@@ -1562,6 +1515,11 @@ angular.module('ldAdminTools')
 						promise = null;
 					}, 200);
 				}
+
+				scope.$on(tableController.TABLE_UPDATED, function() {
+					var filter = tableController.getSearchFilters();
+					console.log(filter);
+				});
 
 				// watch for the input changes
 				scope.$watch(function() {
@@ -2203,7 +2161,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/ldexpandableinput.html',
-    "<div class=ld-expandable-input><div class=ld-input-group><span class=ld-input-group-icon ng-style=\"{cursor: isOpened ? 'context-menu': 'pointer'}\" ng-if=\"iconLeft.length>0\" ng-click=open()><i class=\"fa fa-fw {{ iconLeft }} fa-lg\"></i></span> <input class=\"form-control ld-form-control\" ng-model=inputValue placeholder=\"{{ placeholder }}\" ng-show=isOpened ld-input-focus=isFocus ng-blur=\"isFocus=false\"> <span class=ld-input-group-icon ng-if=\"iconRight.length>0\" ng-show=\"inputValue && isOpened\" ng-click=clear()><i class=\"fa fa-fw {{ iconRight }} fa-lg\"></i></span></div><div ng-if=isOpened class=ld-expandable-close><a href=\"\" ng-click=close()>{{ closeText }}</a></div></div>"
+    "<div class=ld-expandable-input><div class=ld-input-group><span class=ld-input-group-btn ng-class=\"{'relative' : !isOpened}\" ng-style=\"{cursor: isOpened ? 'context-menu': 'pointer'}\" ng-if=\"iconLeft.length>0\" ng-click=open()><i class=\"fa fa-fw {{ iconLeft }} fa-lg\"></i></span> <input class=\"form-control ld-form-control\" ng-model=inputValue placeholder=\"{{ placeholder }}\" ng-show=isOpened ld-input-focus=isFocus ng-blur=\"isFocus=false\"> <span class=ld-input-group-btn ng-if=\"iconRight.length>0\" ng-show=\"inputValue && isOpened\" ng-click=clear()><i class=\"fa fa-fw {{ iconRight }} fa-lg\"></i></span></div><div ng-if=isOpened class=ld-expandable-close><a href=\"\" ng-click=close()>{{ closeText }}</a></div></div>"
   );
 
 
@@ -2233,7 +2191,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/ldtablenavigationdropdown.html',
-    "<div class=ld-table-navigation-dropdown dropdown><a href=\"\" dropdown-toggle style=cursor:pointer role=button>{{ description }} {{ currentPage }} of {{ totalPages }} <i class=\"fa fa-fw fa-caret-down\"></i></a><ul class=\"dropdown-menu dropdown-menu-right\"><li class=dropdown-header>{{ header }}</li><li ng-class=firstPageClass><a href=\"\" ng-click=gotoPage(1)><i class=\"fa fa-fw fa-angle-double-left fa-lg\"></i>{{ firstPage }}</a></li><li ng-class=previousPageClass><a href=\"\" ng-click=\"gotoPage(currentPage - 1)\"><i class=\"fa fa-fw fa-angle-left fa-lg\"></i>{{ previousPage }}</a></li><li ng-repeat=\"page in pages\" ng-class=\"page.active ? 'divider' : ''\"><a href=\"\" ng-if=!page.active ng-click=gotoPage(page.page)><i class=\"fa fa-fw fa-lg\" ng-class=\"page.active ? 'fa-caret-right' : ''\"></i>{{ page.text }}</a></li><li ng-class=nextPageClass><a href=\"\" ng-click=\"gotoPage(currentPage + 1)\"><i class=\"fa fa-fw fa-angle-right fa-lg\"></i>{{ nextPage }}</a></li><li ng-class=lastPageClass><a href=\"\" ng-click=gotoPage(totalPages)><i class=\"fa fa-fw fa-angle-double-right fa-lg\"></i>{{ lastPage }}</a></li></ul></div>"
+    "<div class=ld-table-navigation-dropdown dropdown><a href=\"\" dropdown-toggle style=cursor:pointer role=button>{{ description }} {{ currentPage }} of {{ totalPages }} <i class=\"fa fa-fw fa-caret-down\"></i></a><ul class=\"dropdown-menu dropdown-menu-right\"><li ng-class=firstPageClass><a href=\"\" ng-click=gotoPage(1)><i class=\"fa fa-fw fa-angle-double-left fa-lg\"></i>{{ firstPage }}</a></li><li ng-class=previousPageClass><a href=\"\" ng-click=\"gotoPage(currentPage - 1)\"><i class=\"fa fa-fw fa-angle-left fa-lg\"></i>{{ previousPage }}</a></li><li ng-repeat=\"page in pages\" ng-class=\"page.active ? 'divider' : ''\"><a href=\"\" ng-if=!page.active ng-click=gotoPage(page.page)><i class=\"fa fa-fw fa-lg\" ng-class=\"page.active ? 'fa-caret-right' : ''\"></i>{{ page.text }}</a></li><li ng-class=nextPageClass><a href=\"\" ng-click=\"gotoPage(currentPage + 1)\"><i class=\"fa fa-fw fa-angle-right fa-lg\"></i>{{ nextPage }}</a></li><li ng-class=lastPageClass><a href=\"\" ng-click=gotoPage(totalPages)><i class=\"fa fa-fw fa-angle-double-right fa-lg\"></i>{{ lastPage }}</a></li></ul></div>"
   );
 
 
