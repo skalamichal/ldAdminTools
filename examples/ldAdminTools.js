@@ -86,6 +86,68 @@ angular.module('ldAdminTools')
 
 /**
  * @ngdoc directive
+ * @name ldAdminTools.directive:ldDashboardBox
+ * @description
+ * # ldDashboardBox
+ *
+ * panelType may be one of following:
+ * - default - gray
+ * - primary - blue
+ * - success - green
+ * - info - light blue
+ * - warning - orange
+ * - danger - red
+ */
+angular.module('ldAdminTools')
+	.constant('ldDashboardBoxConfig', {
+		panelTypeDefault: 'default'
+	})
+	.directive('ldDashboardBox', ['ldDashboardBoxConfig', function (config) {
+		return {
+			templateUrl: 'partials/lddashboardbox.html',
+			restrict: 'E',
+			transclude: true,
+			replace: true,
+			scope: {
+				isOpen: '=?'
+			},
+			link: function postLink(scope, element, attrs) {
+				scope.panelType = attrs.ldType || config.panelTypeDefault;
+				scope.isOpen = angular.isDefined(scope.isOpen) ? !!scope.isOpen : true;
+
+				scope.close = function() {
+					element.remove();
+				};
+
+				scope.toggle = function() {
+					scope.isOpen = !scope.isOpen;
+				};
+			}
+		};
+	}]);
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name ldAdminTools.directive:ldDashboardBoxGroup
+ * @description
+ * # ldDashboardBoxGroup
+ */
+angular.module('ldAdminTools')
+	.directive('ldDashboardBoxGroup', function () {
+		return {
+			templateUrl: 'partials/lddashboardboxgroup.html',
+			restrict: 'E',
+			transclude: true,
+			replace: true,
+			link: function postLink(scope, element, attrs) {
+			}
+		};
+	});
+'use strict';
+
+/**
+ * @ngdoc directive
  * @name ldAdminTools.directive:ldDataNavigation
  * @description
  * # ldDataNavigation
@@ -95,6 +157,8 @@ angular.module('ldAdminTools')
  */
 angular.module('ldAdminTools')
 	.constant('ldDataNavigationConfig', {
+		messageDefault: '{0} of {1}',   // the page of pages message, where the {0} is replaced by current page number and
+										// {1} with the total pages
 		showPreviousButtonDefault: true,
 		showNextButtonDefault: true
 	})
@@ -109,6 +173,8 @@ angular.module('ldAdminTools')
 				filter: '=?'
 			},
 			link: function postLink(scope) {
+				var message = scope.message || config.messageDefault;
+
 				scope.disablePreviousButtonClass = '';
 				scope.disableNextButtonClass = '';
 
@@ -122,6 +188,10 @@ angular.module('ldAdminTools')
 				function updateNavigation() {
 					scope.disablePreviousButtonClass = (scope.currentIndex <= 0 ? 'disabled' : '');
 					scope.disableNextButtonClass = (scope.currentIndex >= scope.data.length - 1 ? 'disabled' : '');
+
+					var msg = message.replace('{0}', scope.currentIndex + 1);
+					msg = msg.replace('{1}', scope.data.length);
+					scope.message = msg;
 				}
 
 				scope.previousEntry = function () {
@@ -235,7 +305,7 @@ angular.module('ldAdminTools')
 					scope.iconRight = angular.isUndefined(scope.clearIcon) ? config.clearIconDefault : scope.clearIcon;
 				}
 
-				scope.isOpened = !!scope.isOpened;
+				scope.isOpened = !!scope.opened;
 				scope.inputValue = scope.model;
 				scope.isFocus = false;
 
@@ -1183,54 +1253,6 @@ angular.module('ldAdminTools')
 
 /**
  * @ngdoc directive
- * @name ldAdminTools.directive:ldTableFilter
- * @description
- * # ldTableFilter
- * The ld-table-filter allows to use custom search for the table. The value is a filter object with following data:
- * - name {String}- the filter name (not required here!!!)
- * - filters {Object} optional - with predicate: value pairs
- * - clear {Array} optional - predicates as values, if defined and empty clear the filter (!!!)
- * - divider {Boolean} - if true, the item is a divider in dropdown (not required here!!!) */
-angular.module('ldAdminTools')
-	.directive('ldTableFilter', ['$parse', function ($parse) {
-		return {
-			restrict: 'A',
-			require: '^ldTable',
-			link: function (scope, element, attrs, tableController) {
-
-				var filterGetter = $parse(attrs.ldTableFilter);
-
-				scope.$watch(filterGetter, function (newValue) {
-					if (angular.isDefined(newValue)) {
-
-						// if the clear object is defined, first clear the old filter
-						if (angular.isDefined(newValue.clear)) {
-							// clear all filters
-							if (newValue.clear.length === 0) {
-								tableController.clearSearchFilter();
-							}
-							// remove filters
-							else {
-								angular.forEach(newValue.clear, function (predicate) {
-									tableController.removeSearchFilter(predicate);
-								});
-							}
-						}
-
-						// if filters are defined, apply them
-						if (angular.isDefined(newValue.filters)) {
-							tableController.setSearchFilter(newValue.filters);
-						}
-					}
-				}, true);
-
-			}
-		};
-	}]);
-'use strict';
-
-/**
- * @ngdoc directive
  * @name ldAdminTools.directive:ldTableInfo
  * @description
  * # ldTableInfo
@@ -1332,6 +1354,9 @@ angular.module('ldAdminTools')
 				scope.nextPage = function () {
 					tableController.setPage(tableController.getCurrentPage() + 1);
 				};
+
+				// update first
+				updateNavigation();
 			}
 		};
 	}]);
@@ -1346,6 +1371,8 @@ angular.module('ldAdminTools')
  */
 angular.module('ldAdminTools')
 	.constant('ldTableNavigationDropdownConfig', {
+		descriptionDefault: 'Page {0} of {1}',  // default description, where {0} is replaced with the current page number
+												// and {1} with the total page count
 		firstPageTextDefault: 'First Page',
 		lastPageTextDefault: 'Last Page',
 		pageTextDefault: 'Page {0}',
@@ -1358,7 +1385,7 @@ angular.module('ldAdminTools')
 			require: '^ldTable',
 			templateUrl: 'partials/ldtablenavigationdropdown.html',
 			scope: {
-				description: '=',
+				description: '@',
 				firstPageText: '@',
 				lastPageText: '@',
 				pageText: '@',
@@ -1373,6 +1400,7 @@ angular.module('ldAdminTools')
 				scope.previousPageText = scope.previousPageText || config.previousPageTextDefault;
 				scope.nextPageText = scope.nextPageText || config.nextPageTextDefault;
 				var pageText = scope.pageText || config.pageTextDefault;
+				var descriptionText = scope.description || config.descriptionDefault;
 
 				// display text
 				scope.firstPage = scope.firstPageText;
@@ -1390,6 +1418,9 @@ angular.module('ldAdminTools')
 					scope.lastPageClass = (totalPages > 1 && currentPage < totalPages) ? '' : 'disabled';
 					scope.previousPageClass = (currentPage > 1) ? '' : 'disabled';
 					scope.nextPageClass = (currentPage < totalPages) ? '' : 'disabled';
+					var desc = descriptionText.replace('{0}', currentPage);
+					desc = desc.replace('{1}', totalPages);
+					scope.descriptionText = desc;
 				}
 
 				function makePage(page, currentPage) {
@@ -1421,6 +1452,13 @@ angular.module('ldAdminTools')
 					scope.pages = pages;
 				}
 
+				function update() {
+					scope.totalPages = tableController.getTotalPages();
+					scope.currentPage = tableController.getCurrentPage();
+					updateStyles();
+					makePages();
+				}
+
 				scope.gotoPage = function (page) {
 					if (tableController.getCurrentPage() !== page) {
 						tableController.setPage(page);
@@ -1428,11 +1466,12 @@ angular.module('ldAdminTools')
 				};
 
 				scope.$on(tableController.TABLE_UPDATED, function () {
-					scope.totalPages = tableController.getTotalPages();
-					scope.currentPage = tableController.getCurrentPage();
-					updateStyles();
-					makePages();
+					update();
 				});
+
+				// update first
+				update();
+
 			}
 		};
 	}]);
@@ -1563,10 +1602,9 @@ angular.module('ldAdminTools')
 					}, 200);
 				}
 
-				scope.$watch(function() {
-					return tableController.getSearchFilters();
-				}, function(newValue, oldValue) {
-					console.log(newValue);
+				scope.$on(tableController.TABLE_UPDATED, function() {
+					var filter = tableController.getSearchFilters();
+					console.log(filter);
 				});
 
 				// watch for the input changes
@@ -1712,6 +1750,115 @@ angular.module('ldAdminTools')
 			return data.slice(fromRow, toRow);
 		};
 	});
+
+'use strict';
+
+/**
+ * @ngdoc filter
+ * @name ldAdminToolsApp.filter:ldSelect
+ * @function
+ * @description
+ * # ldSelect
+ * Filter in the ldAdminToolsApp.
+ * Selects data from collection based on select options data.
+ */
+angular.module('ldAdminTools')
+	.filter('ldSelect', ['$filter', function ($filter) {
+
+		/**
+		 * Return new object with properties defined in the values array
+		 * @param {Object} obj
+		 * @param {Array} values
+		 * @returns {{}}
+		 */
+		function selectValues(obj, values) {
+			var out = {};
+			angular.forEach(values, function (key) {
+				out[key] = obj[key];
+			})
+
+			return out;
+		}
+
+		/**
+		 * Create new objects array where only defined values are selected.
+		 * @param {Array} input
+		 * @param {Array} values
+		 * @returns {*}
+		 */
+		function values(input, values) {
+			if (angular.isUndefined(values)) {
+				return input;
+			}
+
+			var out = [];
+
+			angular.forEach(input, function (row) {
+				if (angular.isObject(row)) {
+					out.push(selectValues(row, values));
+				}
+			});
+
+			return out;
+		}
+
+		/**
+		 * Return filtered array
+		 * @param input
+		 * @param where
+		 * @returns {*}
+		 */
+		function where(input, where) {
+			if (angular.isUndefined(where)) {
+				return input;
+			}
+
+			var filter = $filter('filter');
+			return filter(input, where);
+		}
+
+		/**
+		 * Return ordered array.
+		 * @param input
+		 * @param orderBy
+		 * @returns {*}
+		 */
+		function order(input, orderBy) {
+			if (angular.isUndefined(order)) {
+				return input;
+			}
+
+			var filter = $filter('orderBy');
+			return filter(input, orderBy);
+		}
+
+		/**
+		 * Return limitTo from array
+		 * @param input
+		 * @param limit
+		 */
+		function limit(input, limit) {
+			if (angular.isUndefined(limit)) {
+				return input
+			}
+
+			var filter = $filter('limitTo');
+			return filter(input, limit);
+		}
+
+		return function (input, options) {
+			if (!angular.isArray(input)) {
+				return input;
+			}
+
+			var copy = where(input, options.where);
+			copy = order(copy, options.order);
+			copy = limit(copy, options.limit);
+			copy = values(copy, options.values);
+
+			return copy;
+		};
+	}]);
 
 'use strict';
 
@@ -2198,8 +2345,18 @@ angular.module('ldAdminTools')
 angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
+  $templateCache.put('partials/lddashboardbox.html',
+    "<div class=\"panel panel-{{ panelType }}\"><div class=\"panel-heading ld-panel-heading clearfix\"><h4 class=\"panel-title ld-panel-title pull-left\" ng-click=toggle()>Title</h4><div class=\"btn-group pull-right\"><button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=toggle()><i class=\"fa fa-fw fa-minus\"></i></button> <button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=close()><i class=\"fa fa-fw fa-close\"></i></button></div></div><div class=panel-collapse collapse=!isOpen><div class=panel-body ng-transclude></div></div></div>"
+  );
+
+
+  $templateCache.put('partials/lddashboardboxgroup.html',
+    "<div class=ld-panel-group ng-transclude></div>"
+  );
+
+
   $templateCache.put('partials/lddatanavigation.html',
-    "<div class=ld-data-navigation><span ng-if=isFilter>{{ filter.preset.name }}:</span> {{ currentIndex + 1 }} of {{ data.length }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
+    "<div class=ld-data-navigation><span ng-if=isFilter>{{ filter.preset.name }}:</span> {{ message }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
   );
 
 
@@ -2239,7 +2396,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/ldtablenavigationdropdown.html',
-    "<div class=ld-table-navigation-dropdown dropdown><a href=\"\" dropdown-toggle style=cursor:pointer role=button>{{ description }} {{ currentPage }} of {{ totalPages }} <i class=\"fa fa-fw fa-caret-down\"></i></a><ul class=\"dropdown-menu dropdown-menu-right\"><li class=dropdown-header>{{ header }}</li><li ng-class=firstPageClass><a href=\"\" ng-click=gotoPage(1)><i class=\"fa fa-fw fa-angle-double-left fa-lg\"></i>{{ firstPage }}</a></li><li ng-class=previousPageClass><a href=\"\" ng-click=\"gotoPage(currentPage - 1)\"><i class=\"fa fa-fw fa-angle-left fa-lg\"></i>{{ previousPage }}</a></li><li ng-repeat=\"page in pages\" ng-class=\"page.active ? 'divider' : ''\"><a href=\"\" ng-if=!page.active ng-click=gotoPage(page.page)><i class=\"fa fa-fw fa-lg\" ng-class=\"page.active ? 'fa-caret-right' : ''\"></i>{{ page.text }}</a></li><li ng-class=nextPageClass><a href=\"\" ng-click=\"gotoPage(currentPage + 1)\"><i class=\"fa fa-fw fa-angle-right fa-lg\"></i>{{ nextPage }}</a></li><li ng-class=lastPageClass><a href=\"\" ng-click=gotoPage(totalPages)><i class=\"fa fa-fw fa-angle-double-right fa-lg\"></i>{{ lastPage }}</a></li></ul></div>"
+    "<div class=ld-table-navigation-dropdown dropdown><a href=\"\" dropdown-toggle style=cursor:pointer role=button>{{ descriptionText }} <i class=\"fa fa-fw fa-caret-down\"></i></a><ul class=\"dropdown-menu dropdown-menu-right\"><li ng-class=firstPageClass><a href=\"\" ng-click=gotoPage(1)><i class=\"fa fa-fw fa-angle-double-left fa-lg\"></i>{{ firstPage }}</a></li><li ng-class=previousPageClass><a href=\"\" ng-click=\"gotoPage(currentPage - 1)\"><i class=\"fa fa-fw fa-angle-left fa-lg\"></i>{{ previousPage }}</a></li><li ng-repeat=\"page in pages\" ng-class=\"page.active ? 'divider' : ''\"><a href=\"\" ng-if=!page.active ng-click=gotoPage(page.page)><i class=\"fa fa-fw fa-lg\" ng-class=\"page.active ? 'fa-caret-right' : ''\"></i>{{ page.text }}</a></li><li ng-class=nextPageClass><a href=\"\" ng-click=\"gotoPage(currentPage + 1)\"><i class=\"fa fa-fw fa-angle-right fa-lg\"></i>{{ nextPage }}</a></li><li ng-class=lastPageClass><a href=\"\" ng-click=gotoPage(totalPages)><i class=\"fa fa-fw fa-angle-double-right fa-lg\"></i>{{ lastPage }}</a></li></ul></div>"
   );
 
 

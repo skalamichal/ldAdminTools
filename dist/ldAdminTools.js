@@ -86,6 +86,71 @@ angular.module('ldAdminTools')
 
 /**
  * @ngdoc directive
+ * @name ldAdminTools.directive:ldDashboardBox
+ * @description
+ * # ldDashboardBox
+ *
+ * panelType may be one of following:
+ * - default - gray
+ * - primary - blue
+ * - success - green
+ * - info - light blue
+ * - warning - orange
+ * - danger - red
+ */
+angular.module('ldAdminTools')
+	.constant('ldDashboardBoxConfig', {
+		panelTypeDefault: 'default'
+	})
+	.directive('ldDashboardBox', ['ldDashboardBoxConfig', function (config) {
+		return {
+			templateUrl: 'partials/lddashboardbox.html',
+			restrict: 'E',
+			transclude: true,
+			replace: true,
+			scope: {
+				ldIsOpen: '=?',
+				ldTitle: '@',
+				ldType: '@',
+				ldSize: '@?'
+			},
+			link: function postLink(scope, element, attrs) {
+				scope.panelType = scope.ldType || config.panelTypeDefault;
+				scope.isOpen = angular.isDefined(scope.ldIsOpen) ? !!scope.ldIsOpen : true;
+
+				scope.close = function() {
+					element.remove();
+				};
+
+				scope.toggle = function() {
+					scope.ldIsOpen = scope.isOpen = !scope.isOpen;
+				};
+			}
+		};
+	}]);
+'use strict';
+
+/**
+ * @ngdoc directive
+ * @name ldAdminTools.directive:ldDashboardBoxGroup
+ * @description
+ * # ldDashboardBoxGroup
+ */
+angular.module('ldAdminTools')
+	.directive('ldDashboardBoxGroup', function () {
+		return {
+			templateUrl: 'partials/lddashboardboxgroup.html',
+			restrict: 'E',
+			transclude: true,
+			replace: true,
+			link: function postLink(scope, element, attrs) {
+			}
+		};
+	});
+'use strict';
+
+/**
+ * @ngdoc directive
  * @name ldAdminTools.directive:ldDataNavigation
  * @description
  * # ldDataNavigation
@@ -1692,6 +1757,115 @@ angular.module('ldAdminTools')
 'use strict';
 
 /**
+ * @ngdoc filter
+ * @name ldAdminToolsApp.filter:ldSelect
+ * @function
+ * @description
+ * # ldSelect
+ * Filter in the ldAdminToolsApp.
+ * Selects data from collection based on select options data.
+ */
+angular.module('ldAdminTools')
+	.filter('ldSelect', ['$filter', function ($filter) {
+
+		/**
+		 * Return new object with properties defined in the values array
+		 * @param {Object} obj
+		 * @param {Array} values
+		 * @returns {{}}
+		 */
+		function selectValues(obj, values) {
+			var out = {};
+			angular.forEach(values, function (key) {
+				out[key] = obj[key];
+			})
+
+			return out;
+		}
+
+		/**
+		 * Create new objects array where only defined values are selected.
+		 * @param {Array} input
+		 * @param {Array} values
+		 * @returns {*}
+		 */
+		function values(input, values) {
+			if (angular.isUndefined(values)) {
+				return input;
+			}
+
+			var out = [];
+
+			angular.forEach(input, function (row) {
+				if (angular.isObject(row)) {
+					out.push(selectValues(row, values));
+				}
+			});
+
+			return out;
+		}
+
+		/**
+		 * Return filtered array
+		 * @param input
+		 * @param where
+		 * @returns {*}
+		 */
+		function where(input, where) {
+			if (angular.isUndefined(where)) {
+				return input;
+			}
+
+			var filter = $filter('filter');
+			return filter(input, where);
+		}
+
+		/**
+		 * Return ordered array.
+		 * @param input
+		 * @param orderBy
+		 * @returns {*}
+		 */
+		function order(input, orderBy) {
+			if (angular.isUndefined(order)) {
+				return input;
+			}
+
+			var filter = $filter('orderBy');
+			return filter(input, orderBy);
+		}
+
+		/**
+		 * Return limitTo from array
+		 * @param input
+		 * @param limit
+		 */
+		function limit(input, limit) {
+			if (angular.isUndefined(limit)) {
+				return input
+			}
+
+			var filter = $filter('limitTo');
+			return filter(input, limit);
+		}
+
+		return function (input, options) {
+			if (!angular.isArray(input)) {
+				return input;
+			}
+
+			var copy = where(input, options.where);
+			copy = order(copy, options.order);
+			copy = limit(copy, options.limit);
+			copy = values(copy, options.values);
+
+			return copy;
+		};
+	}]);
+
+'use strict';
+
+/**
  * @ngdoc service
  * @name ldAdminToolsApp.ldCache
  * @description
@@ -2173,6 +2347,16 @@ angular.module('ldAdminTools')
 
 angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
+
+  $templateCache.put('partials/lddashboardbox.html',
+    "<div class=\"panel panel-{{ panelType }}\" ng-class=ldSize><div class=\"panel-heading ld-panel-heading clearfix\"><h4 class=\"panel-title ld-panel-title pull-left\">{{ ldTitle }}</h4><div class=\"btn-group pull-right\"><button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=toggle()><i class=\"fa fa-fw fa-minus\"></i></button> <button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=close()><i class=\"fa fa-fw fa-close\"></i></button></div></div><div class=panel-collapse collapse=!isOpen><div class=panel-body ng-transclude></div></div></div>"
+  );
+
+
+  $templateCache.put('partials/lddashboardboxgroup.html',
+    "<div class=ld-panel-group ng-transclude></div>"
+  );
+
 
   $templateCache.put('partials/lddatanavigation.html',
     "<div class=ld-data-navigation><span ng-if=isFilter>{{ filter.preset.name }}:</span> {{ message }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"

@@ -58,6 +58,18 @@
   line-height: 1.5;
   border-radius: 3px;
 }
+.ld-panel-heading {
+  padding: 10px 15px;
+  border-bottom: 1px solid transparent;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+}
+.ld-panel-title {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 16px;
+  color: inherit;
+}
 .dl-horizontal dd:before,
 .dl-horizontal dd:after,
 .container:before,
@@ -267,5 +279,31 @@ a.ld-menuitem:hover {
 }
 .ld-input-inline .ld-expandable-input .ld-input-group {
   display: inline-block;
+}
+/* Dashboard panels */
+.ld-panel-group {
+  display: inline-flex;
+  width: 100%;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.ld-panel-group .panel {
+  flex-grow: 1;
+  display: block;
+  margin-left: 2.5px;
+  margin-right: 2.5px;
+}
+.ld-panel-group .panel:first-of-type {
+  margin-left: 0px;
+}
+.ld-panel-group .panel:last-of-type {
+  margin-right: 0px;
+}
+.ld-panel-heading {
+  padding: 6px 6px;
+}
+.ld-panel-title {
+  padding-top: 2.5px;
+  padding-left: 6px;
 }
 /*# sourceMappingURL=dist/ldAdminTools.css.map */

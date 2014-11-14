@@ -213,3 +213,76 @@ a.ld-menuitem:hover {
 		}
 	}
 }
+
+/* Dashboard panels */
+
+.ld-panel-group {
+	display: inline-flex;
+	width: 100%;
+	align-items: flex-start;
+	justify-content: space-between;
+	flex-wrap: wrap;
+
+	.quarter {
+		width: 24%;
+	}
+
+	.third {
+		width: 33%;
+	}
+
+	.half {
+		width: 49%;
+	}
+
+	.full {
+		width: 100%;
+	}
+
+	.panel {
+		flex-shrink: 1;
+		flex-grow: 0;
+		display: block;
+	}
+
+	@media all and (max-width: 499px) {
+		flex-direction: column;
+
+		.quarter, .third, .half, .full {
+			width: 100%;
+		}
+	}
+
+	@media all and (min-width: 500px) and (max-width: 768px) {
+		.quarter, .third {
+			width: 49%;
+		}
+
+		.half, .full {
+			width: 100%;
+		}
+	}
+
+	@media all and (min-width: 769px) and (max-width: 960px) {
+		.quarter, .third, .half {
+			width: 49%;
+		}
+
+		.full {
+			width: 100%;
+		}
+	}
+}
+
+.ld-panel-heading {
+	&:extend(.panel-heading);
+
+	padding: 6px 6px;
+}
+
+.ld-panel-title {
+	&:extend(.panel-title);
+
+	padding-top: 2.5px;
+	padding-left: 6px;
+}

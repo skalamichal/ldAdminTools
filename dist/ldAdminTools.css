@@ -58,6 +58,18 @@
   line-height: 1.5;
   border-radius: 3px;
 }
+.ld-panel-heading {
+  padding: 10px 15px;
+  border-bottom: 1px solid transparent;
+  border-top-right-radius: 3px;
+  border-top-left-radius: 3px;
+}
+.ld-panel-title {
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 16px;
+  color: inherit;
+}
 .dl-horizontal dd:before,
 .dl-horizontal dd:after,
 .container:before,
@@ -267,5 +279,68 @@ a.ld-menuitem:hover {
 }
 .ld-input-inline .ld-expandable-input .ld-input-group {
   display: inline-block;
+}
+/* Dashboard panels */
+.ld-panel-group {
+  display: inline-flex;
+  width: 100%;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.ld-panel-group .quarter {
+  width: 24%;
+}
+.ld-panel-group .third {
+  width: 33%;
+}
+.ld-panel-group .half {
+  width: 49%;
+}
+.ld-panel-group .full {
+  width: 100%;
+}
+.ld-panel-group .panel {
+  flex-shrink: 1;
+  flex-grow: 0;
+  display: block;
+}
+@media all and (max-width: 499px) {
+  .ld-panel-group {
+    flex-direction: column;
+  }
+  .ld-panel-group .quarter,
+  .ld-panel-group .third,
+  .ld-panel-group .half,
+  .ld-panel-group .full {
+    width: 100%;
+  }
+}
+@media all and (min-width: 500px) and (max-width: 768px) {
+  .ld-panel-group .quarter,
+  .ld-panel-group .third {
+    width: 49%;
+  }
+  .ld-panel-group .half,
+  .ld-panel-group .full {
+    width: 100%;
+  }
+}
+@media all and (min-width: 769px) and (max-width: 960px) {
+  .ld-panel-group .quarter,
+  .ld-panel-group .third,
+  .ld-panel-group .half {
+    width: 49%;
+  }
+  .ld-panel-group .full {
+    width: 100%;
+  }
+}
+.ld-panel-heading {
+  padding: 6px 6px;
+}
+.ld-panel-title {
+  padding-top: 2.5px;
+  padding-left: 6px;
 }
 /*# sourceMappingURL=dist/ldAdminTools.css.map */
