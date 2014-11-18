@@ -11,6 +11,26 @@
 
 <div style="margin: 20px" ng-controller="testController">
 
+	<table class="table table-condensed">
+		<thead>
+		<tr>
+			<th>Email</th>
+			<th>FirstName</th>
+			<th>LastName</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr ng-repeat="row in users | ldSelect:selectFilter">
+			<td ng-repeat="val in row.$">
+				{{ val }}
+			</td>
+			<td>
+				{{ row.lastName }}
+			</td>
+		</tr>
+		</tbody>
+	</table>
+
 </div>
 
 </body>
@@ -51,8 +71,10 @@
 						'email': '@rambo'
 					},
 					'order': ['-firstName', 'email'],
-					'limit': 5
+					'limit': 25
 				};
+
+				$scope.selectFilter = selectOptions;
 
 				var data = ($filter('ldSelect'))($scope.users, selectOptions);
 

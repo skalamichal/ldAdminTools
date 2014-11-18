@@ -1781,6 +1781,9 @@ angular.module('ldAdminTools')
  *  limit: number,
  *  values: ['field', ...]
  * }
+ *
+ * If values are defined the new array has full copy of the input collection, but a new field named '$' is added with
+ * filtered values. This allows to use the filter with ng-repeat for eaxmple.
  */
 angular.module('ldAdminTools')
 	.filter('ldSelect', ['$filter', function ($filter) {
@@ -1792,12 +1795,12 @@ angular.module('ldAdminTools')
 		 * @returns {{}}
 		 */
 		function selectValues(obj, values) {
-			var out = {};
+			obj.$ = {};
 			angular.forEach(values, function (key) {
-				out[key] = obj[key];
+				obj.$[key] = obj[key];
 			});
 
-			return out;
+			return obj;
 		}
 
 		/**
@@ -2443,11 +2446,6 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('partials/ldsubmenuitem.html',
     "<div><a class=ld-menuitem ng-href={{item.url}} ng-click=toggle()><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span> <span class=\"fa ld-right\" ng-class=collapsedClass()></span></a><ld-menu collapse=isCollapsed() data=item.submenu level=\"level + 1\"></ld-menu></div>"
-  );
-
-
-  $templateCache.put('partials/ldtablebuilder.html',
-    ""
   );
 
 

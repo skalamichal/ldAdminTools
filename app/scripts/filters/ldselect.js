@@ -17,6 +17,9 @@
  *  limit: number,
  *  values: ['field', ...]
  * }
+ *
+ * If values are defined the new array has full copy of the input collection, but a new field named '$' is added with
+ * filtered values. This allows to use the filter with ng-repeat for eaxmple.
  */
 angular.module('ldAdminTools')
 	.filter('ldSelect', ['$filter', function ($filter) {
@@ -28,12 +31,12 @@ angular.module('ldAdminTools')
 		 * @returns {{}}
 		 */
 		function selectValues(obj, values) {
-			var out = {};
+			obj.$ = {};
 			angular.forEach(values, function (key) {
-				out[key] = obj[key];
+				obj.$[key] = obj[key];
 			});
 
-			return out;
+			return obj;
 		}
 
 		/**
