@@ -285,19 +285,56 @@ a.ld-menuitem:hover {
   display: inline-flex;
   width: 100%;
   align-items: flex-start;
-  justify-content: space-between;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+.ld-panel-group .quarter {
+  width: 24%;
+}
+.ld-panel-group .third {
+  width: 33%;
+}
+.ld-panel-group .half {
+  width: 49%;
+}
+.ld-panel-group .full {
+  width: 100%;
 }
 .ld-panel-group .panel {
-  flex-grow: 1;
+  flex-shrink: 1;
+  flex-grow: 0;
   display: block;
-  margin-left: 2.5px;
-  margin-right: 2.5px;
 }
-.ld-panel-group .panel:first-of-type {
-  margin-left: 0px;
+@media all and (max-width: 499px) {
+  .ld-panel-group {
+    flex-direction: column;
+  }
+  .ld-panel-group .quarter,
+  .ld-panel-group .third,
+  .ld-panel-group .half,
+  .ld-panel-group .full {
+    width: 100%;
+  }
 }
-.ld-panel-group .panel:last-of-type {
-  margin-right: 0px;
+@media all and (min-width: 500px) and (max-width: 768px) {
+  .ld-panel-group .quarter,
+  .ld-panel-group .third {
+    width: 49%;
+  }
+  .ld-panel-group .half,
+  .ld-panel-group .full {
+    width: 100%;
+  }
+}
+@media all and (min-width: 769px) and (max-width: 960px) {
+  .ld-panel-group .quarter,
+  .ld-panel-group .third,
+  .ld-panel-group .half {
+    width: 49%;
+  }
+  .ld-panel-group .full {
+    width: 100%;
+  }
 }
 .ld-panel-heading {
   padding: 6px 6px;

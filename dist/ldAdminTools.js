@@ -112,18 +112,28 @@ angular.module('ldAdminTools')
 				ldIsOpen: '=?',
 				ldTitle: '@',
 				ldType: '@',
-				ldSize: '@?'
+				ldSize: '@?',
+				ldOnClose: '&?',
+				ldOnToggle: '&?'
 			},
 			link: function postLink(scope, element, attrs) {
 				scope.panelType = scope.ldType || config.panelTypeDefault;
 				scope.isOpen = angular.isDefined(scope.ldIsOpen) ? !!scope.ldIsOpen : true;
 
 				scope.close = function() {
+					if (angular.isDefined(scope.ldOnClose())) {
+						scope.ldOnClose()();
+					}
+
 					element.remove();
 				};
 
 				scope.toggle = function() {
 					scope.ldIsOpen = scope.isOpen = !scope.isOpen;
+
+					if (angular.isDefined(scope.ldOnToggle())) {
+						scope.ldOnToggle()(scope.isOpen);
+					}
 				};
 			}
 		};
@@ -173,7 +183,7 @@ angular.module('ldAdminTools')
 				data: '=', // array with ids
 				viewUrl: '@',
 				currentId: '=',
-				filter: '=?'
+				filter: '@?'
 			},
 			link: function postLink(scope) {
 				var message = scope.message || config.messageDefault;
@@ -185,8 +195,6 @@ angular.module('ldAdminTools')
 				scope.showNextButton = scope.showNextButton || config.showNextButtonDefault;
 
 				scope.currentIndex = scope.data.indexOf(scope.currentId);
-
-				scope.isFilter = angular.isDefined(scope.filter) && angular.isDefined(scope.filter.preset);
 
 				function updateNavigation() {
 					scope.disablePreviousButtonClass = (scope.currentIndex <= 0 ? 'disabled' : '');
@@ -1842,11 +1850,26 @@ angular.module('ldAdminTools')
 		 */
 		function limit(input, limit) {
 			if (angular.isUndefined(limit)) {
-				return input
+				return input;
 			}
 
 			var filter = $filter('limitTo');
 			return filter(input, limit);
+		}
+
+		/**
+		 * Return ldFrom from array
+		 * @param input
+		 * @param fromIndex
+		 * @returns {*}
+		 */
+		function from(input, fromIndex) {
+			if (angular.isUndefined(fromIndex)) {
+				return input;
+			}
+
+			var filter = $filter('ldFrom');
+			return filter(input, fromIndex);
 		}
 
 		return function (input, options) {
@@ -1856,12 +1879,38 @@ angular.module('ldAdminTools')
 
 			var copy = where(input, options.where);
 			copy = order(copy, options.order);
+			copy = from(copy, options.from);
 			copy = limit(copy, options.limit);
 			copy = values(copy, options.values);
 
 			return copy;
 		};
 	}]);
+
+'use strict';
+
+/**
+ * @ngdoc filter
+ * @name ldAdminTools.filter:lfFrom
+ * @function
+ * @description
+ * # lfFrom
+ * Filter in the ldAdminTools.
+ *
+ * Returns data from index.
+ */
+angular.module('ldAdminTools')
+	.filter('lfFrom', function () {
+		return function (input, fromIndex) {
+			if (!angular.isArray(input)) {
+				return input;
+			}
+
+			var fromIdx = fromIndex || 0;
+
+			return input.slice(fromIdx);
+		};
+	});
 
 'use strict';
 
@@ -2349,7 +2398,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('partials/lddashboardbox.html',
-    "<div class=\"panel panel-{{ panelType }}\" ng-class=ldSize><div class=\"panel-heading ld-panel-heading clearfix\"><h4 class=\"panel-title ld-panel-title pull-left\">{{ ldTitle }}</h4><div class=\"btn-group pull-right\"><button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=toggle()><i class=\"fa fa-fw fa-minus\"></i></button> <button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=close()><i class=\"fa fa-fw fa-close\"></i></button></div></div><div class=panel-collapse collapse=!isOpen><div class=panel-body ng-transclude></div></div></div>"
+    "<div class=\"panel panel-{{ panelType }}\" ng-class=ldSize><div class=\"panel-heading ld-panel-heading clearfix\"><h4 class=\"panel-title ld-panel-title pull-left\">{{ ldTitle }}</h4><div class=\"btn-group pull-right\" dropdown><button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=toggle()><i class=\"fa fa-fw fa-minus\"></i></button> <button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=close()><i class=\"fa fa-fw fa-close\"></i></button> <button class=\"btn btn-xs btn-{{ panelType }} dropdown-toggle\" role=button><span class=caret></span></button><ul class=dropdown-menu role=menu><li><a href=\"\" ng-click=options()>Options</a></li></ul></div></div><div class=panel-collapse collapse=!isOpen><div class=panel-body ng-transclude></div></div></div>"
   );
 
 
@@ -2359,7 +2408,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/lddatanavigation.html',
-    "<div class=ld-data-navigation><span ng-if=isFilter>{{ filter.preset.name }}:</span> {{ message }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
+    "<div class=ld-data-navigation>{{ filter }}: {{ message }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
   );
 
 

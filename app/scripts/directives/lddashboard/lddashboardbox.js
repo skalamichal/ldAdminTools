@@ -28,18 +28,28 @@ angular.module('ldAdminTools')
 				ldIsOpen: '=?',
 				ldTitle: '@',
 				ldType: '@',
-				ldSize: '@?'
+				ldSize: '@?',
+				ldOnClose: '&?',
+				ldOnToggle: '&?'
 			},
-			link: function postLink(scope, element, attrs) {
+			link: function postLink(scope, element, attrs, dbboxController) {
 				scope.panelType = scope.ldType || config.panelTypeDefault;
 				scope.isOpen = angular.isDefined(scope.ldIsOpen) ? !!scope.ldIsOpen : true;
 
 				scope.close = function() {
+					if (angular.isDefined(scope.ldOnClose())) {
+						scope.ldOnClose()();
+					}
+
 					element.remove();
 				};
 
 				scope.toggle = function() {
 					scope.ldIsOpen = scope.isOpen = !scope.isOpen;
+
+					if (angular.isDefined(scope.ldOnToggle())) {
+						scope.ldOnToggle()(scope.isOpen);
+					}
 				};
 			}
 		};

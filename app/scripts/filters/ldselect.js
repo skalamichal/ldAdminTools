@@ -7,7 +7,16 @@
  * @description
  * # ldSelect
  * Filter in the ldAdminToolsApp.
- * Selects data from collection based on select options data.
+ * Selects data from collection based on select options data (in this order):
+ * {
+ *  where: {
+ *      field: value
+ *  },
+ *  order: 'field' or ['+field', '-field', ...],
+ *  from: index
+ *  limit: number,
+ *  values: ['field', ...]
+ * }
  */
 angular.module('ldAdminTools')
 	.filter('ldSelect', ['$filter', function ($filter) {
@@ -22,7 +31,7 @@ angular.module('ldAdminTools')
 			var out = {};
 			angular.forEach(values, function (key) {
 				out[key] = obj[key];
-			})
+			});
 
 			return out;
 		}
@@ -30,11 +39,11 @@ angular.module('ldAdminTools')
 		/**
 		 * Create new objects array where only defined values are selected.
 		 * @param {Array} input
-		 * @param {Array} values
+		 * @param {Array} vals
 		 * @returns {*}
 		 */
-		function values(input, values) {
-			if (angular.isUndefined(values)) {
+		function values(input, vals) {
+			if (angular.isUndefined(vals)) {
 				return input;
 			}
 
@@ -42,7 +51,7 @@ angular.module('ldAdminTools')
 
 			angular.forEach(input, function (row) {
 				if (angular.isObject(row)) {
-					out.push(selectValues(row, values));
+					out.push(selectValues(row, vals));
 				}
 			});
 
@@ -52,16 +61,16 @@ angular.module('ldAdminTools')
 		/**
 		 * Return filtered array
 		 * @param input
-		 * @param where
+		 * @param whre
 		 * @returns {*}
 		 */
-		function where(input, where) {
-			if (angular.isUndefined(where)) {
+		function where(input, whre) {
+			if (angular.isUndefined(whre)) {
 				return input;
 			}
 
 			var filter = $filter('filter');
-			return filter(input, where);
+			return filter(input, whre);
 		}
 
 		/**
@@ -82,15 +91,30 @@ angular.module('ldAdminTools')
 		/**
 		 * Return limitTo from array
 		 * @param input
-		 * @param limit
+		 * @param lmit
 		 */
-		function limit(input, limit) {
-			if (angular.isUndefined(limit)) {
-				return input
+		function limit(input, lmit) {
+			if (angular.isUndefined(lmit)) {
+				return input;
 			}
 
 			var filter = $filter('limitTo');
-			return filter(input, limit);
+			return filter(input, lmit);
+		}
+
+		/**
+		 * Return ldFrom from array
+		 * @param input
+		 * @param fromIndex
+		 * @returns {*}
+		 */
+		function from(input, fromIndex) {
+			if (angular.isUndefined(fromIndex)) {
+				return input;
+			}
+
+			var filter = $filter('ldFrom');
+			return filter(input, fromIndex);
 		}
 
 		return function (input, options) {
@@ -100,6 +124,7 @@ angular.module('ldAdminTools')
 
 			var copy = where(input, options.where);
 			copy = order(copy, options.order);
+			copy = from(copy, options.from);
 			copy = limit(copy, options.limit);
 			copy = values(copy, options.values);
 

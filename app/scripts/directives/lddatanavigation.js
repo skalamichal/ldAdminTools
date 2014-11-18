@@ -24,7 +24,7 @@ angular.module('ldAdminTools')
 				data: '=', // array with ids
 				viewUrl: '@',
 				currentId: '=',
-				filter: '=?'
+				filter: '@?'
 			},
 			link: function postLink(scope) {
 				var message = scope.message || config.messageDefault;
@@ -36,8 +36,6 @@ angular.module('ldAdminTools')
 				scope.showNextButton = scope.showNextButton || config.showNextButtonDefault;
 
 				scope.currentIndex = scope.data.indexOf(scope.currentId);
-
-				scope.isFilter = angular.isDefined(scope.filter) && angular.isDefined(scope.filter.preset);
 
 				function updateNavigation() {
 					scope.disablePreviousButtonClass = (scope.currentIndex <= 0 ? 'disabled' : '');
