@@ -116,9 +116,9 @@ angular.module('ldAdminTools')
 				ldOnClose: '&?',
 				ldOnToggle: '&?'
 			},
-			link: function postLink(scope, element, attrs) {
+			link: function postLink(scope, element, attrs, dbboxController) {
 				scope.panelType = scope.ldType || config.panelTypeDefault;
-				scope.isOpen = angular.isDefined(scope.ldIsOpen) ? !!scope.ldIsOpen : true;
+				scope.isBoxOpen = angular.isDefined(scope.ldIsOpen) ? !!scope.ldIsOpen : true;
 
 				scope.close = function() {
 					if (angular.isDefined(scope.ldOnClose())) {
@@ -129,7 +129,7 @@ angular.module('ldAdminTools')
 				};
 
 				scope.toggle = function() {
-					scope.ldIsOpen = scope.isOpen = !scope.isOpen;
+					scope.ldIsOpen = scope.isBoxOpen = !scope.isBoxOpen;
 
 					if (angular.isDefined(scope.ldOnToggle())) {
 						scope.ldOnToggle()(scope.isOpen);
@@ -1771,7 +1771,19 @@ angular.module('ldAdminTools')
  * @description
  * # ldSelect
  * Filter in the ldAdminToolsApp.
- * Selects data from collection based on select options data.
+ * Selects data from collection based on select options data (in this order):
+ * {
+ *  where: {
+ *      field: value
+ *  },
+ *  order: 'field' or ['+field', '-field', ...],
+ *  from: index
+ *  limit: number,
+ *  values: ['field', ...]
+ * }
+ *
+ * If values are defined the new array has full copy of the input collection, but a new field named '$' is added with
+ * filtered values. This allows to use the filter with ng-repeat for eaxmple.
  */
 angular.module('ldAdminTools')
 	.filter('ldSelect', ['$filter', function ($filter) {
@@ -1783,22 +1795,22 @@ angular.module('ldAdminTools')
 		 * @returns {{}}
 		 */
 		function selectValues(obj, values) {
-			var out = {};
+			obj.$ = {};
 			angular.forEach(values, function (key) {
-				out[key] = obj[key];
-			})
+				obj.$[key] = obj[key];
+			});
 
-			return out;
+			return obj;
 		}
 
 		/**
 		 * Create new objects array where only defined values are selected.
 		 * @param {Array} input
-		 * @param {Array} values
+		 * @param {Array} vals
 		 * @returns {*}
 		 */
-		function values(input, values) {
-			if (angular.isUndefined(values)) {
+		function values(input, vals) {
+			if (angular.isUndefined(vals)) {
 				return input;
 			}
 
@@ -1806,7 +1818,7 @@ angular.module('ldAdminTools')
 
 			angular.forEach(input, function (row) {
 				if (angular.isObject(row)) {
-					out.push(selectValues(row, values));
+					out.push(selectValues(row, vals));
 				}
 			});
 
@@ -1816,16 +1828,16 @@ angular.module('ldAdminTools')
 		/**
 		 * Return filtered array
 		 * @param input
-		 * @param where
+		 * @param whre
 		 * @returns {*}
 		 */
-		function where(input, where) {
-			if (angular.isUndefined(where)) {
+		function where(input, whre) {
+			if (angular.isUndefined(whre)) {
 				return input;
 			}
 
 			var filter = $filter('filter');
-			return filter(input, where);
+			return filter(input, whre);
 		}
 
 		/**
@@ -1846,15 +1858,15 @@ angular.module('ldAdminTools')
 		/**
 		 * Return limitTo from array
 		 * @param input
-		 * @param limit
+		 * @param lmit
 		 */
-		function limit(input, limit) {
-			if (angular.isUndefined(limit)) {
+		function limit(input, lmit) {
+			if (angular.isUndefined(lmit)) {
 				return input;
 			}
 
 			var filter = $filter('limitTo');
-			return filter(input, limit);
+			return filter(input, lmit);
 		}
 
 		/**
@@ -2023,8 +2035,6 @@ angular.module('ldAdminTools')
  * - preset {Object} - currently selected preset
  * - filters {Object} - values for the $filter('filter') filter, build in angular filter.
  * - orderBy {Array} - array of member used to sort the input array.
- * - cache {Array} - cached filtered collection to be used in views with last filter results
- * - ??custom - TODO
  */
 angular.module('ldAdminTools')
 	/*jshint unused:false*/
@@ -2398,7 +2408,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('partials/lddashboardbox.html',
-    "<div class=\"panel panel-{{ panelType }}\" ng-class=ldSize><div class=\"panel-heading ld-panel-heading clearfix\"><h4 class=\"panel-title ld-panel-title pull-left\">{{ ldTitle }}</h4><div class=\"btn-group pull-right\" dropdown><button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=toggle()><i class=\"fa fa-fw fa-minus\"></i></button> <button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=close()><i class=\"fa fa-fw fa-close\"></i></button> <button class=\"btn btn-xs btn-{{ panelType }} dropdown-toggle\" role=button><span class=caret></span></button><ul class=dropdown-menu role=menu><li><a href=\"\" ng-click=options()>Options</a></li></ul></div></div><div class=panel-collapse collapse=!isOpen><div class=panel-body ng-transclude></div></div></div>"
+    "<div class=\"panel panel-{{ panelType }}\" ng-class=ldSize><div class=\"panel-heading ld-panel-heading clearfix\"><h4 class=\"panel-title ld-panel-title pull-left\">{{ ldTitle }}</h4><div class=\"btn-group pull-right\" dropdown><button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=toggle()><i class=\"fa fa-fw fa-minus\"></i></button> <button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=close()><i class=\"fa fa-fw fa-close\"></i></button> <button class=\"btn btn-xs btn-{{ panelType }} dropdown-toggle\" role=button><span class=caret></span></button><ul class=dropdown-menu role=menu><li><a href=\"\" ng-click=options()>Options</a></li></ul></div></div><div class=panel-collapse collapse=!isBoxOpen><div class=panel-body ng-transclude></div></div></div>"
   );
 
 
