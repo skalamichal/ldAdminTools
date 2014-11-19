@@ -20,38 +20,18 @@ angular.module('ldAdminTools')
 	.factory('ldFilterService', ['$rootScope', '$filter', 'localStorageService', function ldFilterService($rootScope, $filter, localStorage) {
 
 		// filters are stored in named array
-		var filterFilter = $filter('filter');
-		var orderByFilter = $filter('orderBy');
+		var ldSelectFilter = $filter('ldSelect');
 
 		// filters object, each filter is stored by it's name
 		var filters = {};
 
-		/**
-		 * Apply the $filter('filter') filter
-		 * @param data
-		 * @param filter
-		 * @returns {Array} - filtered or original array
-		 */
-		function applyFilterFilter(data, filter) {
-			if (angular.isUndefined(filter)) {
+		function applyFilter(data, filter) {
+			if (angular.isUndefined(filter))
+			{
 				return data;
 			}
 
-			return filterFilter(data, filter);
-		}
-
-		/**
-		 * Apply the $filter('orderBy') filter
-		 * @param data
-		 * @param orderBy
-		 * @returns {Array} - filtered or original array
-		 */
-		function applyOrderByFilter(data, orderBy) {
-			if (angular.isUndefined(orderBy)) {
-				return data;
-			}
-
-			return orderByFilter(data, orderBy.criterion, orderBy.reverse);
+			var filtered = ldSelectFilter(data, filter);
 		}
 
 		/**
@@ -64,8 +44,7 @@ angular.module('ldAdminTools')
 				return data;
 			}
 
-			var filtered = applyFilterFilter(data, preset.filters);
-			return applyOrderByFilter(filtered, preset.orderBy);
+			return applyFilter(data, preset);
 		}
 
 		/**
@@ -212,8 +191,7 @@ angular.module('ldAdminTools')
 				var data = input;
 
 				data = applyPresetFilter(data, filter.preset);
-				data = applyFilterFilter(data, filter.filter);
-				data = applyOrderByFilter(data, filter.orderBy);
+				data = applyFilter(data, filter.filter);
 
 				filter.dirty = false;
 
