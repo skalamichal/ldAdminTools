@@ -12,8 +12,8 @@
  * - dirty {Boolean} - filter updated, data need to be updated
  * - presets {Array} - list of preset filters
  * - preset {Object} - currently selected preset
- * - filters {Object} - values for the $filter('filter') filter, build in angular filter.
- * - orderBy {Array} - array of member used to sort the input array.
+ * - where {Object} - values for the $filter('filter') filter, build in angular filter.
+ * - order {Array} - array of member used to sort the input array.
  */
 angular.module('ldAdminTools')
 	/*jshint unused:false*/
@@ -26,12 +26,11 @@ angular.module('ldAdminTools')
 		var filters = {};
 
 		function applyFilter(data, filter) {
-			if (angular.isUndefined(filter))
-			{
+			if (angular.isUndefined(filter)) {
 				return data;
 			}
 
-			var filtered = ldSelectFilter(data, filter);
+			return ldSelectFilter(data, filter);
 		}
 
 		/**
@@ -191,7 +190,7 @@ angular.module('ldAdminTools')
 				var data = input;
 
 				data = applyPresetFilter(data, filter.preset);
-				data = applyFilter(data, filter.filter);
+				data = applyFilter(data, filter);
 
 				filter.dirty = false;
 
@@ -199,79 +198,108 @@ angular.module('ldAdminTools')
 			},
 
 			/**
-			 * Ads search criterion to existing search criteria
-			 * @param filterId
-			 * @param criterion
+			 * Look for undefined or empty values in the where object.
+			 * @param where
 			 */
-			addFilterFilterCriterion: function (filterId, criterion) {
+			cleanUpWhereConditions: function(filter) {
+				var keys = [];
+				// remove empty values
+				angular.forEach(filter.where, function(val, key) {
+					if (angular.isUndefined(val) || val.length === 0) {
+						keys.push(key);
+					}
+				});
+
+				angular.forEach(keys, function(key) {
+					delete filter.where[key];
+				});
+			},
+
+			/**
+			 * Set the filter.where condition.
+			 * @param filterId
+			 * @param where condition could be one of:
+			 * - string value - which will set it for global (every available field) search
+			 * - object value - with field:value pairs
+			 * If the value is undefined or empty, it will be removed from the where condition
+			 */
+			setWhereCondition: function (filterId, where) {
 				var filter = this.getFilter(filterId);
-				if (angular.isUndefined(filter.filter)) {
-					filter.filter = {};
+				if (angular.isUndefined(filter.where)) {
+					filter.where = {};
 				}
 
-				// if string, it a global search, change it to {$:criterion}
-				if (angular.isString(criterion)) {
-					angular.extend(filter.filter, {$: criterion});
+				// just string, update the where for global search, for all available fields, in angular marked as $
+				if (angular.isString(where)) {
+					angular.extend(filter.where, {$: where});
 				}
-				// if is an object, just extend it
-				else if (angular.isObject(criterion)) {
-					angular.extend(filter.filter, criterion);
+				// object of field:value pairs
+				else if (angular.isObject(where)) {
+					angular.extend(filter.where, where);
 				}
 
+				this.cleanUpWhereConditions(filter);
+
+				// mark filter as dirty and fire event
 				filter.dirty = true;
-
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			removeFilterFilterCriterion: function (filterId, criterion) {
+			/**
+			 * Remove the field from where condition
+			 * @param filterId
+			 * @param where may be oen of following:
+			 * - string - remove the field
+			 * - array - remove all fields
+			 */
+			removeWhereCondition: function(filterId, where) {
 				var filter = this.getFilter(filterId);
-
-				// nothing to remove in this case
-				if (angular.isUndefined(filter.filter)) {
+				if (angular.isUndefined(filter.where)) {
 					return;
 				}
 
-				// string should represent one property, remove it
-				if (angular.isString(criterion)) {
-					delete filter.filter[criterion];
+				if (angular.isString(where)) {
+					delete filter.where[where];
 				}
-				else if (angular.isArray(criterion)) {
-					angular.forEach(criterion, function (key) {
-						delete filter.filter[key];
-					});
-				}
-				// loop through key,value pairs and remove them
-				else if (angular.isObject(criterion)) {
-					angular.forEach(criterion, function (value, key) {
-						delete filter.filter[key];
+				else if (angular.isArray(where)) {
+					angular.forEach(where, function(key) {
+						delete filter.where[key];
 					});
 				}
 
 				filter.dirty = true;
-
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			clearFilterFilter: function (filterId) {
+			clearWhereFilter: function(filterId) {
 				var filter = this.getFilter(filterId);
-				delete filter.filter;
+				delete filter.where;
 
 				filter.dirty = true;
-
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			addOrderByFilterCriterion: function (filterId, criterion, reverse) {
+			/**
+			 * Set the ordering.
+			 * @param filterId
+			 * @param fields - {String} order by the string value
+			 *               - {Array} order by strings in Array
+			 * @param reverse - reverse the order of array
+			 */
+			setOrderByCondition: function (filterId, fields, reverse) {
 				var filter = this.getFilter(filterId);
 				var rev = !!reverse;
 
-				if (angular.isUndefined(filter.orderBy)) {
-					filter.orderBy = {};
+				if (angular.isUndefined(filter.order)) {
+					filter.order = {};
 				}
 
-				if (angular.isString(criterion)) {
-					filter.orderBy = {
-						criterion: criterion,
+				if (angular.isUndefined(fields) || fields.length === 0) {
+					delete filter.order;
+				}
+				else if (angular.isString(fields) || angular.isArray(fields)) {
+					filter.order = {
+						values: fields,
 						reverse: rev
 					};
 				}
@@ -281,28 +309,19 @@ angular.module('ldAdminTools')
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			removeOrderByFilterCriterion: function (filterId, criterion) {
+			clearOrderByFilter: function (filterId) {
 				var filter = this.getFilter(filterId);
-
-				if (angular.isUndefined(filter)) {
-					return;
-				}
-
-				if (angular.isString(criterion)) {
-					filter.orderBy = {};
-				}
+				delete filter.order;
 
 				filter.dirty = true;
 
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			clearOrderByFilter: function (filterId) {
+			updateFilter: function (filterId, inputFilter) {
 				var filter = this.getFilter(filterId);
-				delete filter.orderBy;
 
-				filter.dirty = true;
-
+				angular.extend(filter, inputFilter);
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
@@ -320,11 +339,11 @@ angular.module('ldAdminTools')
 				}, this);
 			},
 
-			setDirty: function(filterId) {
+			setDirty: function (filterId) {
 				this.getFilter(filterId).dirty = true;
 			},
 
-			isDirty: function(filterId) {
+			isDirty: function (filterId) {
 				return !!this.getFilter(filterId).dirty;
 			},
 
@@ -334,8 +353,8 @@ angular.module('ldAdminTools')
 					angular.forEach(filters, function (value, key) {
 						store[key] = {
 							preset: value.preset,
-							filter: value.filter,
-							orderBy: value.orderBy
+							where: value.where,
+							order: value.order
 						};
 					});
 					localStorage.set('filters', angular.toJson(store));
@@ -352,8 +371,8 @@ angular.module('ldAdminTools')
 
 					angular.forEach(loaded, function (value, key) {
 						filters[key].preset = value.preset;
-						filters[key].filter = value.filter;
-						filters[key].orderBy = value.orderBy;
+						filters[key].where = value.where;
+						filters[key].order = value.order;
 						filters[key].dirty = true;
 					});
 				}

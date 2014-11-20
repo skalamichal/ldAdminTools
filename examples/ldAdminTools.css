@@ -285,7 +285,7 @@ a.ld-menuitem:hover {
   display: inline-flex;
   width: 100%;
   align-items: flex-start;
-  justify-content: space-around;
+  justify-content: flex-start;
   flex-wrap: wrap;
 }
 .ld-panel-group .quarter {
@@ -293,6 +293,9 @@ a.ld-menuitem:hover {
 }
 .ld-panel-group .third {
   width: 33%;
+}
+.ld-panel-group .two-thirds {
+  width: 66%;
 }
 .ld-panel-group .half {
   width: 49%;
@@ -304,6 +307,7 @@ a.ld-menuitem:hover {
   flex-shrink: 1;
   flex-grow: 0;
   display: block;
+  margin-right: 5px;
 }
 @media all and (max-width: 499px) {
   .ld-panel-group {
@@ -312,7 +316,8 @@ a.ld-menuitem:hover {
   .ld-panel-group .quarter,
   .ld-panel-group .third,
   .ld-panel-group .half,
-  .ld-panel-group .full {
+  .ld-panel-group .full,
+  .ld-panel-group .two-thirds {
     width: 100%;
   }
 }
@@ -321,6 +326,7 @@ a.ld-menuitem:hover {
   .ld-panel-group .third {
     width: 49%;
   }
+  .ld-panel-group .two-thirds,
   .ld-panel-group .half,
   .ld-panel-group .full {
     width: 100%;
@@ -332,6 +338,7 @@ a.ld-menuitem:hover {
   .ld-panel-group .half {
     width: 49%;
   }
+  .ld-panel-group .two-thirds,
   .ld-panel-group .full {
     width: 100%;
   }
@@ -343,4 +350,14 @@ a.ld-menuitem:hover {
   padding-top: 2.5px;
   padding-left: 6px;
 }
-/*# sourceMappingURL=dist/ldAdminTools.css.map */
+/* sorting icons */
+.ld-ascent,
+.ld-descent {
+  display: none;
+}
+.ld-table-sort-ascent > .ld-ascent {
+  display: inline;
+}
+.ld-table-sort-descent > .ld-descent {
+  display: inline;
+}

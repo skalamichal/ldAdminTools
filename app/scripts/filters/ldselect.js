@@ -12,7 +12,10 @@
  *  where: {
  *      field: value
  *  },
- *  order: 'field' or ['+field', '-field', ...],
+ *  order: {
+ *      values: 'field' or ['+field', '-field', ...],
+ *      reverse: boolean
+ *  },
  *  from: index
  *  limit: number,
  *  values: ['field', ...]
@@ -83,12 +86,12 @@ angular.module('ldAdminTools')
 		 * @returns {*}
 		 */
 		function order(input, orderBy) {
-			if (angular.isUndefined(order)) {
+			if (angular.isUndefined(orderBy)) {
 				return input;
 			}
 
 			var filter = $filter('orderBy');
-			return filter(input, orderBy);
+			return filter(input, orderBy.values, orderBy.reverse);
 		}
 
 		/**
@@ -121,7 +124,7 @@ angular.module('ldAdminTools')
 		}
 
 		return function (input, options) {
-			if (!angular.isArray(input)) {
+			if (!angular.isArray(input) || angular.isUndefined(options)) {
 				return input;
 			}
 

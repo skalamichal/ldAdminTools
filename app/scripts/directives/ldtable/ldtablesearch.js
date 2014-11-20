@@ -28,7 +28,7 @@ angular.module('ldAdminTools')
 				scope.$watch(predicateGet, function (newValue, oldValue) {
 					if (newValue !== oldValue) {
 						predicate = newValue;
-						tableController.removeSearchFilter(oldValue);
+						tableController.removeSearchFilter(predicate);
 						tableController.setSearchFilter(modelController.$viewValue || '', predicate);
 					}
 				});

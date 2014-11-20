@@ -78,11 +78,12 @@ angular.module('ldAdminTools')
 
 				scope.$on(tableController.TABLE_UPDATED, function () {
 					var orderBy = tableController.getOrderByFilters();
-					if (angular.isUndefined(orderBy) || angular.isUndefined(orderBy.criterion) || orderBy.criterion !== criterion) {
+					console.log(orderBy);
+					if (angular.isUndefined(orderBy) || angular.isUndefined(orderBy.values) || orderBy.values !== criterion) {
 						order = ORDER.NONE;
 					}
 					else {
-						if (criterion === orderBy.criterion) {
+						if (criterion === orderBy.values) {
 							if (orderBy.reverse) {
 								order = ORDER.DESCENT;
 							}

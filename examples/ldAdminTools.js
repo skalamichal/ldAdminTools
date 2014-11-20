@@ -118,7 +118,7 @@ angular.module('ldAdminTools')
 			},
 			link: function postLink(scope, element, attrs, dbboxController) {
 				scope.panelType = scope.ldType || config.panelTypeDefault;
-				scope.isOpen = angular.isDefined(scope.ldIsOpen) ? !!scope.ldIsOpen : true;
+				scope.isBoxOpen = angular.isDefined(scope.ldIsOpen) ? !!scope.ldIsOpen : true;
 
 				scope.close = function() {
 					if (angular.isDefined(scope.ldOnClose())) {
@@ -129,7 +129,7 @@ angular.module('ldAdminTools')
 				};
 
 				scope.toggle = function() {
-					scope.ldIsOpen = scope.isOpen = !scope.isOpen;
+					scope.ldIsOpen = scope.isBoxOpen = !scope.isBoxOpen;
 
 					if (angular.isDefined(scope.ldOnToggle())) {
 						scope.ldOnToggle()(scope.isOpen);
@@ -1057,44 +1057,43 @@ angular.module('ldAdminTools')
 				criterion = {};
 				criterion[predicate] = value;
 			}
-			filterService.addFilterFilterCriterion(filter, criterion);
+			filterService.setWhereCondition(filter, criterion);
 		};
 
 		/**
 		 * Remove the search criterion
 		 * @param {String} - remove predicate given as string
-		 *        {Object} - remove predicates given as object pairs
-		 *        {Array} - remove predicates, each array value is a predicate
+		 *        {Array} -  remove predicates given as strings in array
 		 */
-		this.removeSearchFilter = function removeSearchFilter(criterion) {
-			filterService.removeFilterFilterCriterion(filter, criterion);
+		this.removeSearchFilter = function removeSearchFilter(predicate) {
+			filterService.removeWhereCondition(filter, predicate);
 		};
 
 		/**
 		 * Clear the search filter
 		 */
 		this.clearSearchFilter = function clearSearchFilter() {
-			filterService.clearFilterFilter(filter);
+			filterService.clearWhereFilter(filter);
 		};
 
 		/**
 		 * Set rows order
-		 * @param criterion
+		 * @param criterion - String or Array[String]
 		 * @param reverse
 		 */
 		this.setOrderByFilter = function setOrderByFilter(criterion, reverse) {
-			filterService.addOrderByFilterCriterion(filter, criterion, reverse);
+			filterService.setOrderByCondition(filter, criterion, reverse);
 		};
 
 		/**
 		 * Remove the order by filter.
 		 */
 		this.clearOrderByFilter = function clearOrderByFilter() {
-			filterService.clearOrderByFilter(filter);
+			filterService.clearOrderByCondition(filter);
 		};
 
 		this.clearFilters = function clearFilters() {
-			filterService.clearFilterFilter(filter);
+			filterService.clearWhereFilter(filter);
 			filterService.clearOrderByFilter(filter);
 			rowsPerPage = dataCopy.length;
 		};
@@ -1131,7 +1130,7 @@ angular.module('ldAdminTools')
 		 * @returns {{}}
 		 */
 		this.getOrderByFilters = function getOrderByFilters() {
-			return filterService.getFilter(filter).orderBy;
+			return filterService.getFilter(filter).order;
 		};
 
 		/**
@@ -1139,7 +1138,7 @@ angular.module('ldAdminTools')
 		 * @returns {{}}
 		 */
 		this.getSearchFilters = function getSearchFilters() {
-			return filterService.getFilter(filter).filter;
+			return filterService.getFilter(filter).where;
 		};
 
 		/**
@@ -1595,7 +1594,7 @@ angular.module('ldAdminTools')
 				scope.$watch(predicateGet, function (newValue, oldValue) {
 					if (newValue !== oldValue) {
 						predicate = newValue;
-						tableController.removeSearchFilter(oldValue);
+						tableController.removeSearchFilter(predicate);
 						tableController.setSearchFilter(modelController.$viewValue || '', predicate);
 					}
 				});
@@ -1705,11 +1704,12 @@ angular.module('ldAdminTools')
 
 				scope.$on(tableController.TABLE_UPDATED, function () {
 					var orderBy = tableController.getOrderByFilters();
-					if (angular.isUndefined(orderBy) || angular.isUndefined(orderBy.criterion) || orderBy.criterion !== criterion) {
+					console.log(orderBy);
+					if (angular.isUndefined(orderBy) || angular.isUndefined(orderBy.values) || orderBy.values !== criterion) {
 						order = ORDER.NONE;
 					}
 					else {
-						if (criterion === orderBy.criterion) {
+						if (criterion === orderBy.values) {
 							if (orderBy.reverse) {
 								order = ORDER.DESCENT;
 							}
@@ -1776,7 +1776,10 @@ angular.module('ldAdminTools')
  *  where: {
  *      field: value
  *  },
- *  order: 'field' or ['+field', '-field', ...],
+ *  order: {
+ *      values: 'field' or ['+field', '-field', ...],
+ *      reverse: boolean
+ *  },
  *  from: index
  *  limit: number,
  *  values: ['field', ...]
@@ -1847,12 +1850,12 @@ angular.module('ldAdminTools')
 		 * @returns {*}
 		 */
 		function order(input, orderBy) {
-			if (angular.isUndefined(order)) {
+			if (angular.isUndefined(orderBy)) {
 				return input;
 			}
 
 			var filter = $filter('orderBy');
-			return filter(input, orderBy);
+			return filter(input, orderBy.values, orderBy.reverse);
 		}
 
 		/**
@@ -1885,7 +1888,7 @@ angular.module('ldAdminTools')
 		}
 
 		return function (input, options) {
-			if (!angular.isArray(input)) {
+			if (!angular.isArray(input) || angular.isUndefined(options)) {
 				return input;
 			}
 
@@ -2033,48 +2036,25 @@ angular.module('ldAdminTools')
  * - dirty {Boolean} - filter updated, data need to be updated
  * - presets {Array} - list of preset filters
  * - preset {Object} - currently selected preset
- * - filters {Object} - values for the $filter('filter') filter, build in angular filter.
- * - orderBy {Array} - array of member used to sort the input array.
- * - cache {Array} - cached filtered collection to be used in views with last filter results
- * - ??custom - TODO
+ * - where {Object} - values for the $filter('filter') filter, build in angular filter.
+ * - order {Array} - array of member used to sort the input array.
  */
 angular.module('ldAdminTools')
 	/*jshint unused:false*/
 	.factory('ldFilterService', ['$rootScope', '$filter', 'localStorageService', function ldFilterService($rootScope, $filter, localStorage) {
 
 		// filters are stored in named array
-		var filterFilter = $filter('filter');
-		var orderByFilter = $filter('orderBy');
+		var ldSelectFilter = $filter('ldSelect');
 
 		// filters object, each filter is stored by it's name
 		var filters = {};
 
-		/**
-		 * Apply the $filter('filter') filter
-		 * @param data
-		 * @param filter
-		 * @returns {Array} - filtered or original array
-		 */
-		function applyFilterFilter(data, filter) {
+		function applyFilter(data, filter) {
 			if (angular.isUndefined(filter)) {
 				return data;
 			}
 
-			return filterFilter(data, filter);
-		}
-
-		/**
-		 * Apply the $filter('orderBy') filter
-		 * @param data
-		 * @param orderBy
-		 * @returns {Array} - filtered or original array
-		 */
-		function applyOrderByFilter(data, orderBy) {
-			if (angular.isUndefined(orderBy)) {
-				return data;
-			}
-
-			return orderByFilter(data, orderBy.criterion, orderBy.reverse);
+			return ldSelectFilter(data, filter);
 		}
 
 		/**
@@ -2087,8 +2067,7 @@ angular.module('ldAdminTools')
 				return data;
 			}
 
-			var filtered = applyFilterFilter(data, preset.filters);
-			return applyOrderByFilter(filtered, preset.orderBy);
+			return applyFilter(data, preset);
 		}
 
 		/**
@@ -2235,8 +2214,7 @@ angular.module('ldAdminTools')
 				var data = input;
 
 				data = applyPresetFilter(data, filter.preset);
-				data = applyFilterFilter(data, filter.filter);
-				data = applyOrderByFilter(data, filter.orderBy);
+				data = applyFilter(data, filter);
 
 				filter.dirty = false;
 
@@ -2244,79 +2222,108 @@ angular.module('ldAdminTools')
 			},
 
 			/**
-			 * Ads search criterion to existing search criteria
-			 * @param filterId
-			 * @param criterion
+			 * Look for undefined or empty values in the where object.
+			 * @param where
 			 */
-			addFilterFilterCriterion: function (filterId, criterion) {
+			cleanUpWhereConditions: function(filter) {
+				var keys = [];
+				// remove empty values
+				angular.forEach(filter.where, function(val, key) {
+					if (angular.isUndefined(val) || val.length === 0) {
+						keys.push(key);
+					}
+				});
+
+				angular.forEach(keys, function(key) {
+					delete filter.where[key];
+				});
+			},
+
+			/**
+			 * Set the filter.where condition.
+			 * @param filterId
+			 * @param where condition could be one of:
+			 * - string value - which will set it for global (every available field) search
+			 * - object value - with field:value pairs
+			 * If the value is undefined or empty, it will be removed from the where condition
+			 */
+			setWhereCondition: function (filterId, where) {
 				var filter = this.getFilter(filterId);
-				if (angular.isUndefined(filter.filter)) {
-					filter.filter = {};
+				if (angular.isUndefined(filter.where)) {
+					filter.where = {};
 				}
 
-				// if string, it a global search, change it to {$:criterion}
-				if (angular.isString(criterion)) {
-					angular.extend(filter.filter, {$: criterion});
+				// just string, update the where for global search, for all available fields, in angular marked as $
+				if (angular.isString(where)) {
+					angular.extend(filter.where, {$: where});
 				}
-				// if is an object, just extend it
-				else if (angular.isObject(criterion)) {
-					angular.extend(filter.filter, criterion);
+				// object of field:value pairs
+				else if (angular.isObject(where)) {
+					angular.extend(filter.where, where);
 				}
 
+				this.cleanUpWhereConditions(filter);
+
+				// mark filter as dirty and fire event
 				filter.dirty = true;
-
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			removeFilterFilterCriterion: function (filterId, criterion) {
+			/**
+			 * Remove the field from where condition
+			 * @param filterId
+			 * @param where may be oen of following:
+			 * - string - remove the field
+			 * - array - remove all fields
+			 */
+			removeWhereCondition: function(filterId, where) {
 				var filter = this.getFilter(filterId);
-
-				// nothing to remove in this case
-				if (angular.isUndefined(filter.filter)) {
+				if (angular.isUndefined(filter.where)) {
 					return;
 				}
 
-				// string should represent one property, remove it
-				if (angular.isString(criterion)) {
-					delete filter.filter[criterion];
+				if (angular.isString(where)) {
+					delete filter.where[where];
 				}
-				else if (angular.isArray(criterion)) {
-					angular.forEach(criterion, function (key) {
-						delete filter.filter[key];
-					});
-				}
-				// loop through key,value pairs and remove them
-				else if (angular.isObject(criterion)) {
-					angular.forEach(criterion, function (value, key) {
-						delete filter.filter[key];
+				else if (angular.isArray(where)) {
+					angular.forEach(where, function(key) {
+						delete filter.where[key];
 					});
 				}
 
 				filter.dirty = true;
-
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			clearFilterFilter: function (filterId) {
+			clearWhereFilter: function(filterId) {
 				var filter = this.getFilter(filterId);
-				delete filter.filter;
+				delete filter.where;
 
 				filter.dirty = true;
-
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			addOrderByFilterCriterion: function (filterId, criterion, reverse) {
+			/**
+			 * Set the ordering.
+			 * @param filterId
+			 * @param fields - {String} order by the string value
+			 *               - {Array} order by strings in Array
+			 * @param reverse - reverse the order of array
+			 */
+			setOrderByCondition: function (filterId, fields, reverse) {
 				var filter = this.getFilter(filterId);
 				var rev = !!reverse;
 
-				if (angular.isUndefined(filter.orderBy)) {
-					filter.orderBy = {};
+				if (angular.isUndefined(filter.order)) {
+					filter.order = {};
 				}
 
-				if (angular.isString(criterion)) {
-					filter.orderBy = {
-						criterion: criterion,
+				if (angular.isUndefined(fields) || fields.length === 0) {
+					delete filter.order;
+				}
+				else if (angular.isString(fields) || angular.isArray(fields)) {
+					filter.order = {
+						values: fields,
 						reverse: rev
 					};
 				}
@@ -2326,28 +2333,19 @@ angular.module('ldAdminTools')
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			removeOrderByFilterCriterion: function (filterId, criterion) {
+			clearOrderByFilter: function (filterId) {
 				var filter = this.getFilter(filterId);
-
-				if (angular.isUndefined(filter)) {
-					return;
-				}
-
-				if (angular.isString(criterion)) {
-					filter.orderBy = {};
-				}
+				delete filter.order;
 
 				filter.dirty = true;
 
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
-			clearOrderByFilter: function (filterId) {
+			updateFilter: function (filterId, inputFilter) {
 				var filter = this.getFilter(filterId);
-				delete filter.orderBy;
 
-				filter.dirty = true;
-
+				angular.extend(filter, inputFilter);
 				$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 			},
 
@@ -2365,11 +2363,11 @@ angular.module('ldAdminTools')
 				}, this);
 			},
 
-			setDirty: function(filterId) {
+			setDirty: function (filterId) {
 				this.getFilter(filterId).dirty = true;
 			},
 
-			isDirty: function(filterId) {
+			isDirty: function (filterId) {
 				return !!this.getFilter(filterId).dirty;
 			},
 
@@ -2379,8 +2377,8 @@ angular.module('ldAdminTools')
 					angular.forEach(filters, function (value, key) {
 						store[key] = {
 							preset: value.preset,
-							filter: value.filter,
-							orderBy: value.orderBy
+							where: value.where,
+							order: value.order
 						};
 					});
 					localStorage.set('filters', angular.toJson(store));
@@ -2397,8 +2395,8 @@ angular.module('ldAdminTools')
 
 					angular.forEach(loaded, function (value, key) {
 						filters[key].preset = value.preset;
-						filters[key].filter = value.filter;
-						filters[key].orderBy = value.orderBy;
+						filters[key].where = value.where;
+						filters[key].order = value.order;
 						filters[key].dirty = true;
 					});
 				}
@@ -2410,7 +2408,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('partials/lddashboardbox.html',
-    "<div class=\"panel panel-{{ panelType }}\" ng-class=ldSize><div class=\"panel-heading ld-panel-heading clearfix\"><h4 class=\"panel-title ld-panel-title pull-left\">{{ ldTitle }}</h4><div class=\"btn-group pull-right\" dropdown><button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=toggle()><i class=\"fa fa-fw fa-minus\"></i></button> <button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=close()><i class=\"fa fa-fw fa-close\"></i></button> <button class=\"btn btn-xs btn-{{ panelType }} dropdown-toggle\" role=button><span class=caret></span></button><ul class=dropdown-menu role=menu><li><a href=\"\" ng-click=options()>Options</a></li></ul></div></div><div class=panel-collapse collapse=!isOpen><div class=panel-body ng-transclude></div></div></div>"
+    "<div class=\"panel panel-{{ panelType }}\" ng-class=ldSize><div class=\"panel-heading ld-panel-heading clearfix\"><h4 class=\"panel-title ld-panel-title pull-left\">{{ ldTitle }}</h4><div class=\"btn-group pull-right\" dropdown><button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=toggle()><i class=\"fa fa-fw fa-minus\"></i></button> <button class=\"btn btn-xs btn-{{ panelType }}\" ng-click=close()><i class=\"fa fa-fw fa-close\"></i></button> <button class=\"btn btn-xs btn-{{ panelType }} dropdown-toggle\" role=button><span class=caret></span></button><ul class=dropdown-menu role=menu><li><a href=\"\" ng-click=options()>Options</a></li></ul></div></div><div class=panel-collapse collapse=!isBoxOpen><div class=panel-body ng-transclude></div></div></div>"
   );
 
 

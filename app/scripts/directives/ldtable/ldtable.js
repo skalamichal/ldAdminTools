@@ -174,44 +174,43 @@ angular.module('ldAdminTools')
 				criterion = {};
 				criterion[predicate] = value;
 			}
-			filterService.addFilterFilterCriterion(filter, criterion);
+			filterService.setWhereCondition(filter, criterion);
 		};
 
 		/**
 		 * Remove the search criterion
 		 * @param {String} - remove predicate given as string
-		 *        {Object} - remove predicates given as object pairs
-		 *        {Array} - remove predicates, each array value is a predicate
+		 *        {Array} -  remove predicates given as strings in array
 		 */
-		this.removeSearchFilter = function removeSearchFilter(criterion) {
-			filterService.removeFilterFilterCriterion(filter, criterion);
+		this.removeSearchFilter = function removeSearchFilter(predicate) {
+			filterService.removeWhereCondition(filter, predicate);
 		};
 
 		/**
 		 * Clear the search filter
 		 */
 		this.clearSearchFilter = function clearSearchFilter() {
-			filterService.clearFilterFilter(filter);
+			filterService.clearWhereFilter(filter);
 		};
 
 		/**
 		 * Set rows order
-		 * @param criterion
+		 * @param criterion - String or Array[String]
 		 * @param reverse
 		 */
 		this.setOrderByFilter = function setOrderByFilter(criterion, reverse) {
-			filterService.addOrderByFilterCriterion(filter, criterion, reverse);
+			filterService.setOrderByCondition(filter, criterion, reverse);
 		};
 
 		/**
 		 * Remove the order by filter.
 		 */
 		this.clearOrderByFilter = function clearOrderByFilter() {
-			filterService.clearOrderByFilter(filter);
+			filterService.clearOrderByCondition(filter);
 		};
 
 		this.clearFilters = function clearFilters() {
-			filterService.clearFilterFilter(filter);
+			filterService.clearWhereFilter(filter);
 			filterService.clearOrderByFilter(filter);
 			rowsPerPage = dataCopy.length;
 		};
@@ -248,7 +247,7 @@ angular.module('ldAdminTools')
 		 * @returns {{}}
 		 */
 		this.getOrderByFilters = function getOrderByFilters() {
-			return filterService.getFilter(filter).orderBy;
+			return filterService.getFilter(filter).order;
 		};
 
 		/**
@@ -256,7 +255,7 @@ angular.module('ldAdminTools')
 		 * @returns {{}}
 		 */
 		this.getSearchFilters = function getSearchFilters() {
-			return filterService.getFilter(filter).filter;
+			return filterService.getFilter(filter).where;
 		};
 
 		/**

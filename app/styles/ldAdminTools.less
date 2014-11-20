@@ -231,6 +231,10 @@ a.ld-menuitem:hover {
 		width: 33%;
 	}
 
+	.two-thirds {
+		width: 66%;
+	}
+
 	.half {
 		width: 49%;
 	}
@@ -243,12 +247,13 @@ a.ld-menuitem:hover {
 		flex-shrink: 1;
 		flex-grow: 0;
 		display: block;
+		margin-right: 5px;
 	}
 
 	@media all and (max-width: 499px) {
 		flex-direction: column;
 
-		.quarter, .third, .half, .full {
+		.quarter, .third, .half, .full, .two-thirds {
 			width: 100%;
 		}
 	}
@@ -258,7 +263,7 @@ a.ld-menuitem:hover {
 			width: 49%;
 		}
 
-		.half, .full {
+		.two-thirds, .half, .full {
 			width: 100%;
 		}
 	}
@@ -268,7 +273,7 @@ a.ld-menuitem:hover {
 			width: 49%;
 		}
 
-		.full {
+		.two-thirds, .full {
 			width: 100%;
 		}
 	}
@@ -285,4 +290,18 @@ a.ld-menuitem:hover {
 
 	padding-top: 2.5px;
 	padding-left: 6px;
+}
+
+/* sorting icons */
+.ld-ascent,
+.ld-descent {
+	display: none;
+}
+
+.ld-table-sort-ascent > .ld-ascent {
+	display: inline;
+}
+
+.ld-table-sort-descent > .ld-descent {
+	display: inline;
 }

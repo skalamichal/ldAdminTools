@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+	<meta charset="UTF-8">
+	<title>Select Filter Test</title>
+	<link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css"/>
+	<link rel="stylesheet" type="text/css" href="bower_components/font-awesome/css/font-awesome.css"/>
+	<link rel="stylesheet" type="text/css" href="ldAdminTools.css"/>
+</head>
+<body ng-app="TableApp">
+
+<div style="margin: 20px" ng-controller="testController">
+
+	<button ng-click="sort(false)">Sort by Email</button>
+	<button ng-click="sort(true)">Sort by Email Rev</button>
+	<button ng-click="sort()">Clear Sorting on Email</button>
+
+	<table ld-table="dusers" ld-table-source="users" ld-filter="inbox" class="table table-condensed">
+		<thead>
+		<tr ng-repeat="row in dusers | limitTo:1">
+			<th ng-repeat="(key, val) in row">
+				<i class="ld-ascent fa fa-fw fa-caret-up"></i>
+				<i class="ld-descent fa fa-fw fa-caret-down"></i>
+				{{ key }}
+			</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr ng-repeat="row in dusers | limitTo:20">
+			<td ng-repeat="val in row">
+				{{ val }}
+			</td>
+		</tr>
+		</tbody>
+	</table>
+
+</div>
+
+</body>
+
+<script src="bower_components/angular/angular.js"></script>
+<script src="bower_components/angular-recursion/angular-recursion.js"></script>
+<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+<script src="bower_components/angular-local-storage/dist/angular-local-storage.js"></script>
+<script src="ldAdminTools.js"></script>
+
+<script type="text/javascript">
+
+	angular.module('TableApp', ['ui.bootstrap', 'RecursionHelper', 'LocalStorageModule', 'ldAdminTools'])
+			.controller('testController', ['$scope', 'ldFilterService', function ($scope, filterService) {
+
+				function randomTableRow() {
+					var fnames = ['Michal', 'John', 'George', 'Jones', 'Arnold', 'Dean'];
+					var lnames = ['Doe', 'Smith', 'Rambo', 'Black', 'White'];
+
+					var fname = fnames[Math.floor(Math.random() * fnames.length)];
+					var lname = lnames[Math.floor(Math.random() * lnames.length)];
+
+					return {
+						firstName: fname,
+						lastName: lname,
+						email: fname.toLowerCase() + '@' + lname.toLowerCase() + '.com'
+					};
+				}
+
+				var users = [];
+				for (var i = 0; i < 500; i++) {
+					users.push(randomTableRow());
+				}
+
+				var filters = {
+					'inbox': [
+						{
+							'id': 1,
+							'name': 'All',
+							'default': true
+						},
+						{
+							'id': 2,
+							'name': 'Email @rambo.com',
+							'where': {
+								'email': '@rambo'
+							}
+						}
+					]
+				};
+
+				filterService.registerPresets('inbox', filters.inbox);
+				filterService.setDefaultPreset('inbox');
+				filterService.setPreset('inbox', 2);
+
+				$scope.users = filterService.applyFilter('inbox', users);
+
+				$scope.sort = function(rev) {
+					if (angular.isUndefined(rev)) {
+						filterService.clearOrderByFilter('inbox');
+					}
+					else {
+						filterService.setOrderByCondition('inbox', (rev ? '-' : '+') + 'email');
+					}
+					console.log(filterService.getFilter('inbox'));
+				};
+
+			}]);
+
+</script>
+
+</html>
