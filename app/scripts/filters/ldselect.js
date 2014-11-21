@@ -13,7 +13,7 @@
  *      field: value
  *  },
  *  order: {
- *      values: 'field' or ['+field', '-field', ...],
+ *      values: ['+field', '-field', ...],
  *      reverse: boolean
  *  },
  *  from: index

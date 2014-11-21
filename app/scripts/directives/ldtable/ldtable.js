@@ -11,7 +11,6 @@ angular.module('ldAdminTools')
  * The controller used in the ld-table directive
  */
 	.controller('ldTableController', ['$scope', '$parse', '$filter', '$attrs', 'ldFilterService', function ($scope, $parse, $filter, $attrs, filterService) {
-
 		this.TABLE_UPDATED = 'ldTableUpdated';
 
 		var property = $attrs.ldTable;
@@ -74,9 +73,6 @@ angular.module('ldAdminTools')
 			displaySetter($scope, dataCopy);
 			filterService.forceUpdate(filter);
 
-			// setup the watcher
-			// TODO could cause issue with large data, consider to watch only display data
-			// TODO remove deep object watch and add data length changes
 			$scope.$watch(function () {
 				return sourceGetter($scope);
 			}, function (newData, oldData) {
@@ -88,7 +84,6 @@ angular.module('ldAdminTools')
 		// if no source is defined, watch changes in display data
 		else {
 			dataCopy = makeCopy(displayGetter($scope));
-			// TODO watch
 		}
 
 		var filtered = dataCopy;
@@ -247,7 +242,7 @@ angular.module('ldAdminTools')
 		 * @returns {{}}
 		 */
 		this.getOrderByFilters = function getOrderByFilters() {
-			return filterService.getFilter(filter).order;
+			return filterService.getFilter(filter).combined.order;
 		};
 
 		/**
@@ -255,7 +250,7 @@ angular.module('ldAdminTools')
 		 * @returns {{}}
 		 */
 		this.getSearchFilters = function getSearchFilters() {
-			return filterService.getFilter(filter).where;
+			return filterService.getFilter(filter).combined.where;
 		};
 
 		/**

@@ -60,7 +60,7 @@ angular.module('ldAdminTools')
 						tableController.clearOrderByFilter();
 					}
 					else {
-						tableController.setOrderByFilter(criterion, (order === ORDER.DESCENT));
+						tableController.setOrderByFilter((order === ORDER.ASCENT ? '+' : '-') + criterion, false);
 					}
 				}
 
@@ -78,20 +78,41 @@ angular.module('ldAdminTools')
 
 				scope.$on(tableController.TABLE_UPDATED, function () {
 					var orderBy = tableController.getOrderByFilters();
-					console.log(orderBy);
-					if (angular.isUndefined(orderBy) || angular.isUndefined(orderBy.values) || orderBy.values !== criterion) {
-						order = ORDER.NONE;
-					}
-					else {
-						if (criterion === orderBy.values) {
-							if (orderBy.reverse) {
-								order = ORDER.DESCENT;
+
+					var isCurrent = false;
+					var isReversed = false;
+
+					if (angular.isDefined(orderBy) && angular.isDefined(orderBy.values)) {
+						// parse the array to find match
+						angular.forEach(orderBy.values, function (value) {
+							if (value.indexOf('-') >= 0 || value.indexOf('+') >= 0) {
+								var sign = value.substr(0, 1);
+								var field = value.substr(1);
+
+								console.log(sign + ' ' + field);
+
+								isReversed = (sign === '+') ? false : true;
+								isCurrent = (field === criterion);
 							}
 							else {
-								order = ORDER.ASCENT;
+								isCurrent = (value === criterion);
 							}
+						});
+					}
+
+					console.log(isCurrent + ' ' + isReversed);
+
+					order = ORDER.NONE;
+					if (isCurrent) {
+						if (isReversed) {
+							order = ORDER.DESCENT;
+						}
+						else {
+							order = ORDER.ASCENT
 						}
 					}
+
+					console.log(order);
 
 					updateStyle();
 				});

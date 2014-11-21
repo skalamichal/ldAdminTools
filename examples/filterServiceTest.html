@@ -11,14 +11,28 @@
 
 <div style="margin: 20px" ng-controller="testController">
 
-	<button ng-click="sort(false)">Sort by Email</button>
-	<button ng-click="sort(true)">Sort by Email Rev</button>
-	<button ng-click="sort()">Clear Sorting on Email</button>
+	<div class="btn-group">
+		<button ng-click="sort(false)" class="btn btn-default">Sort by Email</button>
+		<button ng-click="sort(true)" class="btn btn-default">Sort by Email Rev</button>
+		<button ng-click="sort()" class="btn btn-default">Clear Sorting on Email</button>
+	</div>
+
+	<div class="btn-group">
+		<button ng-click="applyPreset(1)" class="btn btn-default">Apply Preset Filter 1</button>
+		<button ng-click="applyPreset(2)" class="btn btn-default">Apply Preset Filter 2</button>
+	</div>
+
+	<div class="input-group" style="width:25%">
+		<input type="text" ng-model="firstName" class="form-control">
+		<span class="input-group-btn">
+        	<button class="btn btn-default" type="button" ng-click="filter('firstName', firstName)">Go!</button>
+      </span>
+	</div>
 
 	<table ld-table="dusers" ld-table-source="users" ld-filter="inbox" class="table table-condensed">
 		<thead>
 		<tr ng-repeat="row in dusers | limitTo:1">
-			<th ng-repeat="(key, val) in row">
+			<th ng-repeat="(key, val) in row" ld-table-sort="{{ key }}">
 				<i class="ld-ascent fa fa-fw fa-caret-up"></i>
 				<i class="ld-descent fa fa-fw fa-caret-down"></i>
 				{{ key }}
@@ -91,15 +105,28 @@
 
 				$scope.users = filterService.applyFilter('inbox', users);
 
-				$scope.sort = function(rev) {
+				$scope.sort = function (rev) {
 					if (angular.isUndefined(rev)) {
 						filterService.clearOrderByFilter('inbox');
 					}
 					else {
-						filterService.setOrderByCondition('inbox', (rev ? '-' : '+') + 'email');
+						filterService.setOrderByCondition('inbox', [(rev ? '-' : '+') + 'email']);
 					}
-					console.log(filterService.getFilter('inbox'));
 				};
+
+				$scope.applyPreset = function (id) {
+					filterService.setPreset('inbox', id);
+				};
+
+				$scope.filter = function (key, value) {
+					var o = {};
+					o[key] = value;
+					filterService.setWhereCondition('inbox', o);
+				};
+
+				$scope.$on(filterService.FILTER_UPDATED, function () {
+					//filterService.toString('inbox');
+				});
 
 			}]);
 
