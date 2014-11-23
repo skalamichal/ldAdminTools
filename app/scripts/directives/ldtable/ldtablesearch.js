@@ -21,15 +21,16 @@ angular.module('ldAdminTools')
 				var modelController = controllers[1];
 				var promise;
 
-				var predicateGet = $parse(attrs.ldTableSearch);
-				var predicate;
+				// setup the searchField
+				var searchFieldGet = $parse(attrs.ldTableSearch);
+				var searchField = searchFieldGet(scope);
 
 				// watch the predicate value so we can change filter at runtime
-				scope.$watch(predicateGet, function (newValue, oldValue) {
+				scope.$watch(searchFieldGet, function (newValue, oldValue) {
 					if (newValue !== oldValue) {
-						predicate = newValue;
-						tableController.removeSearchFilter(predicate);
-						tableController.setSearchFilter(modelController.$viewValue || '', predicate);
+						searchField = newValue;
+						tableController.removeSearchFilter(searchField);
+						tableController.setSearchFilter(modelController.$viewValue || '', searchField);
 					}
 				});
 
@@ -41,15 +42,10 @@ angular.module('ldAdminTools')
 					}
 
 					promise = $timeout(function () {
-						tableController.setSearchFilter(modelController.$viewValue || '', predicate);
+						tableController.setSearchFilter(modelController.$viewValue || '', searchField);
 						promise = null;
 					}, 200);
 				}
-
-				scope.$on(tableController.TABLE_UPDATED, function() {
-					var filter = tableController.getSearchFilters();
-					console.log(filter);
-				});
 
 				// watch for the input changes
 				scope.$watch(function() {
@@ -57,4 +53,4 @@ angular.module('ldAdminTools')
 				}, inputChanged);
 			}
 		};
-	}])
+	}]);

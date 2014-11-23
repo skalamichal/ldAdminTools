@@ -87,7 +87,8 @@ angular.module('ldAdminTools')
 					str += ') ';
 				}
 
-				if (angular.isDefined(filterData.order)) {
+				if (angular.isDefined(filterData.order) && angular.isDefined(filterData.order.values) &&
+					angular.isDefined(filterData.order.reverse)) {
 					str += 'order by (';
 					str += filterData.order.values.toString();
 					str += filterData.order.reverse ? ') desc ' : ') asc ';
@@ -102,12 +103,12 @@ angular.module('ldAdminTools')
 			 * @param filter
 			 */
 			function combine(filter) {
-				var combined = angular.copy(filter.preset);
+				var combined = angular.isDefined(filter.preset) ? angular.copy(filter.preset) : {};
 				var source = filter.data;
 
 				if (angular.isDefined(source)) {
 					// merge where conditions
-					if (angular.isDefined(source.where)){
+					if (angular.isDefined(source.where)) {
 						combined.where = angular.isDefined(combined.where) ? angular.extend(combined.where, source.where) : source.where;
 					}
 
@@ -117,6 +118,7 @@ angular.module('ldAdminTools')
 					}
 				}
 
+				logFilter(combined);
 				filter.combined = combined;
 			}
 
@@ -138,7 +140,7 @@ angular.module('ldAdminTools')
 							data: {},
 							combined: {},
 							presets: [],
-							preset: {}
+							preset: undefined
 						};
 
 						filters[filterId] = filter;
@@ -174,12 +176,12 @@ angular.module('ldAdminTools')
 				setPreset: function (filterId, presetId) {
 					var filter = this.getFilter(filterId);
 					if (angular.isUndefined(filter.presets)) {
-						return;
+						return null;
 					}
 
 					var preset = getPreset(filter.presets, presetId);
 					if (preset === null) {
-						return;
+						return null;
 					}
 
 					filter.preset = preset;
@@ -196,9 +198,6 @@ angular.module('ldAdminTools')
 				 */
 				getPreset: function (filterId) {
 					var filter = this.getFilter(filterId);
-					if (angular.isUndefined(filter)) {
-						return;
-					}
 
 					return filter.preset;
 				},
@@ -232,6 +231,7 @@ angular.module('ldAdminTools')
 					var presets = filter.presets;
 					for (var i = 0; i < presets.length; i++) {
 						if (presets[i].default) {
+							console.log(presets[i]);
 							filter.preset = presets[i];
 							filter.dirty = true;
 							break;

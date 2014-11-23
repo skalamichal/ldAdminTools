@@ -125,7 +125,7 @@ angular.module('ldAdminTools')
 		function expandDone() {
 			self.$element.css('left', '0px');
 			self.$element.removeClass('ld-sliding-left');
-			self.$element.addClass('ld-slide in');
+			self.$element.addClass('ld-slide').addClass('in');
 		}
 
 		// slide (close) the element
@@ -142,7 +142,7 @@ angular.module('ldAdminTools')
 				/*jshint unused:false*/
 				var x = self.$element[0].offsetLeft;
 
-				self.$element.removeClass('ld-slide in').addClass('ld-sliding-left');
+				self.$element.removeClass('ld-slide').removeClass('in').addClass('ld-sliding-left');
 
 				doTransition({ left: -width + 'px' }).then(slideDone);
 			}
@@ -151,7 +151,7 @@ angular.module('ldAdminTools')
 		// transition is done
 		function slideDone() {
 			self.$element.css('left', '-' + width + 'px');
-			self.$element.removeClass('ld-sliding-left in');
+			self.$element.removeClass('ld-sliding-left').removeClass('in');
 			self.$element.addClass('ld-slide');
 		}
 

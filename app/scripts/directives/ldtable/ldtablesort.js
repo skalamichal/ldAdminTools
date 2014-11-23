@@ -31,7 +31,7 @@ angular.module('ldAdminTools')
 					DESCENT: 2
 				});
 
-				var criterion = attrs.ldTableSort;
+				var orderByField = attrs.ldTableSort;
 				var order = ORDER.NONE;
 
 				// udpate the order if the ld-table-sort-default attribute is set
@@ -60,7 +60,7 @@ angular.module('ldAdminTools')
 						tableController.clearOrderByFilter();
 					}
 					else {
-						tableController.setOrderByFilter((order === ORDER.ASCENT ? '+' : '-') + criterion, false);
+						tableController.setOrderByFilter((order === ORDER.ASCENT ? '+' : '-') + orderByField, false);
 					}
 				}
 
@@ -76,9 +76,7 @@ angular.module('ldAdminTools')
 					scope.$apply(sort);
 				}
 
-				scope.$on(tableController.TABLE_UPDATED, function () {
-					var orderBy = tableController.getOrderByFilters();
-
+				function getOrder(orderBy) {
 					var isCurrent = false;
 					var isReversed = false;
 
@@ -89,20 +87,16 @@ angular.module('ldAdminTools')
 								var sign = value.substr(0, 1);
 								var field = value.substr(1);
 
-								console.log(sign + ' ' + field);
-
 								isReversed = (sign === '+') ? false : true;
-								isCurrent = (field === criterion);
+								isCurrent = (field === orderByField);
 							}
 							else {
-								isCurrent = (value === criterion);
+								isCurrent = (value === orderByField);
 							}
 						});
 					}
 
-					console.log(isCurrent + ' ' + isReversed);
-
-					order = ORDER.NONE;
+					var order = ORDER.NONE;
 					if (isCurrent) {
 						if (isReversed) {
 							order = ORDER.DESCENT;
@@ -112,10 +106,19 @@ angular.module('ldAdminTools')
 						}
 					}
 
-					console.log(order);
+					return order;
+				}
+
+				// perform ordering updates when table is updated
+				function tableUpdated() {
+					var orderBy = tableController.getOrderByFilters();
+					order = getOrder(orderBy);
 
 					updateStyle();
-				});
+				}
+
+				// handle the TABLE_UPDATED event
+				scope.$on(tableController.TABLE_UPDATED, tableUpdated);
 
 				// bind the click handler to the element
 				element.on('click', changeSortOrder);
@@ -126,10 +129,15 @@ angular.module('ldAdminTools')
 					element.off('click', changeSortOrder);
 				});
 
+				// check if the order by is set in the current filter
+				if (angular.isDefined(tableController.getOrderByFilters())) {
+					order = getOrder(tableController.getOrderByFilters());
+				}
+
 				// initialize
 				if (order !== ORDER.NONE) {
 					sort();
 				}
 			}
 		};
-	}])
+	}]);

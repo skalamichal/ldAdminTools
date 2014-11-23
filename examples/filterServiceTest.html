@@ -31,6 +31,12 @@
 
 	<table ld-table="dusers" ld-table-source="users" ld-filter="inbox" class="table table-condensed">
 		<thead>
+		<tr>
+			<td>
+				<input type="text" class="form-control" ng-model="email" ld-table-search="'lastName'">
+				<input type="text" class="form-control" ng-model="full" ld-table-search="">
+			</td>
+		</tr>
 		<tr ng-repeat="row in dusers | limitTo:1">
 			<th ng-repeat="(key, val) in row" ld-table-sort="{{ key }}">
 				<i class="ld-ascent fa fa-fw fa-caret-up"></i>
@@ -100,7 +106,7 @@
 				};
 
 				filterService.registerPresets('inbox', filters.inbox);
-				filterService.setDefaultPreset('inbox');
+				//filterService.setDefaultPreset('inbox');
 				filterService.setPreset('inbox', 2);
 
 				$scope.users = filterService.applyFilter('inbox', users);
@@ -125,7 +131,7 @@
 				};
 
 				$scope.$on(filterService.FILTER_UPDATED, function () {
-					//filterService.toString('inbox');
+					$scope.users = filterService.applyFilter('inbox', users);
 				});
 
 			}]);

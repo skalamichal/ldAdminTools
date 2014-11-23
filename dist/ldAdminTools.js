@@ -781,7 +781,7 @@ angular.module('ldAdminTools')
 		function expandDone() {
 			self.$element.css('left', '0px');
 			self.$element.removeClass('ld-sliding-left');
-			self.$element.addClass('ld-slide in');
+			self.$element.addClass('ld-slide').addClass('in');
 		}
 
 		// slide (close) the element
@@ -798,7 +798,7 @@ angular.module('ldAdminTools')
 				/*jshint unused:false*/
 				var x = self.$element[0].offsetLeft;
 
-				self.$element.removeClass('ld-slide in').addClass('ld-sliding-left');
+				self.$element.removeClass('ld-slide').removeClass('in').addClass('ld-sliding-left');
 
 				doTransition({ left: -width + 'px' }).then(slideDone);
 			}
@@ -807,7 +807,7 @@ angular.module('ldAdminTools')
 		// transition is done
 		function slideDone() {
 			self.$element.css('left', '-' + width + 'px');
-			self.$element.removeClass('ld-sliding-left in');
+			self.$element.removeClass('ld-sliding-left').removeClass('in');
 			self.$element.addClass('ld-slide');
 		}
 
@@ -956,11 +956,6 @@ angular.module('ldAdminTools')
 			displaySetter($scope, dataCopy);
 			filterService.forceUpdate(filter);
 
-			console.log('source updated');
-
-			// setup the watcher
-			// TODO could cause issue with large data, consider to watch only display data
-			// TODO remove deep object watch and add data length changes
 			$scope.$watch(function () {
 				return sourceGetter($scope);
 			}, function (newData, oldData) {
@@ -972,7 +967,6 @@ angular.module('ldAdminTools')
 		// if no source is defined, watch changes in display data
 		else {
 			dataCopy = makeCopy(displayGetter($scope));
-			// TODO watch
 		}
 
 		var filtered = dataCopy;
@@ -1047,27 +1041,27 @@ angular.module('ldAdminTools')
 		};
 
 		/**
-		 * Adds the search criterion
+		 * Adds the search for field or global, if not defined
 		 * @param {String} value to search for
 		 * @param {String} the object property, which should be filtered
 		 *
 		 */
-		this.setSearchFilter = function setSearchFilter(value, predicate) {
-			var criterion = value;
-			if (angular.isDefined(predicate) && predicate.length > 0) {
-				criterion = {};
-				criterion[predicate] = value;
+		this.setSearchFilter = function setSearchFilter(value, field) {
+			var condition = value;
+			if (angular.isDefined(field) && field.length > 0) {
+				condition = {};
+				condition[field] = value;
 			}
-			filterService.setWhereCondition(filter, criterion);
+			filterService.setWhereCondition(filter, condition);
 		};
 
 		/**
-		 * Remove the search criterion
+		 * Remove the search condition
 		 * @param {String} - remove predicate given as string
 		 *        {Array} -  remove predicates given as strings in array
 		 */
-		this.removeSearchFilter = function removeSearchFilter(predicate) {
-			filterService.removeWhereCondition(filter, predicate);
+		this.removeSearchFilter = function removeSearchFilter(fields) {
+			filterService.removeWhereCondition(filter, fields);
 		};
 
 		/**
@@ -1090,7 +1084,7 @@ angular.module('ldAdminTools')
 		 * Remove the order by filter.
 		 */
 		this.clearOrderByFilter = function clearOrderByFilter() {
-			filterService.clearOrderByCondition(filter);
+			filterService.clearOrderByFilter(filter);
 		};
 
 		this.clearFilters = function clearFilters() {
@@ -1131,7 +1125,7 @@ angular.module('ldAdminTools')
 		 * @returns {{}}
 		 */
 		this.getOrderByFilters = function getOrderByFilters() {
-			return filterService.getFilter(filter).order;
+			return filterService.getFilter(filter).combined.order;
 		};
 
 		/**
@@ -1139,7 +1133,7 @@ angular.module('ldAdminTools')
 		 * @returns {{}}
 		 */
 		this.getSearchFilters = function getSearchFilters() {
-			return filterService.getFilter(filter).where;
+			return filterService.getFilter(filter).combined.where;
 		};
 
 		/**
@@ -1588,15 +1582,16 @@ angular.module('ldAdminTools')
 				var modelController = controllers[1];
 				var promise;
 
-				var predicateGet = $parse(attrs.ldTableSearch);
-				var predicate;
+				// setup the searchField
+				var searchFieldGet = $parse(attrs.ldTableSearch);
+				var searchField = searchFieldGet(scope);
 
 				// watch the predicate value so we can change filter at runtime
-				scope.$watch(predicateGet, function (newValue, oldValue) {
+				scope.$watch(searchFieldGet, function (newValue, oldValue) {
 					if (newValue !== oldValue) {
-						predicate = newValue;
-						tableController.removeSearchFilter(predicate);
-						tableController.setSearchFilter(modelController.$viewValue || '', predicate);
+						searchField = newValue;
+						tableController.removeSearchFilter(searchField);
+						tableController.setSearchFilter(modelController.$viewValue || '', searchField);
 					}
 				});
 
@@ -1608,15 +1603,10 @@ angular.module('ldAdminTools')
 					}
 
 					promise = $timeout(function () {
-						tableController.setSearchFilter(modelController.$viewValue || '', predicate);
+						tableController.setSearchFilter(modelController.$viewValue || '', searchField);
 						promise = null;
 					}, 200);
 				}
-
-				scope.$on(tableController.TABLE_UPDATED, function() {
-					var filter = tableController.getSearchFilters();
-					console.log(filter);
-				});
 
 				// watch for the input changes
 				scope.$watch(function() {
@@ -1624,7 +1614,7 @@ angular.module('ldAdminTools')
 				}, inputChanged);
 			}
 		};
-	}])
+	}]);
 'use strict';
 
 /**
@@ -1658,7 +1648,7 @@ angular.module('ldAdminTools')
 					DESCENT: 2
 				});
 
-				var criterion = attrs.ldTableSort;
+				var orderByField = attrs.ldTableSort;
 				var order = ORDER.NONE;
 
 				// udpate the order if the ld-table-sort-default attribute is set
@@ -1687,7 +1677,7 @@ angular.module('ldAdminTools')
 						tableController.clearOrderByFilter();
 					}
 					else {
-						tableController.setOrderByFilter(criterion, (order === ORDER.DESCENT));
+						tableController.setOrderByFilter((order === ORDER.ASCENT ? '+' : '-') + orderByField, false);
 					}
 				}
 
@@ -1703,25 +1693,49 @@ angular.module('ldAdminTools')
 					scope.$apply(sort);
 				}
 
-				scope.$on(tableController.TABLE_UPDATED, function () {
-					console.log('tableupdated');
-					var orderBy = tableController.getOrderByFilters();
-					if (angular.isUndefined(orderBy) || angular.isUndefined(orderBy.values) || orderBy.values !== criterion) {
-						order = ORDER.NONE;
-					}
-					else {
-						if (criterion === orderBy.values) {
-							if (orderBy.reverse) {
-								order = ORDER.DESCENT;
+				function getOrder(orderBy) {
+					var isCurrent = false;
+					var isReversed = false;
+
+					if (angular.isDefined(orderBy) && angular.isDefined(orderBy.values)) {
+						// parse the array to find match
+						angular.forEach(orderBy.values, function (value) {
+							if (value.indexOf('-') >= 0 || value.indexOf('+') >= 0) {
+								var sign = value.substr(0, 1);
+								var field = value.substr(1);
+
+								isReversed = (sign === '+') ? false : true;
+								isCurrent = (field === orderByField);
 							}
 							else {
-								order = ORDER.ASCENT;
+								isCurrent = (value === orderByField);
 							}
+						});
+					}
+
+					var order = ORDER.NONE;
+					if (isCurrent) {
+						if (isReversed) {
+							order = ORDER.DESCENT;
+						}
+						else {
+							order = ORDER.ASCENT
 						}
 					}
 
+					return order;
+				}
+
+				// perform ordering updates when table is updated
+				function tableUpdated() {
+					var orderBy = tableController.getOrderByFilters();
+					order = getOrder(orderBy);
+
 					updateStyle();
-				});
+				}
+
+				// handle the TABLE_UPDATED event
+				scope.$on(tableController.TABLE_UPDATED, tableUpdated);
 
 				// bind the click handler to the element
 				element.on('click', changeSortOrder);
@@ -1732,13 +1746,18 @@ angular.module('ldAdminTools')
 					element.off('click', changeSortOrder);
 				});
 
+				// check if the order by is set in the current filter
+				if (angular.isDefined(tableController.getOrderByFilters())) {
+					order = getOrder(tableController.getOrderByFilters());
+				}
+
 				// initialize
 				if (order !== ORDER.NONE) {
 					sort();
 				}
 			}
 		};
-	}])
+	}]);
 'use strict';
 
 /**
@@ -1778,7 +1797,7 @@ angular.module('ldAdminTools')
  *      field: value
  *  },
  *  order: {
- *      values: 'field' or ['+field', '-field', ...],
+ *      values: ['+field', '-field', ...],
  *      reverse: boolean
  *  },
  *  from: index
@@ -2036,9 +2055,13 @@ angular.module('ldAdminTools')
  * Each filter is an object with following values:
  * - dirty {Boolean} - filter is updated, data needs to be updated
  * - presets {Array} - list of preset filters
- * - preset {Object} - currently selected preset
  * - where {Object} - values for the $filter('filter') filter, build in angular filter.
  * - order {Array} - array of member used to sort the input array.
+ *
+ * - preset {Object} - currently selected filter from presets
+ * - data   {Object} - filter data, which are set outside of the preset filter (custom)
+ *
+ * - combined {Object} - combined filter data from preset and data
  *
  * The filter service is using the ldSelect filter, which is sql select like filter.
  */
@@ -2062,19 +2085,6 @@ angular.module('ldAdminTools')
 			}
 
 			/**
-			 * Apply the preset filter, which is object with filters and orderBy data.
-			 * @param data
-			 * @param preset
-			 */
-			function applyPresetFilter(data, preset) {
-				if (angular.isUndefined(preset)) {
-					return data;
-				}
-
-				return applyFilter(data, preset);
-			}
-
-			/**
 			 * Return preset filter from the list of registered (preset) filters.
 			 * @param presets
 			 * @param id
@@ -2090,6 +2100,11 @@ angular.module('ldAdminTools')
 				return null;
 			}
 
+			/**
+			 * Logs the filter to console as:
+			 * ldSelect values(fields) where (field=value) order by (fields) asc|desc
+			 * @param filterData
+			 */
 			function logFilter(filterData) {
 				if (angular.isUndefined(filterData)) {
 					return;
@@ -2110,26 +2125,45 @@ angular.module('ldAdminTools')
 
 				if (angular.isDefined(filterData.where)) {
 					str += 'where (';
-					angular.forEach(filterData.where, function(value, key) {
+					angular.forEach(filterData.where, function (value, key) {
 						str += key + ' = ' + value + ' ';
 					});
 					str += ') ';
 				}
 
-				if (angular.isDefined(filterData.order)) {
+				if (angular.isDefined(filterData.order) && angular.isDefined(filterData.order.values) &&
+					angular.isDefined(filterData.order.reverse)) {
 					str += 'order by (';
-					if (angular.isString(filterData.order.values)) {
-						str += filterData.order.values;
-					}
-					else if (angular.isArray(filterData.order.values)) {
-						str += filterData.order.values.toString();
-					}
-
+					str += filterData.order.values.toString();
 					str += filterData.order.reverse ? ') desc ' : ') asc ';
 				}
 
 				$log.debug(str);
 
+			}
+
+			/**
+			 * Combines the preset filter with the custom filter data.
+			 * @param filter
+			 */
+			function combine(filter) {
+				var combined = angular.isDefined(filter.preset) ? angular.copy(filter.preset) : {};
+				var source = filter.data;
+
+				if (angular.isDefined(source)) {
+					// merge where conditions
+					if (angular.isDefined(source.where)) {
+						combined.where = angular.isDefined(combined.where) ? angular.extend(combined.where, source.where) : source.where;
+					}
+
+					// merge order condition (just overwrite in this case)
+					if (angular.isDefined(source.order)) {
+						combined.order = source.order;
+					}
+				}
+
+				logFilter(combined);
+				filter.combined = combined;
 			}
 
 			return {
@@ -2143,10 +2177,19 @@ angular.module('ldAdminTools')
 				 * @returns {*}
 				 */
 				getFilter: function (filterId) {
-					if (angular.isUndefined(filters[filterId])) {
-						filters[filterId] = {dirty: false};
+					var filter = filters[filterId];
+					if (angular.isUndefined(filter)) {
+						filter = {
+							dirty: false,
+							data: {},
+							combined: {},
+							presets: [],
+							preset: undefined
+						};
+
+						filters[filterId] = filter;
 					}
-					return filters[filterId];
+					return filter;
 				},
 
 				/**
@@ -2177,16 +2220,18 @@ angular.module('ldAdminTools')
 				setPreset: function (filterId, presetId) {
 					var filter = this.getFilter(filterId);
 					if (angular.isUndefined(filter.presets)) {
-						return;
+						return null;
 					}
 
 					var preset = getPreset(filter.presets, presetId);
 					if (preset === null) {
-						return;
+						return null;
 					}
 
 					filter.preset = preset;
 					filter.dirty = true;
+
+					combine(filter);
 
 					$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 				},
@@ -2197,9 +2242,6 @@ angular.module('ldAdminTools')
 				 */
 				getPreset: function (filterId) {
 					var filter = this.getFilter(filterId);
-					if (angular.isUndefined(filter)) {
-						return;
-					}
 
 					return filter.preset;
 				},
@@ -2215,6 +2257,8 @@ angular.module('ldAdminTools')
 					}
 					filter.preset = undefined;
 
+					combine(filter);
+
 					$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 				},
 
@@ -2224,18 +2268,21 @@ angular.module('ldAdminTools')
 				 */
 				setDefaultPreset: function (filterId) {
 					var filter = this.getFilter(filterId);
-					if (angular.isUndefined(filter) || angular.isUndefined(filter.presets)) {
+					if (angular.isUndefined(filter.presets)) {
 						return;
 					}
 
 					var presets = filter.presets;
 					for (var i = 0; i < presets.length; i++) {
 						if (presets[i].default) {
+							console.log(presets[i]);
 							filter.preset = presets[i];
 							filter.dirty = true;
 							break;
 						}
 					}
+
+					combine(filter);
 
 					$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 				},
@@ -2257,10 +2304,7 @@ angular.module('ldAdminTools')
 						return input;
 					}
 
-					var data = input;
-
-					data = applyPresetFilter(data, filter.preset);
-					data = applyFilter(data, filter);
+					var data = applyFilter(input, filter.combined);
 
 					filter.dirty = false;
 
@@ -2269,83 +2313,99 @@ angular.module('ldAdminTools')
 
 				/**
 				 * Look for undefined or empty values in the where object.
-				 * @param where
+				 * @param where {object}
 				 */
-				cleanUpWhereConditions: function (filter) {
+				cleanUpWhereConditions: function (where) {
 					var keys = [];
 					// remove empty values
-					angular.forEach(filter.where, function (val, key) {
+					angular.forEach(where, function (val, key) {
 						if (angular.isUndefined(val) || val.length === 0) {
 							keys.push(key);
 						}
 					});
 
 					angular.forEach(keys, function (key) {
-						delete filter.where[key];
+						delete where[key];
 					});
+
+					return where;
 				},
 
 				/**
-				 * Set the filter.where condition.
+				 * Set the filter.data.where condition.
 				 * @param filterId
-				 * @param where condition could be one of:
+				 * @param whereConds condition could be one of:
 				 * - string value - which will set it for global (every available field) search
 				 * - object value - with field:value pairs
 				 * If the value is undefined or empty, it will be removed from the where condition
 				 */
-				setWhereCondition: function (filterId, where) {
+				setWhereCondition: function (filterId, whereConds) {
 					var filter = this.getFilter(filterId);
-					if (angular.isUndefined(filter.where)) {
-						filter.where = {};
+					var whereConditions = filter.data.where;
+					if (angular.isUndefined(whereConditions)) {
+						whereConditions = {};
 					}
 
 					// just string, update the where for global search, for all available fields, in angular marked as $
-					if (angular.isString(where)) {
-						angular.extend(filter.where, {$: where});
+					if (angular.isString(whereConds)) {
+						whereConditions = angular.extend(whereConditions, {$: whereConds});
 					}
 					// object of field:value pairs
-					else if (angular.isObject(where)) {
-						angular.extend(filter.where, where);
+					else if (angular.isObject(whereConds)) {
+						whereConditions = angular.extend(whereConditions, whereConds);
 					}
 
-					this.cleanUpWhereConditions(filter);
+					whereConditions = this.cleanUpWhereConditions(whereConditions);
 
 					// mark filter as dirty and fire event
 					filter.dirty = true;
+					filter.data.where = whereConditions;
+					combine(filter);
+
 					$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 				},
 
 				/**
 				 * Remove the field from where condition
 				 * @param filterId
-				 * @param where may be oen of following:
+				 * @param fields may be oen of following:
 				 * - string - remove the field
 				 * - array - remove all fields
 				 */
-				removeWhereCondition: function (filterId, where) {
+				removeWhereCondition: function (filterId, fields) {
 					var filter = this.getFilter(filterId);
-					if (angular.isUndefined(filter.where)) {
+					var whereConditions = filter.data.where;
+					if (angular.isUndefined(whereConditions)) {
 						return;
 					}
 
-					if (angular.isString(where)) {
-						delete filter.where[where];
+					if (angular.isString(fields)) {
+						delete whereConditions[fields];
 					}
-					else if (angular.isArray(where)) {
-						angular.forEach(where, function (key) {
-							delete filter.where[key];
+					else if (angular.isArray(fields)) {
+						angular.forEach(fields, function (key) {
+							delete whereConditions[key];
 						});
 					}
 
 					filter.dirty = true;
+					filter.data.where = whereConditions;
+					combine(filter);
+
 					$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 				},
 
+				/**
+				 * Remove where conditions from the filter
+				 * @param filterId
+				 */
 				clearWhereFilter: function (filterId) {
 					var filter = this.getFilter(filterId);
-					delete filter.where;
+					delete filter.data.where;
 
 					filter.dirty = true;
+					combine(filter);
+
 					$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 				},
 
@@ -2359,39 +2419,36 @@ angular.module('ldAdminTools')
 				setOrderByCondition: function (filterId, fields, reverse) {
 					var filter = this.getFilter(filterId);
 					var rev = !!reverse;
+					var orderConditions;
 
-					if (angular.isUndefined(filter.order)) {
-						filter.order = {};
+					if (angular.isString(fields)) {
+						orderConditions = {
+							values: [fields],
+							reverse: rev
+						};
 					}
-
-					if (angular.isUndefined(fields) || fields.length === 0) {
-						delete filter.order;
-					}
-					else if (angular.isString(fields) || angular.isArray(fields)) {
-						filter.order = {
+					else if (angular.isArray(fields)) {
+						orderConditions = {
 							values: fields,
 							reverse: rev
 						};
 					}
 
 					filter.dirty = true;
+					filter.data.order = orderConditions;
+
+					combine(filter);
 
 					$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 				},
 
 				clearOrderByFilter: function (filterId) {
 					var filter = this.getFilter(filterId);
-					delete filter.order;
+					delete filter.data.order;
 
 					filter.dirty = true;
+					combine(filter);
 
-					$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
-				},
-
-				updateFilter: function (filterId, inputFilter) {
-					var filter = this.getFilter(filterId);
-
-					angular.extend(filter, inputFilter);
 					$rootScope.$broadcast(this.FILTER_UPDATED, filterId, filter);
 				},
 
@@ -2454,8 +2511,7 @@ angular.module('ldAdminTools')
 						return;
 					}
 
-					logFilter(filter.preset);
-					logFilter(filter);
+					logFilter(filter.combined);
 				}
 			};
 		}]);

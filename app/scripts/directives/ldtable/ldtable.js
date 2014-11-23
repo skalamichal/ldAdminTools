@@ -158,27 +158,27 @@ angular.module('ldAdminTools')
 		};
 
 		/**
-		 * Adds the search criterion
+		 * Adds the search for field or global, if not defined
 		 * @param {String} value to search for
 		 * @param {String} the object property, which should be filtered
 		 *
 		 */
-		this.setSearchFilter = function setSearchFilter(value, predicate) {
-			var criterion = value;
-			if (angular.isDefined(predicate) && predicate.length > 0) {
-				criterion = {};
-				criterion[predicate] = value;
+		this.setSearchFilter = function setSearchFilter(value, field) {
+			var condition = value;
+			if (angular.isDefined(field) && field.length > 0) {
+				condition = {};
+				condition[field] = value;
 			}
-			filterService.setWhereCondition(filter, criterion);
+			filterService.setWhereCondition(filter, condition);
 		};
 
 		/**
-		 * Remove the search criterion
+		 * Remove the search condition
 		 * @param {String} - remove predicate given as string
 		 *        {Array} -  remove predicates given as strings in array
 		 */
-		this.removeSearchFilter = function removeSearchFilter(predicate) {
-			filterService.removeWhereCondition(filter, predicate);
+		this.removeSearchFilter = function removeSearchFilter(fields) {
+			filterService.removeWhereCondition(filter, fields);
 		};
 
 		/**
@@ -201,7 +201,7 @@ angular.module('ldAdminTools')
 		 * Remove the order by filter.
 		 */
 		this.clearOrderByFilter = function clearOrderByFilter() {
-			filterService.clearOrderByCondition(filter);
+			filterService.clearOrderByFilter(filter);
 		};
 
 		this.clearFilters = function clearFilters() {

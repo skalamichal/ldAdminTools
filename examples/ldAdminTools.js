@@ -781,7 +781,7 @@ angular.module('ldAdminTools')
 		function expandDone() {
 			self.$element.css('left', '0px');
 			self.$element.removeClass('ld-sliding-left');
-			self.$element.addClass('ld-slide in');
+			self.$element.addClass('ld-slide').addClass('in');
 		}
 
 		// slide (close) the element
@@ -798,7 +798,7 @@ angular.module('ldAdminTools')
 				/*jshint unused:false*/
 				var x = self.$element[0].offsetLeft;
 
-				self.$element.removeClass('ld-slide in').addClass('ld-sliding-left');
+				self.$element.removeClass('ld-slide').removeClass('in').addClass('ld-sliding-left');
 
 				doTransition({ left: -width + 'px' }).then(slideDone);
 			}
@@ -807,7 +807,7 @@ angular.module('ldAdminTools')
 		// transition is done
 		function slideDone() {
 			self.$element.css('left', '-' + width + 'px');
-			self.$element.removeClass('ld-sliding-left in');
+			self.$element.removeClass('ld-sliding-left').removeClass('in');
 			self.$element.addClass('ld-slide');
 		}
 
@@ -1041,27 +1041,27 @@ angular.module('ldAdminTools')
 		};
 
 		/**
-		 * Adds the search criterion
+		 * Adds the search for field or global, if not defined
 		 * @param {String} value to search for
 		 * @param {String} the object property, which should be filtered
 		 *
 		 */
-		this.setSearchFilter = function setSearchFilter(value, predicate) {
-			var criterion = value;
-			if (angular.isDefined(predicate) && predicate.length > 0) {
-				criterion = {};
-				criterion[predicate] = value;
+		this.setSearchFilter = function setSearchFilter(value, field) {
+			var condition = value;
+			if (angular.isDefined(field) && field.length > 0) {
+				condition = {};
+				condition[field] = value;
 			}
-			filterService.setWhereCondition(filter, criterion);
+			filterService.setWhereCondition(filter, condition);
 		};
 
 		/**
-		 * Remove the search criterion
+		 * Remove the search condition
 		 * @param {String} - remove predicate given as string
 		 *        {Array} -  remove predicates given as strings in array
 		 */
-		this.removeSearchFilter = function removeSearchFilter(predicate) {
-			filterService.removeWhereCondition(filter, predicate);
+		this.removeSearchFilter = function removeSearchFilter(fields) {
+			filterService.removeWhereCondition(filter, fields);
 		};
 
 		/**
@@ -1084,7 +1084,7 @@ angular.module('ldAdminTools')
 		 * Remove the order by filter.
 		 */
 		this.clearOrderByFilter = function clearOrderByFilter() {
-			filterService.clearOrderByCondition(filter);
+			filterService.clearOrderByFilter(filter);
 		};
 
 		this.clearFilters = function clearFilters() {
@@ -1582,15 +1582,16 @@ angular.module('ldAdminTools')
 				var modelController = controllers[1];
 				var promise;
 
-				var predicateGet = $parse(attrs.ldTableSearch);
-				var predicate;
+				// setup the searchField
+				var searchFieldGet = $parse(attrs.ldTableSearch);
+				var searchField = searchFieldGet(scope);
 
 				// watch the predicate value so we can change filter at runtime
-				scope.$watch(predicateGet, function (newValue, oldValue) {
+				scope.$watch(searchFieldGet, function (newValue, oldValue) {
 					if (newValue !== oldValue) {
-						predicate = newValue;
-						tableController.removeSearchFilter(predicate);
-						tableController.setSearchFilter(modelController.$viewValue || '', predicate);
+						searchField = newValue;
+						tableController.removeSearchFilter(searchField);
+						tableController.setSearchFilter(modelController.$viewValue || '', searchField);
 					}
 				});
 
@@ -1602,15 +1603,10 @@ angular.module('ldAdminTools')
 					}
 
 					promise = $timeout(function () {
-						tableController.setSearchFilter(modelController.$viewValue || '', predicate);
+						tableController.setSearchFilter(modelController.$viewValue || '', searchField);
 						promise = null;
 					}, 200);
 				}
-
-				scope.$on(tableController.TABLE_UPDATED, function() {
-					var filter = tableController.getSearchFilters();
-					console.log(filter);
-				});
 
 				// watch for the input changes
 				scope.$watch(function() {
@@ -1618,7 +1614,7 @@ angular.module('ldAdminTools')
 				}, inputChanged);
 			}
 		};
-	}])
+	}]);
 'use strict';
 
 /**
@@ -1652,7 +1648,7 @@ angular.module('ldAdminTools')
 					DESCENT: 2
 				});
 
-				var criterion = attrs.ldTableSort;
+				var orderByField = attrs.ldTableSort;
 				var order = ORDER.NONE;
 
 				// udpate the order if the ld-table-sort-default attribute is set
@@ -1681,7 +1677,7 @@ angular.module('ldAdminTools')
 						tableController.clearOrderByFilter();
 					}
 					else {
-						tableController.setOrderByFilter((order === ORDER.ASCENT ? '+' : '-') + criterion, false);
+						tableController.setOrderByFilter((order === ORDER.ASCENT ? '+' : '-') + orderByField, false);
 					}
 				}
 
@@ -1697,9 +1693,7 @@ angular.module('ldAdminTools')
 					scope.$apply(sort);
 				}
 
-				scope.$on(tableController.TABLE_UPDATED, function () {
-					var orderBy = tableController.getOrderByFilters();
-
+				function getOrder(orderBy) {
 					var isCurrent = false;
 					var isReversed = false;
 
@@ -1710,20 +1704,16 @@ angular.module('ldAdminTools')
 								var sign = value.substr(0, 1);
 								var field = value.substr(1);
 
-								console.log(sign + ' ' + field);
-
 								isReversed = (sign === '+') ? false : true;
-								isCurrent = (field === criterion);
+								isCurrent = (field === orderByField);
 							}
 							else {
-								isCurrent = (value === criterion);
+								isCurrent = (value === orderByField);
 							}
 						});
 					}
 
-					console.log(isCurrent + ' ' + isReversed);
-
-					order = ORDER.NONE;
+					var order = ORDER.NONE;
 					if (isCurrent) {
 						if (isReversed) {
 							order = ORDER.DESCENT;
@@ -1733,10 +1723,19 @@ angular.module('ldAdminTools')
 						}
 					}
 
-					console.log(order);
+					return order;
+				}
+
+				// perform ordering updates when table is updated
+				function tableUpdated() {
+					var orderBy = tableController.getOrderByFilters();
+					order = getOrder(orderBy);
 
 					updateStyle();
-				});
+				}
+
+				// handle the TABLE_UPDATED event
+				scope.$on(tableController.TABLE_UPDATED, tableUpdated);
 
 				// bind the click handler to the element
 				element.on('click', changeSortOrder);
@@ -1747,13 +1746,18 @@ angular.module('ldAdminTools')
 					element.off('click', changeSortOrder);
 				});
 
+				// check if the order by is set in the current filter
+				if (angular.isDefined(tableController.getOrderByFilters())) {
+					order = getOrder(tableController.getOrderByFilters());
+				}
+
 				// initialize
 				if (order !== ORDER.NONE) {
 					sort();
 				}
 			}
 		};
-	}])
+	}]);
 'use strict';
 
 /**
@@ -2127,7 +2131,8 @@ angular.module('ldAdminTools')
 					str += ') ';
 				}
 
-				if (angular.isDefined(filterData.order)) {
+				if (angular.isDefined(filterData.order) && angular.isDefined(filterData.order.values) &&
+					angular.isDefined(filterData.order.reverse)) {
 					str += 'order by (';
 					str += filterData.order.values.toString();
 					str += filterData.order.reverse ? ') desc ' : ') asc ';
@@ -2142,12 +2147,12 @@ angular.module('ldAdminTools')
 			 * @param filter
 			 */
 			function combine(filter) {
-				var combined = angular.copy(filter.preset);
+				var combined = angular.isDefined(filter.preset) ? angular.copy(filter.preset) : {};
 				var source = filter.data;
 
 				if (angular.isDefined(source)) {
 					// merge where conditions
-					if (angular.isDefined(source.where)){
+					if (angular.isDefined(source.where)) {
 						combined.where = angular.isDefined(combined.where) ? angular.extend(combined.where, source.where) : source.where;
 					}
 
@@ -2157,6 +2162,7 @@ angular.module('ldAdminTools')
 					}
 				}
 
+				logFilter(combined);
 				filter.combined = combined;
 			}
 
@@ -2178,7 +2184,7 @@ angular.module('ldAdminTools')
 							data: {},
 							combined: {},
 							presets: [],
-							preset: {}
+							preset: undefined
 						};
 
 						filters[filterId] = filter;
@@ -2214,12 +2220,12 @@ angular.module('ldAdminTools')
 				setPreset: function (filterId, presetId) {
 					var filter = this.getFilter(filterId);
 					if (angular.isUndefined(filter.presets)) {
-						return;
+						return null;
 					}
 
 					var preset = getPreset(filter.presets, presetId);
 					if (preset === null) {
-						return;
+						return null;
 					}
 
 					filter.preset = preset;
@@ -2236,9 +2242,6 @@ angular.module('ldAdminTools')
 				 */
 				getPreset: function (filterId) {
 					var filter = this.getFilter(filterId);
-					if (angular.isUndefined(filter)) {
-						return;
-					}
 
 					return filter.preset;
 				},
@@ -2272,6 +2275,7 @@ angular.module('ldAdminTools')
 					var presets = filter.presets;
 					for (var i = 0; i < presets.length; i++) {
 						if (presets[i].default) {
+							console.log(presets[i]);
 							filter.preset = presets[i];
 							filter.dirty = true;
 							break;
