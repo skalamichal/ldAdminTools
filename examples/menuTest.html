@@ -10,7 +10,7 @@
 <body ng-app="demo">
 
 <div id="wrapper" ng-controller="demoCtrl" style="padding-top: 20px">
-    <ld-sidebar-menu data="menu" class="navbar-static-side" style="position: absolute; width: 250px" ld-slide-left="menuOpened" ld-animated="animate" ld-closeable="closeable"></ld-sidebar-menu>
+    <ld-sidebar-menu data="menu" class="navbar-static-side ld-slide" style="width: 250px" ng-if="menuOpened" ></ld-sidebar-menu>
 
     <div id="page-wrapper" style="margin-left: 300px">
         <a href="#" ng-click="menuOpened = !menuOpened">Show/Hide menu - <em>{{ menuOpened ? 'opened' : 'closed' }}</em></a> <br/>
@@ -22,6 +22,7 @@
 </body>
 
 <script src="bower_components/angular/angular.js"></script>
+<script src="bower_components/angular-animate/angular-animate.js"></script>
 <script src="bower_components/angular-recursion/angular-recursion.js"></script>
 <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
 <script src="bower_components/angular-local-storage/dist/angular-local-storage.js"></script>
