@@ -10,7 +10,7 @@
 <body ng-app="demo">
 
 <div id="wrapper" ng-controller="demoCtrl" style="padding-top: 20px">
-    <ld-sidebar-menu data="menu" class="navbar-static-side ld-slide" style="width: 250px" ng-if="menuOpened" ></ld-sidebar-menu>
+    <ld-sidebar-menu data="menu" class="navbar-static-side ld-sidebar-menu-slide" style="width: 250px" ng-if="menuOpened" ></ld-sidebar-menu>
 
     <div id="page-wrapper" style="margin-left: 300px">
         <a href="#" ng-click="menuOpened = !menuOpened">Show/Hide menu - <em>{{ menuOpened ? 'opened' : 'closed' }}</em></a> <br/>

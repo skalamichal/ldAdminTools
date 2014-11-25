@@ -172,28 +172,28 @@ a.ld-menuitem:hover {
   float: right;
   padding-top: 2px;
 }
-.ld-slide {
+.ld-sidebar-menu-slide {
   position: absolute;
   left: 0px;
 }
 @media all and (max-width: 768px) {
-  .ld-slide.ng-enter,
-  .ld-slide.ng-leave {
+  .ld-sidebar-menu-slide.ng-enter,
+  .ld-sidebar-menu-slide.ng-leave {
     -webkit-transition: left 0.35s ease;
     -moz-transition: left 0.35s ease;
     -o-transition: left 0.35s ease;
     transition: left 0.35s ease;
   }
-  .ld-slide.ng-enter {
+  .ld-sidebar-menu-slide.ng-enter {
     display: block;
     left: -250px;
   }
-  .ld-slide.ng-enter.ng-enter-active,
-  .ld-slide.ng-leave {
+  .ld-sidebar-menu-slide.ng-enter.ng-enter-active,
+  .ld-sidebar-menu-slide.ng-leave {
     left: 0px;
     display: block;
   }
-  .ld-slide.ng-leave.ng-leave-active {
+  .ld-sidebar-menu-slide.ng-leave.ng-leave-active {
     left: -250px;
   }
 }
