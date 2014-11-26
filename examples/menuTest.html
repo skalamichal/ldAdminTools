@@ -6,11 +6,47 @@
     <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css"/>
     <link rel="stylesheet" type="text/css" href="bower_components/font-awesome/css/font-awesome.css"/>
     <link rel="stylesheet" type="text/css" href="ldAdminTools.css"/>
+
+    <style type="text/css">
+        .ld-sidebar-menu-slide {
+            position: absolute;
+            left: 0px;
+        }
+
+        @media all and (max-width: 768px) {
+
+            .ld-sidebar-menu-slide.ng-enter, .ld-sidebar-menu-slide.ng-leave {
+                -webkit-transition: left 0.35s ease;
+                -moz-transition: left 0.35s ease;
+                -o-transition: left 0.35s ease;
+                transition: left 0.35s ease;
+            }
+
+            .ld-sidebar-menu-slide.ng-enter {
+                display: block;
+                left: -250px;
+            }
+
+            .ld-sidebar-menu-slide.ng-enter.ng-enter-active, .ld-sidebar-menu-slide.ng-leave {
+                left: 0px;
+                display: block;
+            }
+
+            .ld-sidebar-menu-slide.ng-leave.ng-leave-active {
+                left: -250px;
+            }
+        }
+    </style>
+
 </head>
 <body ng-app="demo">
 
 <div id="wrapper" ng-controller="demoCtrl" style="padding-top: 20px">
-    <ld-sidebar-menu data="menu" class="navbar-static-side ld-sidebar-menu-slide" style="width: 250px" ng-if="menuOpened" ></ld-sidebar-menu>
+    <div class="navbar-static-side ld-sidebar-menu-slide" ld-toggle="menuOpened">
+    <ld-sidebar-menu data="menu" ng-if="menuOpened"></ld-sidebar-menu>
+    </div>
+
+    {{ menuOpened }}
 
     <div id="page-wrapper" style="margin-left: 300px">
         <a href="#" ng-click="menuOpened = !menuOpened">Show/Hide menu - <em>{{ menuOpened ? 'opened' : 'closed' }}</em></a> <br/>
@@ -32,6 +68,8 @@
 
     var app = angular.module('demo', ['ui.bootstrap', 'LocalStorageModule', 'ldAdminTools']);
     app.controller('demoCtrl', function ($scope) {
+        console.log('demoCtrl ' + $scope.$id);
+
         $scope.menuOpened = true;
         $scope.animate = true;
         $scope.closeable = false;

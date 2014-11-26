@@ -596,6 +596,27 @@ angular.module('ldAdminTools')
 				};
 			}
 		};
+	}])
+	.directive('ldMenuClose', [function() {
+		return {
+			restrict: 'A',
+			require: '^?ldToggle',
+			link: function(scope, element, attrs, toggleController) {
+				if (!toggleController) {
+					return;
+				}
+
+				function toggle() {
+					toggleController.toggle();
+				}
+
+				element.on('click', toggle);
+
+				scope.$on('$destroy', function() {
+					element.off('click', toggle);
+				});
+			}
+		};
 	}]);
 'use strict';
 
@@ -1534,6 +1555,44 @@ angular.module('ldAdminTools')
 'use strict';
 
 /**
+ * @ngdoc directive
+ * @name ldAdminTools.directive:ldToggle
+ * @description
+ * # ldToggle
+ */
+angular.module('ldAdminTools')
+	.controller('ldToggleController', ['$scope', '$attrs', '$parse', '$timeout', function ($scope, $attrs, $parse, $timeout) {
+		var property = $attrs.ldToggle;
+		var getter = $parse(property);
+		var setter = getter.assign;
+
+		var current = getter($scope);
+
+		$scope.$watch(getter, function (newValue, oldValue) {
+			if (newValue !== oldValue && current !== newValue) {
+				current = !!newValue;
+			}
+		});
+
+		this.toggle = function (value) {
+			current = value ? !!value : !current;
+
+			console.log('ldToggle ' + $scope.$id);
+			$timeout(function() {
+				setter($scope, current);
+			});
+		};
+	}])
+	.directive('ldToggle', function () {
+		return {
+			restrict: 'A',
+			controller: 'ldToggleController'
+		};
+	});
+
+'use strict';
+
+/**
  * @ngdoc filter
  * @name ldAdminTools.filter:ldPading
  * @function
@@ -2318,12 +2377,12 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/ldmenu-wrap.html',
-    "<ul class=nav ng-class=menuLevelStyle><li ng-repeat=\"item in data\"><ld-menu-item ng-if=!item.submenu data=item></ld-menu-item><ld-submenu-item ng-if=item.submenu data=item level=level></ld-submenu-item></li></ul>"
+    "<ul class=nav ng-class=menuLevelStyle><li ng-repeat=\"item in data\"><ld-menu-item ng-if=!item.submenu data=item ld-menu-close></ld-menu-item><ld-submenu-item ng-if=item.submenu data=item level=level></ld-submenu-item></li></ul>"
   );
 
 
   $templateCache.put('partials/ldmenuitem.html',
-    "<a class=ld-menuitem ng-href={{item.url}} ld-slide-toggle><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span></a>"
+    "<a class=ld-menuitem ng-href={{item.url}}><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span></a>"
   );
 
 

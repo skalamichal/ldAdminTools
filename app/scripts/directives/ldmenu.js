@@ -187,4 +187,25 @@ angular.module('ldAdminTools')
 				};
 			}
 		};
+	}])
+	.directive('ldMenuClose', [function() {
+		return {
+			restrict: 'A',
+			require: '^?ldToggle',
+			link: function(scope, element, attrs, toggleController) {
+				if (!toggleController) {
+					return;
+				}
+
+				function toggle() {
+					toggleController.toggle();
+				}
+
+				element.on('click', toggle);
+
+				scope.$on('$destroy', function() {
+					element.off('click', toggle);
+				});
+			}
+		};
 	}]);

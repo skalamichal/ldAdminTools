@@ -72,35 +72,6 @@ a.ld-menuitem:hover {
 	padding-top: 2px;
 }
 
-.ld-sidebar-menu-slide {
-	position: absolute;
-	left: 0px;
-}
-
-@media all and (max-width: 768px) {
-
-	.ld-sidebar-menu-slide.ng-enter, .ld-sidebar-menu-slide.ng-leave {
-		-webkit-transition: left 0.35s ease;
-		-moz-transition: left 0.35s ease;
-		-o-transition: left 0.35s ease;
-		transition: left 0.35s ease;
-	}
-
-	.ld-sidebar-menu-slide.ng-enter {
-		display: block;
-		left: -250px;
-	}
-
-	.ld-sidebar-menu-slide.ng-enter.ng-enter-active, .ld-sidebar-menu-slide.ng-leave {
-		left: 0px;
-		display: block;
-	}
-
-	.ld-sidebar-menu-slide.ng-leave.ng-leave-active {
-		left: -250px;
-	}
-}
-
 /* ld-filter-dropdown style */
 .ld-dropdown {
 	position: relative;
