@@ -1,6 +1,18 @@
 // Core variables and mixins
 @import (reference) "../../bower_components/bootstrap/less/bootstrap.less";
 
+/* variables */
+@info-default-color:     #333;
+@info-default-bg:        #fff;
+@info-default-border:    #ccc;
+
+@info-loading-color:     rgba(39, 38, 39, 1);
+@info-loading-bg:        rgba(255, 240, 196, 1);
+@info-loading-border:    rgba(255, 217, 127, 1);
+
+@zindex-info: 1060;
+
+
 /* Sidebar Menu Styles */
 
 .navbar-static-side ul li {
@@ -289,4 +301,56 @@ a.ld-menuitem:hover {
 
 .ld-table-sort-descent > .ld-descent {
 	display: inline;
+}
+
+/* loading / info box */
+
+.box-size(@padding-vertical; @padding-horizontal; @font-size; @line-height; @border-radius) {
+	padding: @padding-vertical @padding-horizontal;
+	font-size: @font-size;
+	line-height: @line-height;
+	border-radius: @border-radius;
+}
+
+.box-variant(@color; @background; @border) {
+	color: @color;
+	background-color: @background;
+	border-color: @border;
+}
+
+.ld-message-box-on {
+	.ld-message-box {
+		top: 20px;
+		opacity: 1;
+	}
+}
+
+.ld-message-box {
+	position: absolute;
+	left: 50%;
+	top: -50px;
+	opacity: 0;
+	z-index: @zindex-info;
+	.transition(all 0.35s ease);
+}
+
+.ld-message-box-content {
+	position: relative;
+	left: -50%;
+	font-weight: @btn-font-weight;
+	text-align: center;
+	vertical-align: middle;
+	background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
+	white-space: nowrap;
+	cursor: none;
+	border: solid transparent 1px;
+	.box-size(@padding-base-vertical; @padding-base-horizontal; @font-size-base; @line-height-base; @border-radius-base);
+}
+
+.ld-message-box-default {
+	.box-variant(@info-default-color; @info-default-bg; @info-default-border);
+}
+
+.ld-message-box-loading {
+	.box-variant(@info-loading-color; @info-loading-bg; @info-loading-border);
 }

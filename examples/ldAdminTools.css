@@ -117,6 +117,7 @@
 .modal-footer:after {
   clear: both;
 }
+/* variables */
 /* Sidebar Menu Styles */
 .navbar-static-side ul li {
   border-bottom: 1px solid #e7e7e7;
@@ -348,4 +349,44 @@ a.ld-menuitem:hover {
 }
 .ld-table-sort-descent > .ld-descent {
   display: inline;
+}
+/* loading / info box */
+.ld-message-box-on .ld-message-box {
+  top: 20px;
+  opacity: 1;
+}
+.ld-message-box {
+  position: absolute;
+  left: 50%;
+  top: -50px;
+  opacity: 0;
+  z-index: 1060;
+  -webkit-transition: all 0.35s ease;
+  -o-transition: all 0.35s ease;
+  transition: all 0.35s ease;
+}
+.ld-message-box-content {
+  position: relative;
+  left: -50%;
+  font-weight: normal;
+  text-align: center;
+  vertical-align: middle;
+  background-image: none;
+  white-space: nowrap;
+  cursor: none;
+  border: solid transparent 1px;
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  border-radius: 4px;
+}
+.ld-message-box-default {
+  color: #333333;
+  background-color: #ffffff;
+  border-color: #cccccc;
+}
+.ld-message-box-loading {
+  color: #272627;
+  background-color: #fff0c4;
+  border-color: #ffd97f;
 }

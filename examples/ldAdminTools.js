@@ -622,6 +622,42 @@ angular.module('ldAdminTools')
 
 /**
  * @ngdoc directive
+ * @name ldAdminTools.directive:ldMessageBox
+ * @description
+ * # ldMessageBox
+ */
+angular.module('ldAdminTools')
+	.constant('ldMessageBoxConfig', {
+		'icon': '',
+		'spin': false,
+		'message': 'enter message',
+		'type': 'default',
+		'opened': true
+	})
+	.directive('ldMessageBox', ['$parse', 'ldMessageBoxConfig', function ($parse, config) {
+		return {
+			templateUrl: 'partials/ldmessagebox.html',
+			restrict: 'EA',
+			replace: true,
+			scope: {
+				message: '@?',
+				spin: '=?',
+				type: '@?',
+				icon: '@?'
+			},
+			link: function postLink(scope, element, attrs) {
+				scope.message = angular.isUndefined(scope.message) ? config.message : scope.message;
+				scope.spin = scope.spin || config.spin;
+				scope.icon = angular.isUndefined(scope.icon) ? config.icon : scope.icon;
+				scope.type = angular.isUndefined(scope.type) ? config.type : scope.type;
+			}
+		};
+	}]);
+
+'use strict';
+
+/**
+ * @ngdoc directive
  * @name directive:ldResize
  * @description
  * # resize directive to handle window resize
@@ -2348,6 +2384,49 @@ angular.module('ldAdminTools')
 			};
 		}]);
 
+'use strict';
+
+/**
+ * @ngdoc service
+ * @name ldAdminTools.ldMessageBox
+ * @description
+ * # ldMessageBox
+ * Service in the ldAdminTools.
+ *
+ * Displays a message box overlay.
+ */
+angular.module('ldAdminTools')
+	.service('ldMessageBoxService', ['$document', '$rootScope', '$compile', '$animate',
+		function ldMessageBox($document, $rootScope, $compile, $animate) {
+
+			var ON_CLASS = 'ld-message-box-on';
+			var body = $document.find('body').eq(0);
+
+			var messageElm;
+
+			this.show = function (message, type, icon, spin) {
+				var angularMessageElm = angular.element('<ld-message-box></ld-message-box>');
+				angularMessageElm.attr({
+					message: message,
+					type: type,
+					icon: icon,
+					spin: spin
+				});
+				var scope = $rootScope.$new();
+
+				messageElm = $compile(angularMessageElm)(scope);
+				body.append(messageElm);
+				$animate.addClass(body, ON_CLASS);
+			};
+
+			this.hide = function() {
+				$animate.removeClass(body, ON_CLASS).then(function() {
+					console.log('removed');
+				});
+			};
+
+		}]);
+
 angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
   'use strict';
 
@@ -2383,6 +2462,11 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
   $templateCache.put('partials/ldmenuitem.html',
     "<a class=ld-menuitem ng-href={{item.url}}><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span></a>"
+  );
+
+
+  $templateCache.put('partials/ldmessagebox.html',
+    "<div class=ld-message-box><div class=\"ld-message-box-content ld-message-box-{{ type }}\"><i class=\"{{ icon }}\" ng-class=\"{'fa': icon, 'fa-fw': icon, 'fa-lg': icon, 'fa-spin': spin}\"></i> {{ message }}</div></div>"
   );
 
 
