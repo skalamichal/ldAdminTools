@@ -27,7 +27,7 @@
 <script type="text/javascript">
 
 	angular.module('LoadingApp', ['ui.bootstrap', 'ngAnimate', 'ldAdminTools'])
-			.controller('testController', ['$scope', 'ldMessageBoxService', function ($scope, messageBox) {
+			.controller('testController', ['$scope', 'ldMessageBox', function ($scope, messageBox) {
 				$scope.opened = false;
 
 				$scope.toggle = function() {

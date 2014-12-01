@@ -10,8 +10,8 @@
  * Displays a message box overlay.
  */
 angular.module('ldAdminTools')
-	.service('ldMessageBoxService', ['$document', '$rootScope', '$compile', '$animate',
-		function ldMessageBox($document, $rootScope, $compile, $animate) {
+	.service('ldMessageBox', ['$document', '$rootScope', '$compile',
+		function ldMessageBox($document, $rootScope, $compile) {
 
 			var ON_CLASS = 'ld-message-box-on';
 			var body = $document.find('body').eq(0);
@@ -30,13 +30,12 @@ angular.module('ldAdminTools')
 
 				messageElm = $compile(angularMessageElm)(scope);
 				body.append(messageElm);
-				$animate.addClass(body, ON_CLASS);
+				body.addClass(ON_CLASS);
 			};
 
 			this.hide = function() {
-				$animate.removeClass(body, ON_CLASS).then(function() {
-					console.log('removed');
-				});
+				body.removeClass(ON_CLASS);
+				messageElm.remove();
 			};
 
 		}]);

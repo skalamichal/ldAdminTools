@@ -361,9 +361,6 @@ a.ld-menuitem:hover {
   top: -50px;
   opacity: 0;
   z-index: 1060;
-  -webkit-transition: all 0.35s ease;
-  -o-transition: all 0.35s ease;
-  transition: all 0.35s ease;
 }
 .ld-message-box-content {
   position: relative;
