@@ -11,7 +11,7 @@
  * Returns data from index.
  */
 angular.module('ldAdminTools')
-	.filter('lfFrom', function () {
+	.filter('ldFrom', function () {
 		return function (input, fromIndex) {
 			if (!angular.isArray(input)) {
 				return input;

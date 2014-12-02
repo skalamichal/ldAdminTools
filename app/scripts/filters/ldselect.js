@@ -22,7 +22,7 @@
  * }
  *
  * If values are defined the new array has full copy of the input collection, but a new field named '$' is added with
- * filtered values. This allows to use the filter with ng-repeat for eaxmple.
+ * filtered values. This allows to use the filter with ng-repeat for example.
  */
 angular.module('ldAdminTools')
 	.filter('ldSelect', ['$filter', function ($filter) {

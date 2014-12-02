@@ -1630,6 +1630,31 @@ angular.module('ldAdminTools')
 
 /**
  * @ngdoc filter
+ * @name ldAdminTools.filter:lfFrom
+ * @function
+ * @description
+ * # lfFrom
+ * Filter in the ldAdminTools.
+ *
+ * Returns data from index.
+ */
+angular.module('ldAdminTools')
+	.filter('ldFrom', function () {
+		return function (input, fromIndex) {
+			if (!angular.isArray(input)) {
+				return input;
+			}
+
+			var fromIdx = fromIndex || 0;
+
+			return input.slice(fromIdx);
+		};
+	});
+
+'use strict';
+
+/**
+ * @ngdoc filter
  * @name ldAdminTools.filter:ldPading
  * @function
  * @description
@@ -1674,7 +1699,7 @@ angular.module('ldAdminTools')
  * }
  *
  * If values are defined the new array has full copy of the input collection, but a new field named '$' is added with
- * filtered values. This allows to use the filter with ng-repeat for eaxmple.
+ * filtered values. This allows to use the filter with ng-repeat for example.
  */
 angular.module('ldAdminTools')
 	.filter('ldSelect', ['$filter', function ($filter) {
@@ -1789,31 +1814,6 @@ angular.module('ldAdminTools')
 			return copy;
 		};
 	}]);
-
-'use strict';
-
-/**
- * @ngdoc filter
- * @name ldAdminTools.filter:lfFrom
- * @function
- * @description
- * # lfFrom
- * Filter in the ldAdminTools.
- *
- * Returns data from index.
- */
-angular.module('ldAdminTools')
-	.filter('lfFrom', function () {
-		return function (input, fromIndex) {
-			if (!angular.isArray(input)) {
-				return input;
-			}
-
-			var fromIdx = fromIndex || 0;
-
-			return input.slice(fromIdx);
-		};
-	});
 
 'use strict';
 

@@ -24,8 +24,9 @@ module.exports = function (config) {
 			'bower_components/angular-bootstrap/ui-bootstrap.js',
 			'bower_components/angular-recursion/angular-recursion.js',
 			'bower_components/angular-local-storage/dist/angular-local-storage.js',
+			'bower_components/angular-animate/angular-animate.js',
 			'dist/ldAdminTools.js',
-			'app/scripts/**/*.js',
+
 			'test/mock/**/*.js',
 			'test/spec/**/*.js'
 		],
