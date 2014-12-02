@@ -73,3 +73,37 @@ Optionally, ld-clickable-rows-active allows you to specify additional - conditio
   <td>{{message.date | date}}</td>
 </tr>
 ```
+
+####ldMessageBox (service)
+A simple service used to display a short message on the top of the window, for example loading node. Has two methods:
+* show(message, type, icon, spin):
+  * message - description to show
+  * type - box style - currently default and loading are defined
+  * icon - font awesome icon
+  * spin - boolean value, if true, icon is animated
+
+* hide()
+
+Usage in page controller:
+
+```html
+<div ng-controller='sample'>
+  <a href='' ng-click='toggle()'>Toggle loading box</a>
+</div>
+```
+
+```js
+app.controller('sample', ['$scope', 'ldMessageBox', function($scope, messagebox) {
+  $scope.loading = false;
+  $scope.toggle = function() {
+    $scope.loading = != $scope.loading;
+    if ($scope.opened) {
+      // show loading message
+      messagebox.show('Loading...', 'loading', 'fa-spinner', true);
+    } 
+    else {
+      messagebox.hide();
+    }
+  }
+}]);
+```
