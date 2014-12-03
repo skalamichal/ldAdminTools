@@ -32,4 +32,8 @@ describe('Service: $ldMessageBox', function () {
 		expect(body.hasClass('ld-message-box-on')).toBeFalsy();
 	});
 
+	it('should show only one message', function() {
+
+	});
+
 });

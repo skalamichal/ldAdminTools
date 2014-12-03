@@ -2405,6 +2405,10 @@ angular.module('ldAdminTools')
 			var messageElm;
 
 			this.show = function (message, type, icon, spin) {
+				if (angular.isDefined(messageElm)) {
+					this.hide();
+				}
+
 				var angularMessageElm = angular.element('<ld-message-box></ld-message-box>');
 				angularMessageElm.attr({
 					message: message,
