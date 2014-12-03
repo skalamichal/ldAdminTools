@@ -2124,6 +2124,7 @@ angular.module('ldAdminTools')
 						return;
 					}
 					filter.preset = undefined;
+					filter.dirty = true;
 
 					combine(filter);
 
