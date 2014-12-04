@@ -283,7 +283,7 @@ angular.module('ldAdminTools')
 		clearIconDefault: 'fa-remove',
 		closeOnToggleDefault: false
 	})
-	.directive('ldExpandableInput', ['$parse', '$timeout', 'ldExpandableInputConfig', function ($parse, $timeout, config) {
+	.directive('ldExpandableInput', ['$parse', '$timeout', '$animate', 'ldExpandableInputConfig', function ($parse, $timeout, $animate, config) {
 		return {
 			templateUrl: 'partials/ldexpandableinput.html',
 			restrict: 'E',
@@ -291,8 +291,8 @@ angular.module('ldAdminTools')
 			scope: {
 				model: '=ngModel',
 				placeholder: '@?',
-				closeText: '@',
-				opened: '=?',
+				closeText: '@?',
+				opened: '=?opened',
 				openIcon: '@',
 				closeIcon: '@',
 				clearIcon: '@',
@@ -300,10 +300,12 @@ angular.module('ldAdminTools')
 				onOpen: '&?',
 				onClose: '&?'
 			},
-			link: function postLink(scope) {
+			link: function postLink(scope, element) {
+
+				$animate.enabled(false, element);
 
 				function setIconLeft() {
-					if (scope.isOpened) {
+					if (scope.opened) {
 						return angular.isUndefined(scope.closeIcon) ? config.closeIconDefault : scope.closeIcon;
 					}
 					else {
@@ -316,8 +318,6 @@ angular.module('ldAdminTools')
 					scope.iconRight = angular.isUndefined(scope.clearIcon) ? config.clearIconDefault : scope.clearIcon;
 				}
 
-				scope.isOpened = !!scope.opened;
-				scope.inputValue = scope.model;
 				scope.isFocus = false;
 
 				scope.$watch('placeholder', function (newValue) {
@@ -328,28 +328,13 @@ angular.module('ldAdminTools')
 					scope.closeText = angular.isDefined(newValue) ? newValue : config.closeTextDefault;
 				});
 
-				scope.$watch('inputValue', function (newValue) {
-					scope.model = newValue;
-				});
-
-				scope.$watch('model', function (newValue) {
-					scope.inputValue = newValue;
-				});
-
-				scope.$watch('isOpened', function (newValue) {
-					scope.opened = !!newValue;
+				scope.$watch('opened', function () {
 					scope.isFocus = scope.opened;
 					updateIcons();
 				});
 
-				scope.$watch('opened', function (newValue) {
-					scope.isOpened = !!newValue;
-					scope.isFocus = scope.isOpened;
-					updateIcons();
-				});
-
 				scope.clear = function () {
-					scope.inputValue = '';
+					scope.model = '';
 					scope.isFocus = true;
 
 					if (angular.isFunction(scope.onClear())) {
@@ -358,7 +343,7 @@ angular.module('ldAdminTools')
 				};
 
 				scope.open = function () {
-					scope.isOpened = true;
+					scope.opened = true;
 
 					if (angular.isFunction(scope.onOpen())) {
 						scope.onOpen()();
@@ -366,7 +351,7 @@ angular.module('ldAdminTools')
 				};
 
 				scope.close = function () {
-					scope.isOpened = false;
+					scope.opened = false;
 
 					scope.clear();
 
@@ -2455,7 +2440,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/ldexpandableinput.html',
-    "<div class=ld-expandable-input><div class=ld-input-group><span class=ld-input-group-btn ng-class=\"{'relative' : !isOpened}\" ng-style=\"{cursor: isOpened ? 'context-menu': 'pointer'}\" ng-if=\"iconLeft.length>0\" ng-click=open()><i class=\"fa fa-fw {{ iconLeft }} fa-lg\"></i></span> <input class=\"form-control ld-form-control\" ng-model=inputValue placeholder=\"{{ placeholder }}\" ng-show=isOpened ld-input-focus=isFocus ng-blur=\"isFocus=false\"> <span class=ld-input-group-btn ng-if=\"iconRight.length>0\" ng-show=\"inputValue && isOpened\" ng-click=clear()><i class=\"fa fa-fw {{ iconRight }} fa-lg\"></i></span></div><div ng-if=isOpened class=ld-expandable-close><a href=\"\" ng-click=close()>{{ closeText }}</a></div></div>"
+    "<div class=ld-expandable-input><div class=ld-input-group><span class=ld-input-group-btn ng-class=\"{'relative' : !opened}\" ng-style=\"{cursor: opened ? 'context-menu': 'pointer'}\" ng-if=\"iconLeft.length>0\" ng-click=open()><i class=\"fa fa-fw {{ iconLeft }} fa-lg\"></i></span> <input class=\"form-control ld-form-control\" ng-model=model placeholder=\"{{ placeholder }}\" ng-show=opened ld-input-focus=isFocus ng-blur=\"isFocus=false\"> <span class=ld-input-group-btn ng-if=\"iconRight.length>0\" ng-show=\"model && opened\" ng-click=clear()><i class=\"fa fa-fw {{ iconRight }} fa-lg\"></i></span></div><div ng-if=opened class=ld-expandable-close><a href=\"\" ng-click=close()>{{ closeText }}</a></div></div>"
   );
 
 

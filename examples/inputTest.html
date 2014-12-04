@@ -13,13 +13,13 @@
 
 	<div class="ld-input-inline">
 		<ld-expandable-input ng-model="inputValue" opened="opened" on-clear="clear"
-								 close-text="Cancel"></ld-expandable-input>
+							 close-text="Cancel"></ld-expandable-input>
 		<ld-expandable-input ng-model="inputValue" opened="opened" on-clear="clear"
-								 close-text="Cancel"></ld-expandable-input>
+							 close-text="Cancel"></ld-expandable-input>
 	</div>
 
 	<div>
-		<ld-expandable-input Est" opened="opened" on-clear="clear"
+		<ld-expandable-input ng-model="inputValue" opened="opened" on-clear="clear"
 							 close-text="Cancel"></ld-expandable-input>
 		<ld-expandable-input ng-model="inputValue" opened="opened" on-clear="clear"
 							 close-text="Cancel"></ld-expandable-input>
@@ -30,8 +30,6 @@
 	<a href="" ng-click="inputValue='Michal'">Reset to Michal</a>
 	<br/>
 	<a href="" ng-click="opened = !opened">{{ opened ? 'Close' : 'Open' }}</a>
-	<br/>
-	<a href="" ng-click="expand('a')">Call expand</a>
 
 </div>
 
@@ -40,6 +38,7 @@
 <script src="bower_components/angular/angular.js"></script>
 <script src="bower_components/angular-recursion/angular-recursion.js"></script>
 <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+<script src="bower_components/angular-animate/angular-animate.js"></script>
 <script src="bower_components/angular-local-storage/dist/angular-local-storage.js"></script>
 <script src="ldAdminTools.js"></script>
 

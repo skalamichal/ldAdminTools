@@ -15,7 +15,7 @@ angular.module('ldAdminTools')
 		clearIconDefault: 'fa-remove',
 		closeOnToggleDefault: false
 	})
-	.directive('ldExpandableInput', ['$parse', '$timeout', 'ldExpandableInputConfig', function ($parse, $timeout, config) {
+	.directive('ldExpandableInput', ['$parse', '$timeout', '$animate', 'ldExpandableInputConfig', function ($parse, $timeout, $animate, config) {
 		return {
 			templateUrl: 'partials/ldexpandableinput.html',
 			restrict: 'E',
@@ -23,8 +23,8 @@ angular.module('ldAdminTools')
 			scope: {
 				model: '=ngModel',
 				placeholder: '@?',
-				closeText: '@',
-				opened: '=?',
+				closeText: '@?',
+				opened: '=?opened',
 				openIcon: '@',
 				closeIcon: '@',
 				clearIcon: '@',
@@ -32,10 +32,12 @@ angular.module('ldAdminTools')
 				onOpen: '&?',
 				onClose: '&?'
 			},
-			link: function postLink(scope) {
+			link: function postLink(scope, element) {
+
+				$animate.enabled(false, element);
 
 				function setIconLeft() {
-					if (scope.isOpened) {
+					if (scope.opened) {
 						return angular.isUndefined(scope.closeIcon) ? config.closeIconDefault : scope.closeIcon;
 					}
 					else {
@@ -48,8 +50,6 @@ angular.module('ldAdminTools')
 					scope.iconRight = angular.isUndefined(scope.clearIcon) ? config.clearIconDefault : scope.clearIcon;
 				}
 
-				scope.isOpened = !!scope.opened;
-				scope.inputValue = scope.model;
 				scope.isFocus = false;
 
 				scope.$watch('placeholder', function (newValue) {
@@ -60,28 +60,13 @@ angular.module('ldAdminTools')
 					scope.closeText = angular.isDefined(newValue) ? newValue : config.closeTextDefault;
 				});
 
-				scope.$watch('inputValue', function (newValue) {
-					scope.model = newValue;
-				});
-
-				scope.$watch('model', function (newValue) {
-					scope.inputValue = newValue;
-				});
-
-				scope.$watch('isOpened', function (newValue) {
-					scope.opened = !!newValue;
+				scope.$watch('opened', function () {
 					scope.isFocus = scope.opened;
 					updateIcons();
 				});
 
-				scope.$watch('opened', function (newValue) {
-					scope.isOpened = !!newValue;
-					scope.isFocus = scope.isOpened;
-					updateIcons();
-				});
-
 				scope.clear = function () {
-					scope.inputValue = '';
+					scope.model = '';
 					scope.isFocus = true;
 
 					if (angular.isFunction(scope.onClear())) {
@@ -90,7 +75,7 @@ angular.module('ldAdminTools')
 				};
 
 				scope.open = function () {
-					scope.isOpened = true;
+					scope.opened = true;
 
 					if (angular.isFunction(scope.onOpen())) {
 						scope.onOpen()();
@@ -98,7 +83,7 @@ angular.module('ldAdminTools')
 				};
 
 				scope.close = function () {
-					scope.isOpened = false;
+					scope.opened = false;
 
 					scope.clear();
 
