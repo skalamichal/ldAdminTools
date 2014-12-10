@@ -437,8 +437,7 @@ angular.module('ldAdminTools')
 						angular.forEach(filters, function (value, key) {
 							store[key] = {
 								preset: value.preset,
-								where: value.where,
-								order: value.order
+								data: value.data
 							};
 						});
 						localStorage.set('filters', angular.toJson(store));
@@ -455,8 +454,8 @@ angular.module('ldAdminTools')
 
 						angular.forEach(loaded, function (value, key) {
 							filters[key].preset = value.preset;
-							filters[key].where = value.where;
-							filters[key].order = value.order;
+							filters[key].data = value.data;
+							combine(filters[key]);
 							filters[key].dirty = true;
 						});
 					}

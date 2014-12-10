@@ -6,6 +6,7 @@ describe('Directive: ldResize', function () {
 	var windowMock;
 	beforeEach(module('ldAdminTools', function ($provide) {
 		windowMock = {
+			fn: null,
 			innerWidth: 800,
 			innerHeight: 600,
 			setSize: function(width, height) {
@@ -13,7 +14,9 @@ describe('Directive: ldResize', function () {
 				windowMock.innerHeight = height;
 			},
 			bind: jasmine.createSpy('bind'),
-			addEventListener: jasmine.createSpy('addEventListener')
+			addEventListener: jasmine.createSpy('addEventListener').andCallFake(function(event, fn) {
+				windowMock.fn = fn;
+			})
 		};
 
 		$provide.value('$window', windowMock);
@@ -31,7 +34,7 @@ describe('Directive: ldResize', function () {
 		$compile = _$compile_;
 	}));
 
-	it('should call resize method, when window is resized', function () {
+	it('should call resize method, when update size is called', function () {
 		$rootScope.onResize = jasmine.createSpy('onResize');
 		$compile('<div ld-resize="onResize"></div>')($scope);
 		$rootScope.$digest();

@@ -11,17 +11,17 @@ angular.module('ldAdminTools')
 /**
  * The controller for the main ld-sidebar-menu directive for the sidebar menu.
  */
-	.controller('ldSidebarMenuController', ['$scope', '$parse', '$attrs', function ($scope, $parse, $attrs) {
+	.controller('ldSidebarMenuController', [function () {
 		var self = this;
-		var menus = [];
+		this.menus = [];
 
 		// register menu block
 		this.registerMenu = function (menu) {
 			var level = menu.level;
-			if (angular.isUndefined(menus[level])) {
-				menus[level] = [];
+			if (angular.isUndefined(this.menus[level])) {
+				this.menus[level] = [];
 			}
-			menus[level].push(menu);
+			this.menus[level].push(menu);
 
 			// setup the menu level style
 			menu.menuLevelStyle = 'nav-' + self.getLevelAsString(level) + '-level';
@@ -29,7 +29,7 @@ angular.module('ldAdminTools')
 
 		// open menu function, goes through all menus at the same level and calls its closeMenu function on the scope
 		this.openMenu = function(menu) {
-			angular.forEach(menus[menu.level], function(m) {
+			angular.forEach(this.menus[menu.level], function(m) {
 				if (m.$id !== menu.$id) {
 					m.closeMenu();
 				}
@@ -40,7 +40,7 @@ angular.module('ldAdminTools')
 
 		// close all submenus
 		function closeAllSubmenus(level) {
-			angular.forEach(menus, function(menu, index) {
+			angular.forEach(this.menus, function(menu, index) {
 				if (index > level) {
 					angular.forEach(menu, function (m) {
 						m.closeMenu();
@@ -77,7 +77,8 @@ angular.module('ldAdminTools')
 			scope: {
 				'data': '=',
 				'options': '=?ldMenuOptions',
-				'level': '=?level'
+				'level': '=?level',
+				'opened': '=?'
 			},
 			replace: true,
 			// expose the sidebar menu controller API
@@ -89,6 +90,9 @@ angular.module('ldAdminTools')
 				scope.level = scope.level || 1;
 				// get the style for the level: nav-first-level for example
 				scope.menuLevelStyle = 'nav-' + controller.getLevelAsString(scope.level) + '-level';
+
+				// set opened to true by default
+				scope.opened = scope.opened || true;
 			}
 		};
 	}])
@@ -185,27 +189,6 @@ angular.module('ldAdminTools')
 				scope.isCollapsed = function() {
 					return scope.collapsed;
 				};
-			}
-		};
-	}])
-	.directive('ldMenuClose', [function() {
-		return {
-			restrict: 'A',
-			require: '^?ldToggle',
-			link: function(scope, element, attrs, toggleController) {
-				if (!toggleController) {
-					return;
-				}
-
-				function toggle() {
-					toggleController.toggle();
-				}
-
-				element.on('click', toggle);
-
-				scope.$on('$destroy', function() {
-					element.off('click', toggle);
-				});
 			}
 		};
 	}]);

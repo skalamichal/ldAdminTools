@@ -3,7 +3,30 @@
 describe('Service: ldFilterService', function () {
 
 	// load the service's module
-	beforeEach(module('ldAdminTools'));
+	beforeEach(module('ldAdminTools', function($provide) {
+		var mock = {
+			data: {},
+			isSupported: true,
+			set: jasmine.createSpy('set').andCallFake(function(key, value) {
+				mock.data[key] = value;
+			}),
+			get: jasmine.createSpy('get').andCallFake(function(key) {
+				return mock.data[key];
+			}),
+			remove: jasmine.createSpy('remove').andCallFake(function(key) {
+				delete mock.data[key];
+			}),
+			keys: jasmine.createSpy('keys').andCallFake(function() {
+				var ks = [];
+				angular.forEach(mock.data, function(data, key) {
+					ks.push(key);
+				});
+				return ks;
+			})
+		};
+
+		$provide.value('localStorageService', mock);
+	}));
 
 	// instantiate service
 	var ldFilterService,

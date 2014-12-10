@@ -1,6 +1,6 @@
 <ul class="nav" ng-class="menuLevelStyle">
     <li ng-repeat="item in data">
-        <ld-menu-item ng-if="!item.submenu" data="item" ld-menu-close></ld-menu-item>
+        <ld-menu-item ng-if="!item.submenu" data="item" ng-click="opened = !opened"></ld-menu-item>
         <ld-submenu-item ng-if="item.submenu" data="item" level="level"></ld-submenu-item>
     </li>
 </ul>
