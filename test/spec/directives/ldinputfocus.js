@@ -6,13 +6,42 @@ describe('Directive: ldInputFocus', function () {
 	beforeEach(module('ldAdminTools'));
 
 	var element,
-		scope;
+		scope,
+		$rootScope,
+		$timeout;
 
-	beforeEach(inject(function ($rootScope) {
-		scope = $rootScope.$new();
+	beforeEach(inject(function (_$rootScope_, _$timeout_) {
+		$rootScope = _$rootScope_;
+		$timeout = _$timeout_;
 	}));
 
-	it('should make hidden element visible', inject(function ($compile) {
-		element = angular.element('<ld-input-focus></ld-input-focus>');
+	it('should set focus to the input field', inject(function ($compile, $document, $log) {
+		$rootScope.focus = false;
+		element = angular.element('<input type="text" ld-input-focus="focus">');
+		element = $compile(element)($rootScope);
+		$document.append(element);
+		$rootScope.$digest();
+
+		spyOn(element[0], 'focus');
+		$rootScope.focus = true;
+		$rootScope.$digest();
+		$timeout.flush();
+
+		expect(element[0].focus).toHaveBeenCalled();
+	}));
+
+	it('should not set focus to the input field', inject(function ($compile, $document, $log) {
+		$rootScope.focus = true;
+		element = angular.element('<input type="text" ld-input-focus="focus">');
+		element = $compile(element)($rootScope);
+		$document.append(element);
+		$rootScope.$digest();
+		$timeout.flush();
+
+		spyOn(element[0], 'focus');
+		$rootScope.focus = false;
+		$rootScope.$digest();
+
+		expect(element[0].focus).not.toHaveBeenCalled();
 	}));
 });
