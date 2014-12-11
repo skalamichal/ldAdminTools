@@ -40,7 +40,7 @@ angular.module('ldAdminTools')
 
 		// close all submenus
 		function closeAllSubmenus(level) {
-			angular.forEach(this.menus, function(menu, index) {
+			angular.forEach(self.menus, function(menu, index) {
 				if (index > level) {
 					angular.forEach(menu, function (m) {
 						m.closeMenu();

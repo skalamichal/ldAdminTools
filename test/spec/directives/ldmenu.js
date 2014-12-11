@@ -52,10 +52,13 @@ describe('Directive: ldMenu', function () {
 	}
 
 	describe('ldSidebarMenuController', function () {
+		var id = 1;
 		function __createMenu(level) {
-			return {
-				level: level
-			};
+			var menuScope = $rootScope.$new();
+			menuScope.level = level;
+			menuScope.closeMenu = jasmine.createSpy('closeMenu');
+
+			return menuScope;
 		}
 
 		var ctrl;
@@ -103,5 +106,74 @@ describe('Directive: ldMenu', function () {
 			ctrl.registerMenu(menuLevel2_3);
 			expect(ctrl.menus[2].length).toBe(3);
 		});
+
+		it('should open and close menu', function() {
+			var menuLevel1_1 = __createMenu(1);
+			var menuLevel1_2 = __createMenu(1);
+			var menuLevel1_3 = __createMenu(1);
+			var menuLevel2_1 = __createMenu(2);
+			var menuLevel2_2 = __createMenu(2);
+			var menuLevel2_3 = __createMenu(2);
+
+			ctrl.registerMenu(menuLevel1_1);
+			ctrl.registerMenu(menuLevel1_2);
+			ctrl.registerMenu(menuLevel1_3);
+			ctrl.registerMenu(menuLevel2_1);
+			ctrl.registerMenu(menuLevel2_2);
+			ctrl.registerMenu(menuLevel2_3);
+
+			ctrl.openMenu(menuLevel1_1);
+			expect(menuLevel1_1.closeMenu).not.toHaveBeenCalled();
+			expect(menuLevel1_2.closeMenu).toHaveBeenCalled();
+			expect(menuLevel1_3.closeMenu).toHaveBeenCalled();
+			expect(menuLevel2_1.closeMenu).toHaveBeenCalled();
+			expect(menuLevel2_2.closeMenu).toHaveBeenCalled();
+			expect(menuLevel2_3.closeMenu).toHaveBeenCalled();
+		});
+
+		it('should open second level menu and close menu', function() {
+			var menuLevel1_1 = __createMenu(1);
+			var menuLevel1_2 = __createMenu(1);
+			var menuLevel1_3 = __createMenu(1);
+			var menuLevel2_1 = __createMenu(2);
+			var menuLevel2_2 = __createMenu(2);
+			var menuLevel2_3 = __createMenu(2);
+
+			ctrl.registerMenu(menuLevel1_1);
+			ctrl.registerMenu(menuLevel1_2);
+			ctrl.registerMenu(menuLevel1_3);
+			ctrl.registerMenu(menuLevel2_1);
+			ctrl.registerMenu(menuLevel2_2);
+			ctrl.registerMenu(menuLevel2_3);
+
+			ctrl.openMenu(menuLevel2_1);
+			expect(menuLevel1_1.closeMenu).not.toHaveBeenCalled();
+			expect(menuLevel1_2.closeMenu).not.toHaveBeenCalled();
+			expect(menuLevel1_3.closeMenu).not.toHaveBeenCalled();
+			expect(menuLevel2_1.closeMenu).not.toHaveBeenCalled();
+			expect(menuLevel2_2.closeMenu).toHaveBeenCalled();
+			expect(menuLevel2_3.closeMenu).toHaveBeenCalled();
+		});
+	});
+
+	describe('ldSidebarMenu', function() {
+
+		beforeEach(inject(function($compile) {
+			$rootScope.opened = true;
+			var element = angular.element('<ld-sidebar-menu></ld-sidebar-menu>');
+			element.attr({
+				data: createMenu(),
+				opened: $rootScope.opened
+			});
+
+			element = $compile(element)($rootScope);
+			$rootScope.$digest();
+
+			var topul = element.find('ul').eq(0);
+			expect(topul.hasClass('nav')).toBeTruthy();
+			expect(topul.hasClass('nav-first-level')).toBeTruthy();
+
+			
+		}));
 	});
 });
