@@ -98,7 +98,7 @@ describe('Directive: ldExpandableInput', function () {
 		expect(close.find('a').eq(0).text()).toBe('Close');
 	}));
 
-	it('should change when opened is set to true and back to false', inject(function($compile) {
+	it('should change when opened is set to true and back to false', inject(function ($compile) {
 		$scope.opened = false;
 		var element = angular.element('<ld-expandable-input ng-model="value" opened="opened"></ld-expandable-input>');
 		$element = $compile(element)($scope);
@@ -132,7 +132,7 @@ describe('Directive: ldExpandableInput', function () {
 		expect(elmScope.isFocus).toBeTruthy();
 	}));
 
-	it('should update clear icon when input field has any text', inject(function($compile) {
+	it('should update clear icon when input field has any text', inject(function ($compile) {
 		$scope.opened = false;
 		var element = angular.element('<ld-expandable-input ng-model="value" opened="opened"></ld-expandable-input>');
 		$element = $compile(element)($scope);
@@ -171,7 +171,7 @@ describe('Directive: ldExpandableInput', function () {
 		expect(input[0].value).toBe('');
 	}));
 
-	it('should call callback methods', inject(function($compile) {
+	it('should call callback methods', inject(function ($compile) {
 		$scope.opened = false;
 		var element = angular.element('<ld-expandable-input ng-model="value" opened="opened" on-clear="onClear" on-open="onOpen" on-close="onClose"></ld-expandable-input>');
 		$element = $compile(element)($scope);
@@ -190,6 +190,40 @@ describe('Directive: ldExpandableInput', function () {
 		expect($scope.onClose).toHaveBeenCalled();
 	}));
 
-	it('should add custom icons/placeholder/value/close text', inject(function($compile) {
+	it('should add custom icons/placeholder/value/close text', inject(function ($compile) {
+		$scope.opened = false;
+		$scope.placeholder = 'Custom placeholder';
+		$scope.closeText = 'Custom close';
+		$scope.openIcon = 'open-icon';
+		$scope.closeIcon = 'close-icon';
+		$scope.clearIcon = 'clear-icon';
+		var element = angular.element('<ld-expandable-input ng-model="value" placeholder="{{placeholder}}" close-text="{{closeText}}" open-icon="{{openIcon}}" close-icon="{{closeIcon}}" clear-icon="{{clearIcon}}"></ld-expandable-input>');
+		$element = $compile(element)($scope);
+		$scope.$digest();
+
+		var elmScope = $element.isolateScope();
+
+		var button = $element.find('span').eq(0);
+		expect(elmScope.iconLeft).toBe('open-icon');
+
+		var buttonIcon = $element.find('i').eq(0);
+		expect(buttonIcon.hasClass('fa fa-fw open-icon fa-lg')).toBeTruthy();
+
+		var input = $element.find('input').eq(0);
+		expect(input.attr('placeholder')).toBe('Custom placeholder');
+
+		expect(elmScope.iconRight).toBe('clear-icon');
+
+		var buttonIconRight = $element.find('i').eq(1);
+		expect(buttonIconRight.hasClass('fa fa-fw clear-icon fa-lg')).toBeTruthy();
+
+		// open and check
+		elmScope.open();
+		$scope.$digest();
+		expect(elmScope.iconLeft).toBe('close-icon');
+		expect(buttonIcon.hasClass('fa fa-fw fa-lg close-icon')).toBeTruthy();
+
+		// check custom cancel
+		expect($element.find('a').eq(0).text()).toBe('Custom close');
 	}));
 });

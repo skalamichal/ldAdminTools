@@ -173,7 +173,7 @@ describe('Directive: ldMenu', function () {
 			expect(topul.hasClass('nav')).toBeTruthy();
 			expect(topul.hasClass('nav-first-level')).toBeTruthy();
 
-			
+
 		}));
 	});
 });

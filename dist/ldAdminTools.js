@@ -253,7 +253,7 @@ angular.module('ldAdminTools')
 			scope.select = function (item) {
 				scope.selected = item;
 
-				if (angular.isDefined(scope.onchanged)) {
+				if (angular.isDefined(scope.onchanged) && angular.isDefined(scope.onchanged())) {
 					scope.onchanged()(item);
 				}
 			};
