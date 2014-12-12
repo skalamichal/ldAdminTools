@@ -13,27 +13,27 @@
  */
 angular.module('ldAdminTools')
 	.directive('ldDropdown', [function () {
-	return {
-		restrict: 'EA',
-		scope: {
-			selected: '=?',
-			list: '=',
-			onchanged: '&?'
-		},
-		templateUrl: 'partials/lddropdown.html',
-		link: function (scope) {
-			scope.select = function (item) {
-				scope.selected = item;
+		return {
+			restrict: 'EA',
+			scope: {
+				selected: '=?',
+				list: '=',
+				onchanged: '&?'
+			},
+			templateUrl: 'partials/lddropdown.html',
+			link: function (scope) {
+				scope.select = function (item) {
+					scope.selected = item;
 
-				if (angular.isDefined(scope.onchanged) && angular.isDefined(scope.onchanged())) {
-					scope.onchanged()(item);
+					if (angular.isDefined(scope.onchanged) && angular.isDefined(scope.onchanged())) {
+						scope.onchanged()(item);
+					}
+				};
+
+				if (angular.isUndefined(scope.selected) && angular.isDefined(scope.list) && scope.list.length > 0) {
+					scope.select(scope.list[0]);
 				}
-			};
-
-			if (angular.isUndefined(scope.selected) && angular.isDefined(scope.list) && scope.list.length > 0) {
-				scope.select(scope.list[0]);
 			}
-		}
-	};
-}]);
+		};
+	}]);
 

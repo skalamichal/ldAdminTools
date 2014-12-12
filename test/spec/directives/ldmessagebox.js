@@ -39,7 +39,7 @@ describe('Directive: ldMessageBox', function () {
 		expect(content.text()).toBe(' enter message');
 	}));
 
-	it('should create defined message', inject(function($compile) {
+	it('should create defined message', inject(function ($compile) {
 		$rootScope.message = 'Loading';
 		$rootScope.icon = 'fa-loading';
 		$rootScope.spin = true;

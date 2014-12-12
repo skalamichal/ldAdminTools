@@ -1,6 +1,7 @@
 <div class="ld-expandable-input">
 	<div class="ld-input-group">
-		<span class="ld-input-group-btn" ng-class="{'relative' : !opened}" ng-style="{cursor: opened ? 'context-menu': 'pointer'}" ng-if="iconLeft.length>0" ng-click="open()"><i
+		<span class="ld-input-group-btn" ng-class="{'relative' : !opened}"
+			  ng-style="{cursor: opened ? 'context-menu': 'pointer'}" ng-if="iconLeft.length>0" ng-click="open()"><i
 				class="fa fa-fw {{ iconLeft }} fa-lg"></i></span>
 		<input class="form-control ld-form-control" type="text" ng-model="model"
 			   placeholder="{{ placeholder }}" ng-show="opened" ld-input-focus="isFocus" ng-blur="isFocus=false">

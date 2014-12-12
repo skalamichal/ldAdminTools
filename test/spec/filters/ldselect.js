@@ -154,7 +154,7 @@ describe('Filter: ldSelect', function () {
 		]);
 	});
 
-	it('should return first 3 items, ordered by lastname', function() {
+	it('should return first 3 items, ordered by lastname', function () {
 		var filter = {
 			order: {
 				values: ['lastname']

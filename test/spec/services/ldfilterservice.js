@@ -3,22 +3,22 @@
 describe('Service: ldFilterService', function () {
 
 	// load the service's module
-	beforeEach(module('ldAdminTools', function($provide) {
+	beforeEach(module('ldAdminTools', function ($provide) {
 		var mock = {
 			data: {},
 			isSupported: true,
-			set: jasmine.createSpy('set').andCallFake(function(key, value) {
+			set: jasmine.createSpy('set').andCallFake(function (key, value) {
 				mock.data[key] = value;
 			}),
-			get: jasmine.createSpy('get').andCallFake(function(key) {
+			get: jasmine.createSpy('get').andCallFake(function (key) {
 				return mock.data[key];
 			}),
-			remove: jasmine.createSpy('remove').andCallFake(function(key) {
+			remove: jasmine.createSpy('remove').andCallFake(function (key) {
 				delete mock.data[key];
 			}),
-			keys: jasmine.createSpy('keys').andCallFake(function() {
+			keys: jasmine.createSpy('keys').andCallFake(function () {
 				var ks = [];
-				angular.forEach(mock.data, function(data, key) {
+				angular.forEach(mock.data, function (data, key) {
 					ks.push(key);
 				});
 				return ks;
@@ -134,18 +134,30 @@ describe('Service: ldFilterService', function () {
 		expect(filter.dirty).toBeFalsy();
 		expect(result).toEqual([
 			{
-				firstname: 'John', lastname: 'Doe', email: 'john.doe@example.com', age: 20, $: {firstname: 'John', lastname: 'Doe'}
+				firstname: 'John',
+				lastname: 'Doe',
+				email: 'john.doe@example.com',
+				age: 20,
+				$: {firstname: 'John', lastname: 'Doe'}
 			},
 			{
-				firstname: 'Josh', lastname: 'Hutcherson', email: 'josh.hutch@example.com', age: 25, $: {firstname: 'Josh', lastname: 'Hutcherson'}
+				firstname: 'Josh',
+				lastname: 'Hutcherson',
+				email: 'josh.hutch@example.com',
+				age: 25,
+				$: {firstname: 'Josh', lastname: 'Hutcherson'}
 			},
 			{
-				firstname: 'Jennifer', lastname: 'Lawrence', email: 'jenny.lawrence@example.com', age: 26, $: {firstname: 'Jennifer', lastname: 'Lawrence'}
+				firstname: 'Jennifer',
+				lastname: 'Lawrence',
+				email: 'jenny.lawrence@example.com',
+				age: 26,
+				$: {firstname: 'Jennifer', lastname: 'Lawrence'}
 			}
 		]);
 	});
 
-	it('should set global search', function() {
+	it('should set global search', function () {
 		ldFilterService.setWhereCondition('test', 'Will');
 		var filter = ldFilterService.getFilter('test');
 		expect(filter.dirty).toBeTruthy();
@@ -164,7 +176,7 @@ describe('Service: ldFilterService', function () {
 		expect(filter.data.where.$).toBeUndefined();
 	});
 
-	it('should defined global search via object', function() {
+	it('should defined global search via object', function () {
 		ldFilterService.setWhereCondition('test', {$: 'Will'});
 		var filter = ldFilterService.getFilter('test');
 		expect(filter.dirty).toBeTruthy();
@@ -183,7 +195,7 @@ describe('Service: ldFilterService', function () {
 		expect(filter.data.where.$).toBeUndefined();
 	});
 
-	it('should set search via object and remove via array', function() {
+	it('should set search via object and remove via array', function () {
 		ldFilterService.setWhereCondition('test', {firstname: 'Will', age: 26, $: 'Smith'});
 		var filter = ldFilterService.getFilter('test');
 		expect(filter.dirty).toBeTruthy();
@@ -206,7 +218,7 @@ describe('Service: ldFilterService', function () {
 		expect(filter.data.where).toBeUndefined();
 	});
 
-	it('should define ordering options, apply and remove it', function() {
+	it('should define ordering options, apply and remove it', function () {
 		ldFilterService.setOrderByCondition('test', 'age', false);
 		var filter = ldFilterService.getFilter('test');
 		expect(filter.dirty).toBeTruthy();
@@ -243,7 +255,7 @@ describe('Service: ldFilterService', function () {
 		expect(filter.data.order).toBeUndefined();
 	});
 
-	it('should combine preset and custom filter options', function() {
+	it('should combine preset and custom filter options', function () {
 		ldFilterService.registerPresets('test', presets.test);
 
 		var filter = ldFilterService.getFilter('test');

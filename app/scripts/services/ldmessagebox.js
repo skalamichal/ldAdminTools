@@ -37,7 +37,7 @@ angular.module('ldAdminTools')
 				body.addClass(ON_CLASS);
 			};
 
-			this.hide = function() {
+			this.hide = function () {
 				body.removeClass(ON_CLASS);
 				messageElm.remove();
 			};

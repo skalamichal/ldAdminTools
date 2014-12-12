@@ -9,12 +9,12 @@ describe('Directive: ldResize', function () {
 			fn: null,
 			innerWidth: 800,
 			innerHeight: 600,
-			setSize: function(width, height) {
+			setSize: function (width, height) {
 				windowMock.innerWidth = width;
 				windowMock.innerHeight = height;
 			},
 			bind: jasmine.createSpy('bind'),
-			addEventListener: jasmine.createSpy('addEventListener').andCallFake(function(event, fn) {
+			addEventListener: jasmine.createSpy('addEventListener').andCallFake(function (event, fn) {
 				windowMock.fn = fn;
 			})
 		};
@@ -39,7 +39,7 @@ describe('Directive: ldResize', function () {
 		$compile('<div ld-resize="onResize"></div>')($scope);
 		$rootScope.$digest();
 
-		$window.setSize(300,200);
+		$window.setSize(300, 200);
 		$rootScope.$digest();
 
 		$scope.updateSize();

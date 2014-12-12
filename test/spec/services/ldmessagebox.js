@@ -18,7 +18,7 @@ describe('Service: $ldMessageBox', function () {
 		body = $document.find('body').eq(0);
 	}));
 
-	it('should have the class defined on the body, when the message is displayed', function() {
+	it('should have the class defined on the body, when the message is displayed', function () {
 		expect(body).not.toBeUndefined();
 		expect(body.hasClass('ld-message-box-on')).toBeFalsy();
 
@@ -33,7 +33,7 @@ describe('Service: $ldMessageBox', function () {
 		expect(body.hasClass('ld-message-box-on')).toBeFalsy();
 	});
 
-	it('should show only one message', function() {
+	it('should show only one message', function () {
 		var messages = body.find('div');
 		expect(messages.length).toBe(0);
 
@@ -43,7 +43,7 @@ describe('Service: $ldMessageBox', function () {
 		$scope.$digest();
 		messages = body.find('div');
 		var count = 0;
-		angular.forEach(messages, function(message) {
+		angular.forEach(messages, function (message) {
 			if (angular.element(message).hasClass('ld-message-box')) {
 				count++;
 			}

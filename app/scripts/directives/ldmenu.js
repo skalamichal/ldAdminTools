@@ -28,8 +28,8 @@ angular.module('ldAdminTools')
 		};
 
 		// open menu function, goes through all menus at the same level and calls its closeMenu function on the scope
-		this.openMenu = function(menu) {
-			angular.forEach(this.menus[menu.level], function(m) {
+		this.openMenu = function (menu) {
+			angular.forEach(this.menus[menu.level], function (m) {
 				if (m.$id !== menu.$id) {
 					m.closeMenu();
 				}
@@ -40,7 +40,7 @@ angular.module('ldAdminTools')
 
 		// close all submenus
 		function closeAllSubmenus(level) {
-			angular.forEach(self.menus, function(menu, index) {
+			angular.forEach(self.menus, function (menu, index) {
 				if (index > level) {
 					angular.forEach(menu, function (m) {
 						m.closeMenu();
@@ -123,7 +123,7 @@ angular.module('ldAdminTools')
 					}
 
 					// define close menu at the scope, called from ld-sidebar-menu controller
-					scope.closeMenu = function() {
+					scope.closeMenu = function () {
 						if (angular.isDefined(submenuItemController)) {
 							submenuItemController.closeMenu();
 						}
@@ -157,12 +157,12 @@ angular.module('ldAdminTools')
 				item: '=data',
 				level: '='
 			},
-			controller: ['$scope', function($scope) {
-				this.registerMenu = function(menu) {
+			controller: ['$scope', function ($scope) {
+				this.registerMenu = function (menu) {
 					$scope.menu = menu;
 				};
 
-				this.closeMenu = function() {
+				this.closeMenu = function () {
 					if (!$scope.collapsed) {
 						$scope.collapsed = true;
 					}
@@ -172,21 +172,21 @@ angular.module('ldAdminTools')
 			require: '^ldSidebarMenu',
 			templateUrl: 'partials/ldsubmenuitem.html',
 			replace: true,
-			link: function(scope, element, attrs, controller) {
+			link: function (scope, element, attrs, controller) {
 				scope.collapsed = true;
 
-				scope.toggle = function() {
+				scope.toggle = function () {
 					scope.collapsed = !scope.collapsed;
 					if (!scope.collapsed && angular.isDefined(scope.menu)) {
 						controller.openMenu(scope.menu);
 					}
 				};
 
-				scope.collapsedClass = function() {
+				scope.collapsedClass = function () {
 					return scope.collapsed ? 'fa-angle-left' : 'fa-angle-down';
 				};
 
-				scope.isCollapsed = function() {
+				scope.isCollapsed = function () {
 					return scope.collapsed;
 				};
 			}

@@ -17,7 +17,7 @@ describe('Filter: lfFrom', function () {
 		expect(ldFrom(input)).toBe(input);
 	});
 
-	it('should return array from given index', function() {
+	it('should return array from given index', function () {
 		expect(ldFrom(data).length).toEqual(10);
 
 		expect(ldFrom(data, 5).length).toEqual(5);

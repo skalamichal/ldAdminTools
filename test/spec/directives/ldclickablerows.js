@@ -2,12 +2,12 @@
 
 describe('Directive: ldClickableRows', function () {
 
-  // load the directive's module
-  beforeEach(module('ldAdminTools'));
+	// load the directive's module
+	beforeEach(module('ldAdminTools'));
 
-  var scope;
+	var scope;
 
-  beforeEach(inject(function ($rootScope) {
-    scope = $rootScope.$new();
-  }));
+	beforeEach(inject(function ($rootScope) {
+		scope = $rootScope.$new();
+	}));
 });

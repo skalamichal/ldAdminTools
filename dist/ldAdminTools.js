@@ -171,7 +171,7 @@ angular.module('ldAdminTools')
 angular.module('ldAdminTools')
 	.constant('ldDataNavigationConfig', {
 		messageDefault: '{0} of {1}',   // the page of pages message, where the {0} is replaced by current page number and
-										// {1} with the total pages
+                                        // {1} with the total pages
 		showPreviousButtonDefault: true,
 		showNextButtonDefault: true
 	})
@@ -188,18 +188,12 @@ angular.module('ldAdminTools')
 			link: function postLink(scope) {
 				var message = scope.message || config.messageDefault;
 
-				scope.disablePreviousButtonClass = '';
-				scope.disableNextButtonClass = '';
-
 				scope.showPreviousButton = scope.showPreviousButton || config.showPreviousButtonDefault;
 				scope.showNextButton = scope.showNextButton || config.showNextButtonDefault;
 
 				scope.currentIndex = scope.data.indexOf(scope.currentId);
 
 				function updateNavigation() {
-					scope.disablePreviousButtonClass = (scope.currentIndex <= 0 ? 'disabled' : '');
-					scope.disableNextButtonClass = (scope.currentIndex >= scope.data.length - 1 ? 'disabled' : '');
-
 					var msg = message.replace('{0}', scope.currentIndex + 1);
 					msg = msg.replace('{1}', scope.data.length);
 					scope.message = msg;
@@ -213,7 +207,7 @@ angular.module('ldAdminTools')
 					scope.index = scope.currentIndex + 1;
 				};
 
-				scope.$watch('index', function(newIndex) {
+				scope.$watch('index', function (newIndex) {
 					if (angular.isUndefined(newIndex)) {
 						return;
 					}
@@ -241,29 +235,29 @@ angular.module('ldAdminTools')
  */
 angular.module('ldAdminTools')
 	.directive('ldDropdown', [function () {
-	return {
-		restrict: 'EA',
-		scope: {
-			selected: '=?',
-			list: '=',
-			onchanged: '&?'
-		},
-		templateUrl: 'partials/lddropdown.html',
-		link: function (scope) {
-			scope.select = function (item) {
-				scope.selected = item;
+		return {
+			restrict: 'EA',
+			scope: {
+				selected: '=?',
+				list: '=',
+				onchanged: '&?'
+			},
+			templateUrl: 'partials/lddropdown.html',
+			link: function (scope) {
+				scope.select = function (item) {
+					scope.selected = item;
 
-				if (angular.isDefined(scope.onchanged) && angular.isDefined(scope.onchanged())) {
-					scope.onchanged()(item);
+					if (angular.isDefined(scope.onchanged) && angular.isDefined(scope.onchanged())) {
+						scope.onchanged()(item);
+					}
+				};
+
+				if (angular.isUndefined(scope.selected) && angular.isDefined(scope.list) && scope.list.length > 0) {
+					scope.select(scope.list[0]);
 				}
-			};
-
-			if (angular.isUndefined(scope.selected) && angular.isDefined(scope.list) && scope.list.length > 0) {
-				scope.select(scope.list[0]);
 			}
-		}
-	};
-}]);
+		};
+	}]);
 
 
 'use strict';
@@ -383,7 +377,7 @@ angular.module('ldAdminTools')
 				var isFocus = $parse(property);
 				scope.$watch(isFocus, function (newValue) {
 					if (!!newValue) {
-						$timeout(function() {
+						$timeout(function () {
 							element[0].focus();
 						});
 					}
@@ -422,8 +416,8 @@ angular.module('ldAdminTools')
 		};
 
 		// open menu function, goes through all menus at the same level and calls its closeMenu function on the scope
-		this.openMenu = function(menu) {
-			angular.forEach(this.menus[menu.level], function(m) {
+		this.openMenu = function (menu) {
+			angular.forEach(this.menus[menu.level], function (m) {
 				if (m.$id !== menu.$id) {
 					m.closeMenu();
 				}
@@ -434,7 +428,7 @@ angular.module('ldAdminTools')
 
 		// close all submenus
 		function closeAllSubmenus(level) {
-			angular.forEach(self.menus, function(menu, index) {
+			angular.forEach(self.menus, function (menu, index) {
 				if (index > level) {
 					angular.forEach(menu, function (m) {
 						m.closeMenu();
@@ -517,7 +511,7 @@ angular.module('ldAdminTools')
 					}
 
 					// define close menu at the scope, called from ld-sidebar-menu controller
-					scope.closeMenu = function() {
+					scope.closeMenu = function () {
 						if (angular.isDefined(submenuItemController)) {
 							submenuItemController.closeMenu();
 						}
@@ -551,12 +545,12 @@ angular.module('ldAdminTools')
 				item: '=data',
 				level: '='
 			},
-			controller: ['$scope', function($scope) {
-				this.registerMenu = function(menu) {
+			controller: ['$scope', function ($scope) {
+				this.registerMenu = function (menu) {
 					$scope.menu = menu;
 				};
 
-				this.closeMenu = function() {
+				this.closeMenu = function () {
 					if (!$scope.collapsed) {
 						$scope.collapsed = true;
 					}
@@ -566,21 +560,21 @@ angular.module('ldAdminTools')
 			require: '^ldSidebarMenu',
 			templateUrl: 'partials/ldsubmenuitem.html',
 			replace: true,
-			link: function(scope, element, attrs, controller) {
+			link: function (scope, element, attrs, controller) {
 				scope.collapsed = true;
 
-				scope.toggle = function() {
+				scope.toggle = function () {
 					scope.collapsed = !scope.collapsed;
 					if (!scope.collapsed && angular.isDefined(scope.menu)) {
 						controller.openMenu(scope.menu);
 					}
 				};
 
-				scope.collapsedClass = function() {
+				scope.collapsedClass = function () {
 					return scope.collapsed ? 'fa-angle-left' : 'fa-angle-down';
 				};
 
-				scope.isCollapsed = function() {
+				scope.isCollapsed = function () {
 					return scope.collapsed;
 				};
 			}
@@ -2353,7 +2347,7 @@ angular.module('ldAdminTools')
 				body.addClass(ON_CLASS);
 			};
 
-			this.hide = function() {
+			this.hide = function () {
 				body.removeClass(ON_CLASS);
 				messageElm.remove();
 			};
@@ -2374,7 +2368,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/lddatanavigation.html',
-    "<div class=ld-data-navigation>{{ filter }}: {{ message }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
+    "<div class=ld-data-navigation>{{ filter }}: {{ message }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=\"{disabled: currentIndex <= 0}\" ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=\"{disabled: currentIndex >= data.length - 1}\" ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
   );
 
 

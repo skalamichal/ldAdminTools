@@ -27,6 +27,7 @@ module.exports = function (config) {
 			'bower_components/angular-animate/angular-animate.js',
 			'dist/ldAdminTools.js',
 
+			'test/util/**/*.js',
 			'test/mock/**/*.js',
 			'test/spec/**/*.js'
 		],

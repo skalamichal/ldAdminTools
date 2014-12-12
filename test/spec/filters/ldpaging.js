@@ -12,12 +12,12 @@ describe('Filter: ldPaging', function () {
 		ldPading = $filter('ldPaging');
 	}));
 
-	it('should return return input if it is not an array', function() {
+	it('should return return input if it is not an array', function () {
 		var input = 'Michal';
 		expect(ldPading(input)).toBe(input);
 	});
 
-	it('should return expected number of rows', function() {
+	it('should return expected number of rows', function () {
 		expect(ldPading(data, 1, 10).length).toEqual(10);
 		expect(ldPading(data, 1, 10)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 

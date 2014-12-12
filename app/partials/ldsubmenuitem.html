@@ -1,10 +1,10 @@
 <div>
-    <a class="ld-menuitem" ng-href="{{item.url}}" ng-click="toggle()">
-        <i ng-if="item.icon.length > 0" class="fa fa-fw {{item.icon}}"></i>
-        {{ item.text }}
-        <span class="badge" ng-if="item.badge && item.badge() > 0">{{ item.badge() }}</span>
-        <span class="fa ld-right" ng-class="collapsedClass()"></span>
-    </a>
+	<a class="ld-menuitem" ng-href="{{item.url}}" ng-click="toggle()">
+		<i ng-if="item.icon.length > 0" class="fa fa-fw {{item.icon}}"></i>
+		{{ item.text }}
+		<span class="badge" ng-if="item.badge && item.badge() > 0">{{ item.badge() }}</span>
+		<span class="fa ld-right" ng-class="collapsedClass()"></span>
+	</a>
 
-    <ld-menu collapse='isCollapsed()' data="item.submenu" level="level + 1"></ld-menu>
+	<ld-menu collapse='isCollapsed()' data="item.submenu" level="level + 1"></ld-menu>
 </div>

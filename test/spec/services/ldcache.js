@@ -8,18 +8,18 @@ describe('Service: ldCache', function () {
 		mock = {
 			data: {},
 			isSupported: true,
-			set: jasmine.createSpy('set').andCallFake(function(key, value) {
+			set: jasmine.createSpy('set').andCallFake(function (key, value) {
 				mock.data[key] = value;
 			}),
-			get: jasmine.createSpy('get').andCallFake(function(key) {
+			get: jasmine.createSpy('get').andCallFake(function (key) {
 				return mock.data[key];
 			}),
-			remove: jasmine.createSpy('remove').andCallFake(function(key) {
+			remove: jasmine.createSpy('remove').andCallFake(function (key) {
 				delete mock.data[key];
 			}),
-			keys: jasmine.createSpy('keys').andCallFake(function() {
+			keys: jasmine.createSpy('keys').andCallFake(function () {
 				var ks = [];
-				angular.forEach(mock.data, function(data, key) {
+				angular.forEach(mock.data, function (data, key) {
 					ks.push(key);
 				});
 				return ks;
@@ -50,7 +50,7 @@ describe('Service: ldCache', function () {
 		expect(mock.get).not.toHaveBeenCalled();
 	});
 
-	it('should remove value from cache', function() {
+	it('should remove value from cache', function () {
 		ldCache.cache('name', 'michal');
 		ldCache.clear('name');
 
@@ -61,7 +61,7 @@ describe('Service: ldCache', function () {
 		expect(mock.get).toHaveBeenCalledWith('ldCache_name');
 	});
 
-	it('should clear all values from cache', function() {
+	it('should clear all values from cache', function () {
 		ldCache.cache('firstname', 'michal');
 		ldCache.cache('lastname', 'smith');
 
@@ -72,7 +72,7 @@ describe('Service: ldCache', function () {
 		expect(ldCache.get('lastname')).toBeUndefined();
 	});
 
-	it('should load value from localstorage', function() {
+	it('should load value from localstorage', function () {
 		mock.data.ldCache_name = 'michal';
 
 		var name = ldCache.get('name');

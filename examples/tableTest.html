@@ -1,57 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head lang="en">
-    <meta charset="UTF-8">
-    <title>Table Test</title>
-    <link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css"/>
-    <link rel="stylesheet" type="text/css" href="bower_components/font-awesome/css/font-awesome.css"/>
-    <link rel="stylesheet" type="text/css" href="ldAdminTools.css"/>
+	<meta charset="UTF-8">
+	<title>Table Test</title>
+	<link rel="stylesheet" type="text/css" href="bower_components/bootstrap/dist/css/bootstrap.css"/>
+	<link rel="stylesheet" type="text/css" href="bower_components/font-awesome/css/font-awesome.css"/>
+	<link rel="stylesheet" type="text/css" href="ldAdminTools.css"/>
 </head>
 <body ng-app="TableApp">
 
 <div style="margin: 20px" ng-controller="testController">
 
-    <a href="" ng-click="addNewUser()">Add new user</a>
+	<a href="" ng-click="addNewUser()">Add new user</a>
 
-    <table ld-table="filteredUsers" ld-table-source="users" class="table table-condensed table-striped" ld-table-page-rows="10" ld-filter="test">
-        <thead>
-        <tr>
-            <th></th>
-            <th>
-                <ld-dropdown list="filters" onchanged="selectItem"></ld-dropdown>
-            </th>
-            <th>
-                <input ld-table-search ng-model="searchValue" class="form-control" placeholder="global search ..."
-                       type="text" style="display: inline-block; width: 250px"/>
-                <ld-table-navigation-dropdown></ld-table-navigation-dropdown>
-                <ld-table-navigation></ld-table-navigation>
-            </th>
-        </tr>
-        <tr>
-            <th><ld-table-checkbox></ld-table-checkbox></th>
-            <th ld-table-sort="lastName">Name</th>
-            <th ld-table-sort="email">Email</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="user in filteredUsers">
-            <td width="20"><input type="checkbox" ng-model="user.selected"></td>
-            <td>{{ user.firstName }} {{ user.lastName }}</td>
-            <td>{{ user.email }}</td>
-        </tr>
-        </tbody>
-        <tfoot>
-        <tr>
-            <td></td>
-            <td>
-                <ld-table-pagination></ld-table-pagination>
-            </td>
-            <td>
-                <ld-table-info text="{0} - {1} of {2} Messages"></ld-table-info>
-            </td>
-        </tr>
-        </tfoot>
-    </table>
+	<table ld-table="filteredUsers" ld-table-source="users" class="table table-condensed table-striped"
+		   ld-table-page-rows="10" ld-filter="test">
+		<thead>
+		<tr>
+			<th></th>
+			<th>
+				<ld-dropdown list="filters" onchanged="selectItem"></ld-dropdown>
+			</th>
+			<th>
+				<input ld-table-search ng-model="searchValue" class="form-control" placeholder="global search ..."
+					   type="text" style="display: inline-block; width: 250px"/>
+				<ld-table-navigation-dropdown></ld-table-navigation-dropdown>
+				<ld-table-navigation></ld-table-navigation>
+			</th>
+		</tr>
+		<tr>
+			<th>
+				<ld-table-checkbox></ld-table-checkbox>
+			</th>
+			<th ld-table-sort="lastName">Name</th>
+			<th ld-table-sort="email">Email</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr ng-repeat="user in filteredUsers">
+			<td width="20"><input type="checkbox" ng-model="user.selected"></td>
+			<td>{{ user.firstName }} {{ user.lastName }}</td>
+			<td>{{ user.email }}</td>
+		</tr>
+		</tbody>
+		<tfoot>
+		<tr>
+			<td></td>
+			<td>
+				<ld-table-pagination></ld-table-pagination>
+			</td>
+			<td>
+				<ld-table-info text="{0} - {1} of {2} Messages"></ld-table-info>
+			</td>
+		</tr>
+		</tfoot>
+	</table>
 
 </div>
 
@@ -65,68 +68,68 @@
 
 <script type="text/javascript">
 
-    angular.module('TableApp', ['ui.bootstrap', 'RecursionHelper', 'LocalStorageModule', 'ldAdminTools'])
-            .controller('testController', ['$scope', 'ldFilterService', function (scope, filterService) {
+	angular.module('TableApp', ['ui.bootstrap', 'RecursionHelper', 'LocalStorageModule', 'ldAdminTools'])
+			.controller('testController', ['$scope', 'ldFilterService', function (scope, filterService) {
 
-                scope.filters = [
-                    {
-                        name: 'All',
-                        id: 1,
-                        default: true
-                    },
-                    {
-                        name: 'Michal',
-                        id: 2,
-                        where: {
-                            'firstName': 'Michal'
-                        }
-                    },
-                    {
-                        divider: true
-                    },
-                    {
-                        name: 'Email @black.com',
-                        id: 3,
-                        where: {
-                            'email': '@black.com'
-                        }
-                    }
-                ];
+				scope.filters = [
+					{
+						name: 'All',
+						id: 1,
+						default: true
+					},
+					{
+						name: 'Michal',
+						id: 2,
+						where: {
+							'firstName': 'Michal'
+						}
+					},
+					{
+						divider: true
+					},
+					{
+						name: 'Email @black.com',
+						id: 3,
+						where: {
+							'email': '@black.com'
+						}
+					}
+				];
 
-                filterService.registerPresets('test', scope.filters);
-                filterService.setDefaultPreset('test');
+				filterService.registerPresets('test', scope.filters);
+				filterService.setDefaultPreset('test');
 
-                function randomTableRow() {
-                    var fnames = ['Michal', 'John', 'George', 'Jones', 'Arnold', 'Dean'];
-                    var lnames = ['Doe', 'Smith', 'Rambo', 'Black', 'White'];
+				function randomTableRow() {
+					var fnames = ['Michal', 'John', 'George', 'Jones', 'Arnold', 'Dean'];
+					var lnames = ['Doe', 'Smith', 'Rambo', 'Black', 'White'];
 
-                    var fname = fnames[Math.floor(Math.random() * fnames.length)];
-                    var lname = lnames[Math.floor(Math.random() * lnames.length)];
+					var fname = fnames[Math.floor(Math.random() * fnames.length)];
+					var lname = lnames[Math.floor(Math.random() * lnames.length)];
 
-                    return {
-                        firstName: fname,
-                        lastName: lname,
-                        email: fname.toLowerCase() + '@' + lname.toLowerCase() + '.com'
-                    };
-                }
+					return {
+						firstName: fname,
+						lastName: lname,
+						email: fname.toLowerCase() + '@' + lname.toLowerCase() + '.com'
+					};
+				}
 
-                scope.users = [];
-                for (var i = 0; i < 32; i++) {
-                    scope.users.push(randomTableRow());
-                }
+				scope.users = [];
+				for (var i = 0; i < 32; i++) {
+					scope.users.push(randomTableRow());
+				}
 
-                scope.addNewUser = function() {
-                    console.log('Add new user');
-                    scope.users.push(randomTableRow());
-                };
+				scope.addNewUser = function () {
+					console.log('Add new user');
+					scope.users.push(randomTableRow());
+				};
 
-                scope.selectItem = function(item) {
-                    console.log(item);
-                    filterService.setPreset('test', item.id);
-                    filterService.applyFilter('test');
-                };
+				scope.selectItem = function (item) {
+					console.log(item);
+					filterService.setPreset('test', item.id);
+					filterService.applyFilter('test');
+				};
 
-            }])
+			}])
 
 </script>
 

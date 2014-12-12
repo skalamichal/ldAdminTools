@@ -11,7 +11,7 @@ describe('Directive: ldMenu', function () {
 	beforeEach(inject(function (_$rootScope_) {
 		$rootScope = _$rootScope_.$new();
 		$rootScope.unread = 5;
-		unreadFn = jasmine.createSpy('unreadFn').andCallFake(function() {
+		unreadFn = jasmine.createSpy('unreadFn').andCallFake(function () {
 			return $rootScope.unread;
 		});
 	}));
@@ -21,7 +21,7 @@ describe('Directive: ldMenu', function () {
 			{
 				'url': '#/menu1',
 				'icon': 'fa-menu1',
-				'text':'Menu 1'
+				'text': 'Menu 1'
 			},
 			{
 				'url': '#/menu2',
@@ -53,6 +53,7 @@ describe('Directive: ldMenu', function () {
 
 	describe('ldSidebarMenuController', function () {
 		var id = 1;
+
 		function __createMenu(level) {
 			var menuScope = $rootScope.$new();
 			menuScope.level = level;
@@ -63,18 +64,18 @@ describe('Directive: ldMenu', function () {
 
 		var ctrl;
 
-		beforeEach(inject(function($controller) {
+		beforeEach(inject(function ($controller) {
 			ctrl = $controller('ldSidebarMenuController', {});
 		}));
 
-		it('should return string for values 1, 2, 3', function() {
+		it('should return string for values 1, 2, 3', function () {
 			expect(ctrl.getLevelAsString(1)).toBe('first');
 			expect(ctrl.getLevelAsString(2)).toBe('second');
 			expect(ctrl.getLevelAsString(3)).toBe('third');
 			expect(ctrl.getLevelAsString()).toBe('');
 		});
 
-		it('should check registerMenu', function() {
+		it('should check registerMenu', function () {
 			var menuLevel1_1 = __createMenu(1);
 			var menuLevel1_2 = __createMenu(1);
 			var menuLevel1_3 = __createMenu(1);
@@ -107,7 +108,7 @@ describe('Directive: ldMenu', function () {
 			expect(ctrl.menus[2].length).toBe(3);
 		});
 
-		it('should open and close menu', function() {
+		it('should open and close menu', function () {
 			var menuLevel1_1 = __createMenu(1);
 			var menuLevel1_2 = __createMenu(1);
 			var menuLevel1_3 = __createMenu(1);
@@ -131,7 +132,7 @@ describe('Directive: ldMenu', function () {
 			expect(menuLevel2_3.closeMenu).toHaveBeenCalled();
 		});
 
-		it('should open second level menu and close menu', function() {
+		it('should open second level menu and close menu', function () {
 			var menuLevel1_1 = __createMenu(1);
 			var menuLevel1_2 = __createMenu(1);
 			var menuLevel1_3 = __createMenu(1);
@@ -156,9 +157,9 @@ describe('Directive: ldMenu', function () {
 		});
 	});
 
-	describe('ldSidebarMenu', function() {
+	describe('ldSidebarMenu', function () {
 
-		beforeEach(inject(function($compile) {
+		beforeEach(inject(function ($compile) {
 			$rootScope.opened = true;
 			var element = angular.element('<ld-sidebar-menu></ld-sidebar-menu>');
 			element.attr({
@@ -172,7 +173,6 @@ describe('Directive: ldMenu', function () {
 			var topul = element.find('ul').eq(0);
 			expect(topul.hasClass('nav')).toBeTruthy();
 			expect(topul.hasClass('nav-first-level')).toBeTruthy();
-
 
 		}));
 	});

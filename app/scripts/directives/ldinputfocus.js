@@ -15,7 +15,7 @@ angular.module('ldAdminTools')
 				var isFocus = $parse(property);
 				scope.$watch(isFocus, function (newValue) {
 					if (!!newValue) {
-						$timeout(function() {
+						$timeout(function () {
 							element[0].focus();
 						});
 					}
