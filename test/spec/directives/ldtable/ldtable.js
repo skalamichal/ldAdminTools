@@ -3,34 +3,32 @@
 describe('Directive: ldTable', function () {
 
 	// load the directive's module
+	var ldFilterServiceMock;
 	beforeEach(module('ldAdminTools', function ($provide) {
-		var ldFilterService = {
-			getFilter: jasmine.createSpy('getFilter').andCallThrough(),
-			removeFilter: jasmine.createSpy('removeFilter').andCallThrough(),
-			forceUpdate: jasmine.createSpy('forceUpdate').andCallThrough(),
-			setWhereCondition: jasmine.createSpy('setWhereCondition').andCallThrough(),
-			removeWhereCondition: jasmine.createSpy('removeWhereCondition').andCallThrough(),
-			clearWhereCondition: jasmine.createSpy('clearWhereCondition').andCallThrough(),
-			setOrderByCondition: jasmine.createSpy('setOrderByCondition').andCallThrough(),
-			clearOrderByFilter: jasmine.createSpy('clearOrderByFilter').andCallThrough(),
-			applyFilter: jasmine.createSpy('applyFilter').andCallThrough()
+		ldFilterServiceMock = {
+			getFilter: jasmine.createSpy('getFilter'),
+			removeFilter: jasmine.createSpy('removeFilter'),
+			forceUpdate: jasmine.createSpy('forceUpdate'),
+			setWhereCondition: jasmine.createSpy('setWhereCondition'),
+			removeWhereCondition: jasmine.createSpy('removeWhereCondition'),
+			clearWhereCondition: jasmine.createSpy('clearWhereCondition'),
+			setOrderByCondition: jasmine.createSpy('setOrderByCondition'),
+			clearOrderByFilter: jasmine.createSpy('clearOrderByFilter'),
+			applyFilter: jasmine.createSpy('applyFilter')
 		};
 
-		//$provide.factory('ldFilterService', function () {
-	//		return ldFilterService;
-	//	});
+		//$provide.value('ldFilterService', ldFilterServiceMock);
 	}));
 
-	var scope,
-		ctrl,
+	var ctrl,
+		$rootScope,
 		$controller,
 		$parse,
 		$filter,
 		ldFilterService;
 
 	beforeEach(inject(function (_$rootScope_, _$controller_, _$parse_, _$filter_, _ldFilterService_) {
-		scope = _$rootScope_.$new();
-
+		$rootScope = _$rootScope_;
 		$controller = _$controller_;
 		$parse = _$parse_;
 		$filter = _$filter_;
@@ -39,7 +37,7 @@ describe('Directive: ldTable', function () {
 
 	function createController() {
 		var controller = {
-			$scope: scope,
+			$scope: $rootScope,
 			$parse: $parse,
 			$filter: $filter,
 			$attrs: {
@@ -49,13 +47,13 @@ describe('Directive: ldTable', function () {
 		};
 
 		ctrl = $controller('ldTableController', controller);
-		scope.$digest();
+		$rootScope.$digest();
 	}
 
 	function createControllerWithDisplayData() {
-		scope.displayData = createData();
+		$rootScope.displayData = createData();
 		var controller = {
-			$scope: scope,
+			$scope: $rootScope,
 			$parse: $parse,
 			$filter: $filter,
 			$attrs: {
@@ -66,13 +64,13 @@ describe('Directive: ldTable', function () {
 		};
 
 		ctrl = $controller('ldTableController', controller);
-		scope.$digest();
+		$rootScope.$digest();
 	}
 
 	function createControllerWithSourceData() {
-		scope.sourceData = createData();
+		$rootScope.sourceData = createData();
 		var controller = {
-			$scope: scope,
+			$scope: $rootScope,
 			$parse: $parse,
 			$filter: $filter,
 			$attrs: {
@@ -84,7 +82,7 @@ describe('Directive: ldTable', function () {
 		};
 
 		ctrl = $controller('ldTableController', controller);
-		scope.$digest();
+		$rootScope.$digest();
 	}
 
 	function createData() {
@@ -115,36 +113,111 @@ describe('Directive: ldTable', function () {
 
 	it('should define the "displayData" scope variable', function () {
 		createController();
-		expect(scope.displayData).toBeDefined();
+		expect($rootScope.displayData).toBeDefined();
 		expect(ctrl.getFilter()).not.toBe('unittestfilter');
 	});
 
 	it('should copy source data to "displayData"', function () {
 		createControllerWithSourceData();
 
-		expect(scope.displayData).toBeDefined();
-		expect(scope.displayData).toEqual(scope.sourceData);
+		expect($rootScope.displayData).toBeDefined();
+		expect($rootScope.displayData).toEqual($rootScope.sourceData);
 		expect(ctrl.getFilter()).toBe('unittestfilter');
 	});
 
 	describe('work with display data', function() {
-		beforeEach(function() {
+		beforeEach(function () {
 			createControllerWithDisplayData();
 		});
 
-		it('should always use the same data, even when external data are changed', function() {
+		it('should always use the same data, even when external data are changed', function () {
 			expect(ctrl.getRows()).toEqual(createData());
 
 			var changed = [{id: 1}, {id: 3}];
-			scope.displayData = [].concat(changed);
-			scope.$digest();
+			$rootScope.displayData = [].concat(changed);
+			$rootScope.$digest();
 
 			expect(ctrl.getRows()).toEqual(changed);
 
 			ctrl.filterUpdated();
-			scope.$digest();
+			$rootScope.$digest();
 
 			expect(ctrl.getRows()).not.toEqual(changed);
+		});
+
+		it('should set paging for the table and navigate through pages', function () {
+			spyOn(ctrl, 'applyPaging').andCallThrough();
+			ctrl.setupPaging(3, 2);
+			$rootScope.$digest();
+
+			expect(ctrl.applyPaging).toHaveBeenCalled();
+			expect(ctrl.getRowsPerPage()).toBe(3);
+			expect(ctrl.getCurrentPage()).toBe(2);
+			expect(ctrl.getTotalPages()).toBe(3);
+			expect($rootScope.displayData.length).toBe(3);
+			expect(ctrl.getRows().length).toBe(3);
+			expect(ctrl.getRows()).toEqual([
+				{
+					firstname: 'Donald', lastname: 'Sutherland', email: 'donald.suther@example.com', age: 61
+				},
+				{
+					firstname: 'Jennifer', lastname: 'Lawrence', email: 'jenny.lawrence@example.com', age: 26
+				},
+				{
+					firstname: 'Willow', lastname: 'Shields', email: 'willow.shields@example.com', age: 16
+				}
+			]);
+
+			ctrl.setPage(3);
+			$rootScope.$digest();
+
+			expect(ctrl.getCurrentPage()).toBe(3);
+			expect($rootScope.displayData.length).toBe(1);
+			expect(ctrl.getRows()).toEqual([
+				{
+					firstname: 'Will', lastname: 'Smith', email: 'will.smith@example.com', age: 20
+				}
+			]);
+
+			ctrl.setPage(20);
+			$rootScope.$digest();
+
+			expect(ctrl.getCurrentPage()).toBe(3);
+
+			ctrl.clearPaging();
+
+			expect(ctrl.getRowsPerPage()).toBe(7);
+			expect(ctrl.getCurrentPage()).toBe(1);
+			expect(ctrl.getTotalPages()).toBe(1);
+			expect(ctrl.getRows()).toEqual(createData());
+		});
+	});
+
+	describe('work with filters', function() {
+
+		beforeEach(function () {
+			createControllerWithDisplayData();
+		});
+
+		it('should work with filters', function() {
+			spyOn(ldFilterService, 'setWhereCondition');
+			spyOn(ldFilterService, 'removeWhereCondition');
+			spyOn(ldFilterService, 'clearWhereFilter');
+
+			ctrl.setSearchFilter('Michal');
+			expect(ldFilterService.setWhereCondition).toHaveBeenCalledWith('unittestfilter', 'Michal');
+
+			ctrl.setSearchFilter('Michal', '$');
+			expect(ldFilterService.setWhereCondition).toHaveBeenCalledWith('unittestfilter', {$: 'Michal'});
+
+			ctrl.removeSearchFilter('name');
+			expect(ldFilterService.removeWhereCondition).toHaveBeenCalledWith('unittestfilter', 'name');
+
+			ctrl.removeSearchFilter(['name', '$']);
+			expect(ldFilterService.removeWhereCondition).toHaveBeenCalledWith('unittestfilter', ['name', '$']);
+
+			ctrl.clearSearchFilter();
+			expect(ldFilterService.clearWhereFilter).toHaveBeenCalledWith('unittestfilter');
 		});
 	});
 

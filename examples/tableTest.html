@@ -13,7 +13,7 @@
 
 	<a href="" ng-click="addNewUser()">Add new user</a>
 
-	<table ld-table="filteredUsers" ld-table-source="users" class="table table-condensed table-striped"
+	<table ld-table="users" class="table table-condensed table-striped"
 		   ld-table-page-rows="10" ld-filter="test">
 		<thead>
 		<tr>
@@ -37,7 +37,7 @@
 		</tr>
 		</thead>
 		<tbody>
-		<tr ng-repeat="user in filteredUsers">
+		<tr ng-repeat="user in users">
 			<td width="20"><input type="checkbox" ng-model="user.selected"></td>
 			<td>{{ user.firstName }} {{ user.lastName }}</td>
 			<td>{{ user.email }}</td>
@@ -64,6 +64,7 @@
 <script src="bower_components/angular-recursion/angular-recursion.js"></script>
 <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
 <script src="bower_components/angular-local-storage/dist/angular-local-storage.js"></script>
+<script src="bower_components/angular-animate/angular-animate.js"></script>
 <script src="ldAdminTools.js"></script>
 
 <script type="text/javascript">
