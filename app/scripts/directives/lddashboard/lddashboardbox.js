@@ -32,7 +32,7 @@ angular.module('ldAdminTools')
 				ldOnClose: '&?',
 				ldOnToggle: '&?'
 			},
-			link: function postLink(scope, element, attrs, dbboxController) {
+			link: function postLink(scope, element) {
 				scope.panelType = scope.ldType || config.panelTypeDefault;
 				scope.isBoxOpen = angular.isDefined(scope.ldIsOpen) ? !!scope.ldIsOpen : true;
 
@@ -48,7 +48,7 @@ angular.module('ldAdminTools')
 					scope.ldIsOpen = scope.isBoxOpen = !scope.isBoxOpen;
 
 					if (angular.isDefined(scope.ldOnToggle())) {
-						scope.ldOnToggle()(scope.isOpen);
+						scope.ldOnToggle()(scope.ldIsOpen);
 					}
 				};
 			}

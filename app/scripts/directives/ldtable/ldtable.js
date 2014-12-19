@@ -92,6 +92,7 @@ angular.module('ldAdminTools')
 		var currentPage = 1;
 		var rowsPerPage = dataCopy.length;
 		var totalPages = 1;
+		var paging = false;
 
 		// setup event handler
 		$scope.$on(filterService.FILTER_UPDATED, angular.bind(this, function (event, filterId) {
@@ -121,6 +122,7 @@ angular.module('ldAdminTools')
 		 * @param rows
 		 */
 		this.setupPaging = function setPaging(rows, page) {
+			paging = true;
 			rowsPerPage = rows;
 			currentPage = page || 1;
 
@@ -130,7 +132,7 @@ angular.module('ldAdminTools')
 		};
 
 		function calcTotalPages() {
-			var pages = rowsPerPage < 1 ? 1 : Math.ceil(filteredRows / rowsPerPage);
+			var pages = paging ? (rowsPerPage < 1 ? 1 : Math.ceil(filteredRows / rowsPerPage)) : 1;
 			return Math.max(pages || 0, 1);
 		}
 
@@ -138,6 +140,7 @@ angular.module('ldAdminTools')
 		 * Remove paging
 		 */
 		this.clearPaging = function clearPaging() {
+			paging = false;
 			rowsPerPage = dataCopy.length;
 			currentPage = 1;
 			totalPages = 1;

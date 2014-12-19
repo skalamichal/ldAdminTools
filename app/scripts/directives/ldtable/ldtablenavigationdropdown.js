@@ -49,7 +49,7 @@ angular.module('ldAdminTools')
 				// the pages array
 				scope.pages = [];
 
-				function updateStyles() {
+				scope.updateStyles = function() {
 					var totalPages = tableController.getTotalPages();
 					var currentPage = tableController.getCurrentPage();
 					scope.firstPageClass = (totalPages > 1 && currentPage > 1) ? '' : 'disabled';
@@ -90,12 +90,12 @@ angular.module('ldAdminTools')
 					scope.pages = pages;
 				}
 
-				function update() {
+				scope.update = function() {
 					scope.totalPages = tableController.getTotalPages();
 					scope.currentPage = tableController.getCurrentPage();
-					updateStyles();
+					scope.updateStyles();
 					makePages();
-				}
+				};
 
 				scope.gotoPage = function (page) {
 					if (tableController.getCurrentPage() !== page) {
@@ -104,11 +104,11 @@ angular.module('ldAdminTools')
 				};
 
 				scope.$on(tableController.TABLE_UPDATED, function () {
-					update();
+					scope.update();
 				});
 
 				// update first
-				update();
+				scope.update();
 
 			}
 		};

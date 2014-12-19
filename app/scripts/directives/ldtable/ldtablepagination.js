@@ -6,8 +6,7 @@
  * @description
  * # ldTablePagination
  * The ld-table-pagination is a plugin to paginate the table. Following values could be set via attributes:
- * - items-per-page {Number} - the max number of rows displayed on the page
- * - max-size {Number} - max number of buttons in paginntion
+ * - max-size {Number} - max number of buttons in pagination
  * - is-visible {Boolean} - show/hide the pagination
  */
 angular.module('ldAdminTools')
@@ -21,7 +20,7 @@ angular.module('ldAdminTools')
 			},
 			templateUrl: 'partials/ldtablepagination.html',
 			link: function (scope, element, attrs, tableController) {
-				// defaylt values used by the angular-ui pagination used by this directive
+				// default values used by the angular-ui pagination used by this directive
 				scope.totalItems = tableController.getFilteredRows();
 				scope.itemsPerPage = tableController.getRowsPerPage();
 				scope.maxSize = scope.maxSize || null;

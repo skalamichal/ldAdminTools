@@ -28,8 +28,8 @@ angular.module('ldAdminTools')
 				// watch the predicate value so we can change filter at runtime
 				scope.$watch(searchFieldGet, function (newValue, oldValue) {
 					if (newValue !== oldValue) {
-						searchField = newValue;
 						tableController.removeSearchFilter(searchField);
+						searchField = newValue;
 						tableController.setSearchFilter(modelController.$viewValue || '', searchField);
 					}
 				});

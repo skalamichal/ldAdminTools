@@ -12,8 +12,12 @@ describe('Directive: ldDashboardBoxGroup', function () {
 		scope = $rootScope.$new();
 	}));
 
-	it('should make hidden element visible', inject(function ($compile) {
-		element = angular.element('<ld-dashboard-box-group></ld-dashboard-box-group>');
+	it('should create the element', inject(function ($compile) {
+		element = angular.element('<ld-dashboard-box-group>Some Content</ld-dashboard-box-group>');
 		element = $compile(element)(scope);
+		scope.$digest();
+
+		expect(element).toHaveClass('ld-panel-group');
+		expect(element.text().trim()).toBe('Some Content');
 	}));
 });

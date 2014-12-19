@@ -26,8 +26,8 @@ angular.module('ldAdminTools')
 				scope.disablePreviousButtonClass = '';
 				scope.disableNextButtonClass = '';
 
-				scope.showPreviousButton = scope.showPreviousButton || config.showPreviousButtonDefault;
-				scope.showNextButton = scope.showNextButton || config.showNextButtonDefault;
+				scope.showPreviousButton = angular.isDefined(scope.showPreviousButton) ? scope.showPreviousButton : config.showPreviousButtonDefault;
+				scope.showNextButton = angular.isDefined(scope.showNextButton) ? scope.showNextButton : config.showNextButtonDefault;
 
 				function updateNavigation() {
 					var page = tableController.getCurrentPage();

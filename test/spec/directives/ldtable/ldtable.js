@@ -3,47 +3,25 @@
 describe('Directive: ldTable', function () {
 
 	// load the directive's module
-	var ldFilterServiceMock;
-	beforeEach(module('ldAdminTools', function ($provide) {
-		ldFilterServiceMock = {
-			getFilter: jasmine.createSpy('getFilter'),
-			removeFilter: jasmine.createSpy('removeFilter'),
-			forceUpdate: jasmine.createSpy('forceUpdate'),
-			setWhereCondition: jasmine.createSpy('setWhereCondition'),
-			removeWhereCondition: jasmine.createSpy('removeWhereCondition'),
-			clearWhereCondition: jasmine.createSpy('clearWhereCondition'),
-			setOrderByCondition: jasmine.createSpy('setOrderByCondition'),
-			clearOrderByFilter: jasmine.createSpy('clearOrderByFilter'),
-			applyFilter: jasmine.createSpy('applyFilter')
-		};
-
-		//$provide.value('ldFilterService', ldFilterServiceMock);
-	}));
+	beforeEach(module('ldAdminTools'));
 
 	var ctrl,
 		$rootScope,
 		$controller,
-		$parse,
-		$filter,
 		ldFilterService;
 
-	beforeEach(inject(function (_$rootScope_, _$controller_, _$parse_, _$filter_, _ldFilterService_) {
+	beforeEach(inject(function (_$rootScope_, _$controller_, _ldFilterService_) {
 		$rootScope = _$rootScope_;
 		$controller = _$controller_;
-		$parse = _$parse_;
-		$filter = _$filter_;
 		ldFilterService = _ldFilterService_;
 	}));
 
 	function createController() {
 		var controller = {
 			$scope: $rootScope,
-			$parse: $parse,
-			$filter: $filter,
 			$attrs: {
 				ldTable: 'displayData'
-			},
-			ldFilterService: ldFilterService
+			}
 		};
 
 		ctrl = $controller('ldTableController', controller);
@@ -54,13 +32,10 @@ describe('Directive: ldTable', function () {
 		$rootScope.displayData = createData();
 		var controller = {
 			$scope: $rootScope,
-			$parse: $parse,
-			$filter: $filter,
 			$attrs: {
 				ldTable: 'displayData',
 				ldFilter: 'unittestfilter'
-			},
-			ldFilterService: ldFilterService
+			}
 		};
 
 		ctrl = $controller('ldTableController', controller);
@@ -71,14 +46,11 @@ describe('Directive: ldTable', function () {
 		$rootScope.sourceData = createData();
 		var controller = {
 			$scope: $rootScope,
-			$parse: $parse,
-			$filter: $filter,
 			$attrs: {
 				ldTable: 'displayData',
 				ldTableSource: 'sourceData',
 				ldFilter: 'unittestfilter'
-			},
-			ldFilterService: ldFilterService
+			}
 		};
 
 		ctrl = $controller('ldTableController', controller);
@@ -125,7 +97,7 @@ describe('Directive: ldTable', function () {
 		expect(ctrl.getFilter()).toBe('unittestfilter');
 	});
 
-	describe('work with display data', function() {
+	describe('work with display data', function () {
 		beforeEach(function () {
 			createControllerWithDisplayData();
 		});
@@ -193,22 +165,29 @@ describe('Directive: ldTable', function () {
 		});
 	});
 
-	describe('work with filters', function() {
+	describe('work with filters', function () {
 
 		beforeEach(function () {
 			createControllerWithDisplayData();
 		});
 
-		it('should work with filters', function() {
-			spyOn(ldFilterService, 'setWhereCondition');
-			spyOn(ldFilterService, 'removeWhereCondition');
-			spyOn(ldFilterService, 'clearWhereFilter');
+		it('should work with filters', function () {
+			spyOn(ldFilterService, 'setWhereCondition').andCallThrough();
+			spyOn(ldFilterService, 'removeWhereCondition').andCallThrough();
+			spyOn(ldFilterService, 'clearWhereFilter').andCallThrough();
+			spyOn(ldFilterService, 'setOrderByCondition').andCallThrough();
+			spyOn(ldFilterService, 'clearOrderByFilter').andCallThrough();
 
-			ctrl.setSearchFilter('Michal');
-			expect(ldFilterService.setWhereCondition).toHaveBeenCalledWith('unittestfilter', 'Michal');
+			spyOn(ctrl, 'filterUpdated').andCallThrough();
+			spyOn(ctrl, 'applyPaging').andCallThrough();
 
-			ctrl.setSearchFilter('Michal', '$');
-			expect(ldFilterService.setWhereCondition).toHaveBeenCalledWith('unittestfilter', {$: 'Michal'});
+			ctrl.setSearchFilter('example.com');
+			expect(ldFilterService.setWhereCondition).toHaveBeenCalledWith('unittestfilter', 'example.com');
+
+			ctrl.setSearchFilter('Jo', 'firstname');
+			$rootScope.$digest();
+			expect(ldFilterService.setWhereCondition).toHaveBeenCalledWith('unittestfilter', {firstname: 'Jo'});
+			expect(ctrl.getFilteredRows()).toBe(2);
 
 			ctrl.removeSearchFilter('name');
 			expect(ldFilterService.removeWhereCondition).toHaveBeenCalledWith('unittestfilter', 'name');
@@ -218,6 +197,45 @@ describe('Directive: ldTable', function () {
 
 			ctrl.clearSearchFilter();
 			expect(ldFilterService.clearWhereFilter).toHaveBeenCalledWith('unittestfilter');
+
+			ctrl.setOrderByFilter('+name', false);
+			expect(ldFilterService.setOrderByCondition).toHaveBeenCalledWith('unittestfilter', '+name', false);
+
+			ctrl.setOrderByFilter(['+name', '-date'], true);
+			expect(ldFilterService.setOrderByCondition).toHaveBeenCalledWith('unittestfilter', ['+name', '-date'], true);
+
+			ctrl.clearOrderByFilter();
+			expect(ldFilterService.clearOrderByFilter).toHaveBeenCalledWith('unittestfilter');
+
+			expect(ctrl.filterUpdated).toHaveBeenCalled();
+			expect(ctrl.applyPaging).toHaveBeenCalled();
+		});
+	});
+
+	describe('work with display data', function () {
+		beforeEach(function () {
+			createControllerWithSourceData();
+		});
+
+		it('should update "display data" when "source" has been changed', function () {
+			$rootScope.$apply(function () {
+				$rootScope.sourceData.push({
+					firstname: 'John', lastname: 'Rambo', email: 'john.rambo@example.com', age: 45
+				});
+			});
+			$rootScope.$digest();
+
+			expect($rootScope.displayData.length).toBe(8);
+
+			// sey new data
+			$rootScope.$apply(function () {
+				$rootScope.sourceData = [
+					{id: 1}, {id: 2}
+				];
+			});
+			expect($rootScope.displayData.length).toBe(2);
+			expect($rootScope.displayData).toEqual($rootScope.sourceData);
+
 		});
 	});
 

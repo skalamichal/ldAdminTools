@@ -56,6 +56,7 @@ angular.module('ldAdminTools')
 				 * Update element style and apply the orderBy filter.
 				 */
 				function sort() {
+					updateStyle();
 					if (order === ORDER.NONE) {
 						tableController.clearOrderByFilter();
 					}

@@ -18,11 +18,9 @@ angular.module('ldAdminTools')
 			require: '^ldTable',
 			templateUrl: 'partials/ldtableinfo.html',
 			scope: {
-				text: '@'
+				text: '@?'
 			},
 			link: function (scope, element, attrs, tableController) {
-
-				var infoText = scope.text || config.textDefault;
 
 				// update the scope variables used in the template
 				function update() {
@@ -33,6 +31,7 @@ angular.module('ldAdminTools')
 					var rowFrom = ((page - 1) * rowsPerPage) + 1;
 					var rowTo = Math.min(rowFrom - 1 + rowsPerPage, rows);
 
+					var infoText = angular.isDefined(scope.text) ? scope.text : config.textDefault
 					var txt = infoText.replace('{0}', rowFrom);
 					txt = txt.replace('{1}', rowTo);
 					txt = txt.replace('{2}', rows);
@@ -42,7 +41,6 @@ angular.module('ldAdminTools')
 				}
 
 				scope.$watch('text', function (value) {
-					infoText = value;
 					update();
 				});
 
