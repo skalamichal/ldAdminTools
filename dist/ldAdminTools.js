@@ -1150,6 +1150,7 @@ angular.module('ldAdminTools')
 				};
 
 				scope.nextPage = function () {
+					console.log(tableController.getCurrentPage() + 1);
 					tableController.setPage(tableController.getCurrentPage() + 1);
 				};
 
@@ -2350,7 +2351,9 @@ angular.module('ldAdminTools')
 
 			this.hide = function () {
 				body.removeClass(ON_CLASS);
-				messageElm.remove();
+				if (angular.isDefined(messageElm)) {
+					messageElm.remove();
+				}
 			};
 
 		}]);
@@ -2409,7 +2412,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/ldtablenavigation.html',
-    "<div class=ld-table-navigation><a href=# class=\"btn btn-link ld-table-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousPage()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=# class=\"btn btn-link ld-table-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextPage()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
+    "<div class=ld-table-navigation><a href=\"\" class=\"btn btn-link ld-table-navigation-btn\" ng-if=showPreviousButton ng-class=disablePreviousButtonClass ng-click=previousPage()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-table-navigation-btn\" ng-if=showNextButton ng-class=disableNextButtonClass ng-click=nextPage()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
   );
 
 
