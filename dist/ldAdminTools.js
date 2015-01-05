@@ -1150,7 +1150,6 @@ angular.module('ldAdminTools')
 				};
 
 				scope.nextPage = function () {
-					console.log(tableController.getCurrentPage() + 1);
 					tableController.setPage(tableController.getCurrentPage() + 1);
 				};
 
