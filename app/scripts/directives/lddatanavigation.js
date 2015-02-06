@@ -35,7 +35,7 @@ angular.module('ldAdminTools')
 				scope.currentIndex = scope.data.indexOf(scope.currentId);
 
 				function updateNavigation() {
-					var msg = message.replace('{0}', scope.currentIndex + 1);
+					var msg = message.replace('{0}', (scope.currentIndex + 1));
 					msg = msg.replace('{1}', scope.data.length);
 					scope.message = msg;
 				}
@@ -48,12 +48,13 @@ angular.module('ldAdminTools')
 					scope.index = scope.currentIndex + 1;
 				};
 
-				scope.$watch('index', function (newIndex) {
+				var unwatch = scope.$watch('index', function (newIndex) {
 					if (angular.isUndefined(newIndex)) {
 						return;
 					}
+					unwatch();
 					var path = scope.viewUrl.replace('{0}', scope.data[newIndex]);
-					$location.url(path);
+					$location.path(path);
 				});
 
 				updateNavigation();

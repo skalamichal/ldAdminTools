@@ -194,7 +194,7 @@ angular.module('ldAdminTools')
 				scope.currentIndex = scope.data.indexOf(scope.currentId);
 
 				function updateNavigation() {
-					var msg = message.replace('{0}', scope.currentIndex + 1);
+					var msg = message.replace('{0}', (scope.currentIndex + 1));
 					msg = msg.replace('{1}', scope.data.length);
 					scope.message = msg;
 				}
@@ -207,12 +207,13 @@ angular.module('ldAdminTools')
 					scope.index = scope.currentIndex + 1;
 				};
 
-				scope.$watch('index', function (newIndex) {
+				var unwatch = scope.$watch('index', function (newIndex) {
 					if (angular.isUndefined(newIndex)) {
 						return;
 					}
+					unwatch();
 					var path = scope.viewUrl.replace('{0}', scope.data[newIndex]);
-					$location.url(path);
+					$location.path(path);
 				});
 
 				updateNavigation();
@@ -2371,7 +2372,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/lddatanavigation.html',
-    "<div class=ld-data-navigation>{{ filter }}: {{ message }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=\"{disabled: currentIndex <= 0}\" ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=\"{disabled: currentIndex >= data.length - 1}\" ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
+    "<div class=ld-data-navigation>{{ filter }}: {{ message }} <a style=\"cursor: pointer\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=\"{disabled: currentIndex <= 0}\" ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a style=\"cursor: pointer\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=\"{disabled: currentIndex >= data.length - 1}\" ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
   );
 
 
@@ -2391,7 +2392,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/ldmenuitem.html',
-    "<a class=ld-menuitem ng-href={{item.url}}><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span></a>"
+    "<span><a ng-if=::!item.fn class=ld-menuitem ng-href={{item.url}}><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span></a> <a ng-if=::item.fn class=ld-menuitem ng-click=item.fn()><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span></a></span>"
   );
 
 

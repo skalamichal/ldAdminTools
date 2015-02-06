@@ -1,7 +1,7 @@
 {
   "name": "ld-admin-tools",
   "description": "A collection of angular tools for admin sites",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "main": [
     "dist/ldAdminTools.js",
     "dist/ldAdminTools.css"

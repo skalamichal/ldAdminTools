@@ -285,7 +285,6 @@ module.exports = function (grunt) {
 						cleancss: true,
 						sourceMap: true,
 						sourceMapFilename: '<%= library.dist %>/ldAdminTools.css.map'
-						//sourceMapBasepath: '<%= library.dist %>/styles/'
 					},
 					files: {
 						'<%= library.dist %>/ldAdminTools.css': '<%= library.app %>/styles/ldAdminTools.less'
@@ -294,10 +293,6 @@ module.exports = function (grunt) {
 				serve: {
 					options: {
 						paths: ['bower_components/bootstrap/less/', 'bower_components/bootstrap/less/mixins/']
-						//cleancss: true,
-						//sourceMap: true
-						//sourceMapFilename: '<%= library.dist %>/ldAdminTools.css.map',
-						//sourceMapBasepath: '<%= library.dist %>/styles/'
 					},
 					files: {
 						'<%= library.examples %>/ldAdminTools.css': '<%= library.app %>/styles/ldAdminTools.less'
