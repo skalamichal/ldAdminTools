@@ -14,7 +14,6 @@ describe('Directive: ldExpandableInput', function () {
 		$scope.onClear = jasmine.createSpy('onClear');
 		$scope.onOpen = jasmine.createSpy('onOpen');
 		$scope.onClose = jasmine.createSpy('onClose');
-		$scope.value;
 	}));
 
 	it('should create default directive HTML code', inject(function ($compile) {
@@ -203,7 +202,6 @@ describe('Directive: ldExpandableInput', function () {
 
 		var elmScope = $element.isolateScope();
 
-		var button = $element.find('span').eq(0);
 		expect(elmScope.iconLeft).toBe('open-icon');
 
 		var buttonIcon = $element.find('i').eq(0);

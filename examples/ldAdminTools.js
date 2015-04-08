@@ -116,7 +116,7 @@ angular.module('ldAdminTools')
 				ldOnClose: '&?',
 				ldOnToggle: '&?'
 			},
-			link: function postLink(scope, element, attrs, dbboxController) {
+			link: function postLink(scope, element) {
 				scope.panelType = scope.ldType || config.panelTypeDefault;
 				scope.isBoxOpen = angular.isDefined(scope.ldIsOpen) ? !!scope.ldIsOpen : true;
 
@@ -132,7 +132,7 @@ angular.module('ldAdminTools')
 					scope.ldIsOpen = scope.isBoxOpen = !scope.isBoxOpen;
 
 					if (angular.isDefined(scope.ldOnToggle())) {
-						scope.ldOnToggle()(scope.isOpen);
+						scope.ldOnToggle()(scope.ldIsOpen);
 					}
 				};
 			}
@@ -194,7 +194,7 @@ angular.module('ldAdminTools')
 				scope.currentIndex = scope.data.indexOf(scope.currentId);
 
 				function updateNavigation() {
-					var msg = message.replace('{0}', scope.currentIndex + 1);
+					var msg = message.replace('{0}', (scope.currentIndex + 1));
 					msg = msg.replace('{1}', scope.data.length);
 					scope.message = msg;
 				}
@@ -207,12 +207,13 @@ angular.module('ldAdminTools')
 					scope.index = scope.currentIndex + 1;
 				};
 
-				scope.$watch('index', function (newIndex) {
+				var unwatch = scope.$watch('index', function (newIndex) {
 					if (angular.isUndefined(newIndex)) {
 						return;
 					}
+					unwatch();
 					var path = scope.viewUrl.replace('{0}', scope.data[newIndex]);
-					$location.url(path);
+					$location.path(path);
 				});
 
 				updateNavigation();
@@ -767,6 +768,7 @@ angular.module('ldAdminTools')
 		var currentPage = 1;
 		var rowsPerPage = dataCopy.length;
 		var totalPages = 1;
+		var paging = false;
 
 		// setup event handler
 		$scope.$on(filterService.FILTER_UPDATED, angular.bind(this, function (event, filterId) {
@@ -796,6 +798,7 @@ angular.module('ldAdminTools')
 		 * @param rows
 		 */
 		this.setupPaging = function setPaging(rows, page) {
+			paging = true;
 			rowsPerPage = rows;
 			currentPage = page || 1;
 
@@ -805,7 +808,7 @@ angular.module('ldAdminTools')
 		};
 
 		function calcTotalPages() {
-			var pages = rowsPerPage < 1 ? 1 : Math.ceil(filteredRows / rowsPerPage);
+			var pages = paging ? (rowsPerPage < 1 ? 1 : Math.ceil(filteredRows / rowsPerPage)) : 1;
 			return Math.max(pages || 0, 1);
 		}
 
@@ -813,6 +816,7 @@ angular.module('ldAdminTools')
 		 * Remove paging
 		 */
 		this.clearPaging = function clearPaging() {
+			paging = false;
 			rowsPerPage = dataCopy.length;
 			currentPage = 1;
 			totalPages = 1;
@@ -1025,7 +1029,6 @@ angular.module('ldAdminTools')
 				};
 
 				function selectAll() {
-					console.log(tableController.getRows().length);
 					angular.forEach(tableController.getRows(), function (row) {
 						row.selected = true;
 					});
@@ -1067,11 +1070,9 @@ angular.module('ldAdminTools')
 			require: '^ldTable',
 			templateUrl: 'partials/ldtableinfo.html',
 			scope: {
-				text: '@'
+				text: '@?'
 			},
 			link: function (scope, element, attrs, tableController) {
-
-				var infoText = scope.text || config.textDefault;
 
 				// update the scope variables used in the template
 				function update() {
@@ -1082,6 +1083,7 @@ angular.module('ldAdminTools')
 					var rowFrom = ((page - 1) * rowsPerPage) + 1;
 					var rowTo = Math.min(rowFrom - 1 + rowsPerPage, rows);
 
+					var infoText = angular.isDefined(scope.text) ? scope.text : config.textDefault
 					var txt = infoText.replace('{0}', rowFrom);
 					txt = txt.replace('{1}', rowTo);
 					txt = txt.replace('{2}', rows);
@@ -1091,7 +1093,6 @@ angular.module('ldAdminTools')
 				}
 
 				scope.$watch('text', function (value) {
-					infoText = value;
 					update();
 				});
 
@@ -1132,8 +1133,8 @@ angular.module('ldAdminTools')
 				scope.disablePreviousButtonClass = '';
 				scope.disableNextButtonClass = '';
 
-				scope.showPreviousButton = scope.showPreviousButton || config.showPreviousButtonDefault;
-				scope.showNextButton = scope.showNextButton || config.showNextButtonDefault;
+				scope.showPreviousButton = angular.isDefined(scope.showPreviousButton) ? scope.showPreviousButton : config.showPreviousButtonDefault;
+				scope.showNextButton = angular.isDefined(scope.showNextButton) ? scope.showNextButton : config.showNextButtonDefault;
 
 				function updateNavigation() {
 					var page = tableController.getCurrentPage();
@@ -1209,7 +1210,7 @@ angular.module('ldAdminTools')
 				// the pages array
 				scope.pages = [];
 
-				function updateStyles() {
+				scope.updateStyles = function() {
 					var totalPages = tableController.getTotalPages();
 					var currentPage = tableController.getCurrentPage();
 					scope.firstPageClass = (totalPages > 1 && currentPage > 1) ? '' : 'disabled';
@@ -1250,12 +1251,12 @@ angular.module('ldAdminTools')
 					scope.pages = pages;
 				}
 
-				function update() {
+				scope.update = function() {
 					scope.totalPages = tableController.getTotalPages();
 					scope.currentPage = tableController.getCurrentPage();
-					updateStyles();
+					scope.updateStyles();
 					makePages();
-				}
+				};
 
 				scope.gotoPage = function (page) {
 					if (tableController.getCurrentPage() !== page) {
@@ -1264,11 +1265,11 @@ angular.module('ldAdminTools')
 				};
 
 				scope.$on(tableController.TABLE_UPDATED, function () {
-					update();
+					scope.update();
 				});
 
 				// update first
-				update();
+				scope.update();
 
 			}
 		};
@@ -1305,8 +1306,7 @@ angular.module('ldAdminTools')
  * @description
  * # ldTablePagination
  * The ld-table-pagination is a plugin to paginate the table. Following values could be set via attributes:
- * - items-per-page {Number} - the max number of rows displayed on the page
- * - max-size {Number} - max number of buttons in paginntion
+ * - max-size {Number} - max number of buttons in pagination
  * - is-visible {Boolean} - show/hide the pagination
  */
 angular.module('ldAdminTools')
@@ -1320,7 +1320,7 @@ angular.module('ldAdminTools')
 			},
 			templateUrl: 'partials/ldtablepagination.html',
 			link: function (scope, element, attrs, tableController) {
-				// defaylt values used by the angular-ui pagination used by this directive
+				// default values used by the angular-ui pagination used by this directive
 				scope.totalItems = tableController.getFilteredRows();
 				scope.itemsPerPage = tableController.getRowsPerPage();
 				scope.maxSize = scope.maxSize || null;
@@ -1382,8 +1382,8 @@ angular.module('ldAdminTools')
 				// watch the predicate value so we can change filter at runtime
 				scope.$watch(searchFieldGet, function (newValue, oldValue) {
 					if (newValue !== oldValue) {
-						searchField = newValue;
 						tableController.removeSearchFilter(searchField);
+						searchField = newValue;
 						tableController.setSearchFilter(modelController.$viewValue || '', searchField);
 					}
 				});
@@ -1466,6 +1466,7 @@ angular.module('ldAdminTools')
 				 * Update element style and apply the orderBy filter.
 				 */
 				function sort() {
+					updateStyle();
 					if (order === ORDER.NONE) {
 						tableController.clearOrderByFilter();
 					}
@@ -2350,7 +2351,9 @@ angular.module('ldAdminTools')
 
 			this.hide = function () {
 				body.removeClass(ON_CLASS);
-				messageElm.remove();
+				if (angular.isDefined(messageElm)) {
+					messageElm.remove();
+				}
 			};
 
 		}]);
@@ -2369,7 +2372,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/lddatanavigation.html',
-    "<div class=ld-data-navigation>{{ filter }}: {{ message }} <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=\"{disabled: currentIndex <= 0}\" ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a href=\"\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=\"{disabled: currentIndex >= data.length - 1}\" ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
+    "<div class=ld-data-navigation>{{ filter }}: {{ message }} <a style=\"cursor: pointer\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showPreviousButton ng-class=\"{disabled: currentIndex <= 0}\" ng-click=previousEntry()><i class=\"fa fa-fw fa-chevron-left fa-lg\"></i></a> <a style=\"cursor: pointer\" class=\"btn btn-link ld-data-navigation-btn\" ng-if=showNextButton ng-class=\"{disabled: currentIndex >= data.length - 1}\" ng-click=nextEntry()><i class=\"fa fa-fw fa-chevron-right fa-lg\"></i></a></div>"
   );
 
 
@@ -2389,7 +2392,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/ldmenuitem.html',
-    "<a class=ld-menuitem ng-href={{item.url}}><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span></a>"
+    "<span><a ng-if=::!item.fn class=ld-menuitem ng-href={{item.url}}><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span></a> <a ng-if=::item.fn class=ld-menuitem ng-click=item.fn()><i ng-if=\"item.icon.length > 0\" class=\"fa fa-fw {{item.icon}}\"></i> {{ item.text }} <span class=badge ng-if=\"item.badge && item.badge() > 0\">{{ item.badge() }}</span></a></span>"
   );
 
 

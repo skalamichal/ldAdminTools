@@ -1,4 +1,5 @@
 'use strict';
+/*jshint camelcase:false */
 
 describe('Directive: ldMenu', function () {
 
@@ -52,8 +53,6 @@ describe('Directive: ldMenu', function () {
 	}
 
 	describe('ldSidebarMenuController', function () {
-		var id = 1;
-
 		function __createMenu(level) {
 			var menuScope = $rootScope.$new();
 			menuScope.level = level;
@@ -91,7 +90,7 @@ describe('Directive: ldMenu', function () {
 			expect(ctrl.menus[1]).toBeDefined();
 			expect(ctrl.menus[1].length).toBe(1);
 			expect(ctrl.getLevelAsString).toHaveBeenCalledWith(1);
-			expect(menuLevel1_1.menuLevelStyle).toBe('nav-first-level')
+			expect(menuLevel1_1.menuLevelStyle).toBe('nav-first-level');
 			ctrl.registerMenu(menuLevel1_2);
 			expect(ctrl.menus[1].length).toBe(2);
 			ctrl.registerMenu(menuLevel1_3);

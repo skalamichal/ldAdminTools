@@ -11,7 +11,8 @@ describe('Directive: ldDataNavigation', function () {
 
 	beforeEach(module('ldAdminTools', function($provide) {
 		$location = {
-			url: jasmine.createSpy('url')
+			url: jasmine.createSpy('url'),
+			path: jasmine.createSpy('path')
 		};
 
 		$provide.factory('$location', function() {
@@ -94,7 +95,7 @@ describe('Directive: ldDataNavigation', function () {
 			$scope.$digest();
 
 			expect(scope.index).toBe(0);
-			expect($location.url).toHaveBeenCalledWith('/url/1');
+			expect($location.path).toHaveBeenCalledWith('/url/1');
 		});
 
 		it('should navigate to next page', function() {
@@ -106,7 +107,7 @@ describe('Directive: ldDataNavigation', function () {
 			$scope.$digest();
 
 			expect(scope.index).toBe($scope.data.length - 1);
-			expect($location.url).toHaveBeenCalledWith('/url/616');
+			expect($location.path).toHaveBeenCalledWith('/url/616');
 		});
 
 	});

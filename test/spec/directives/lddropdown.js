@@ -35,8 +35,6 @@ describe('Directive: ldDropdown', function () {
 		$element = $compile(element)($scope);
 		$scope.$digest();
 
-		var elmScope = $element.isolateScope();
-
 		expect($scope.onChanged).not.toHaveBeenCalled();
 
 		expect($element.find('li').length).toBe(0);
@@ -49,8 +47,6 @@ describe('Directive: ldDropdown', function () {
 		var element = angular.element('<ld-dropdown list="list" onchanged="onChanged"></ld-dropdown>');
 		$element = $compile(element)($scope);
 		$scope.$digest();
-
-		var elmScope = $element.isolateScope();
 
 		expect($scope.onChanged).toHaveBeenCalledWith($scope.list[0]);
 
@@ -69,8 +65,6 @@ describe('Directive: ldDropdown', function () {
 		var element = angular.element('<ld-dropdown list="list" selected="selected"></ld-dropdown>');
 		$element = $compile(element)($scope);
 		$scope.$digest();
-
-		var elmScope = $element.isolateScope();
 
 		expect($element.find('li').length).toBe(4);
 		expect($element.find('a').eq(0).text()).toBe('test3 ');

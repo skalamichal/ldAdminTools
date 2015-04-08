@@ -608,7 +608,7 @@ angular.module('ldAdminTools')
 				type: '@?',
 				icon: '@?'
 			},
-			link: function postLink(scope, element, attrs) {
+			link: function postLink(scope) {
 				scope.message = angular.isUndefined(scope.message) ? config.message : scope.message;
 				scope.spin = scope.spin || config.spin;
 				scope.icon = angular.isUndefined(scope.icon) ? config.icon : scope.icon;

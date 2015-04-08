@@ -64,10 +64,10 @@ describe('Directive: ldMessageBox', function () {
 
 		var i = content.find('i').eq(0);
 
-		expect(i.hasClass('fa')).toBeTruthy()
-		expect(i.hasClass('fa-lg')).toBeTruthy()
-		expect(i.hasClass('fa-spin')).toBeTruthy()
-		expect(i.hasClass('fa-fw')).toBeTruthy()
+		expect(i.hasClass('fa')).toBeTruthy();
+		expect(i.hasClass('fa-lg')).toBeTruthy();
+		expect(i.hasClass('fa-spin')).toBeTruthy();
+		expect(i.hasClass('fa-fw')).toBeTruthy();
 		expect(i.hasClass('fa-loading')).toBeTruthy();
 
 		expect(content.text()).toBe(' Loading');

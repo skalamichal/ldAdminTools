@@ -6,7 +6,6 @@ describe('Directive: ldInputFocus', function () {
 	beforeEach(module('ldAdminTools'));
 
 	var element,
-		scope,
 		$rootScope,
 		$timeout;
 
@@ -15,7 +14,7 @@ describe('Directive: ldInputFocus', function () {
 		$timeout = _$timeout_;
 	}));
 
-	it('should set focus to the input field', inject(function ($compile, $document, $log) {
+	it('should set focus to the input field', inject(function ($compile, $document) {
 		$rootScope.focus = false;
 		element = angular.element('<input type="text" ld-input-focus="focus">');
 		element = $compile(element)($rootScope);
@@ -30,7 +29,7 @@ describe('Directive: ldInputFocus', function () {
 		expect(element[0].focus).toHaveBeenCalled();
 	}));
 
-	it('should not set focus to the input field', inject(function ($compile, $document, $log) {
+	it('should not set focus to the input field', inject(function ($compile, $document) {
 		$rootScope.focus = true;
 		element = angular.element('<input type="text" ld-input-focus="focus">');
 		element = $compile(element)($rootScope);

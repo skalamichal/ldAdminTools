@@ -1,5 +1,7 @@
 'use strict';
 
+/*jshint camelcase:false */
+
 describe('Service: ldCache', function () {
 
 	// load the service's module
