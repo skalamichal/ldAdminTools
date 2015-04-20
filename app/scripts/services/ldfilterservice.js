@@ -116,6 +116,11 @@ angular.module('ldAdminTools')
 					if (angular.isDefined(source.order)) {
 						combined.order = source.order;
 					}
+
+					// merge the or condition (just overwrite in this case)
+					if (angular.isDefined(source.or)) {
+						combined.or = source.or;
+					}
 				}
 
 				logFilter(combined);

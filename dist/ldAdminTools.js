@@ -1577,6 +1577,44 @@ angular.module('ldAdminTools')
 		};
 	});
 
+/**
+ * Created by Michal Skala on 20. 4. 2015.
+ */
+
+/*jslint node:true */
+'use strict';
+
+angular.module('ldAdminTools')
+	.filter('ldOr', ['$filter', function ($filter) {
+
+		var values;
+		var field;
+
+		function Comparator(_field, _values) {
+			values = _values;
+			field = _field;
+
+			this.compare = function (value) {
+				if (angular.isUndefined(value[field])) {
+					return false;
+				}
+
+				console.log(value[field], (values.indexOf(value[field]) !== -1));
+
+				return values.indexOf(value[field]) !== -1  ;
+			}
+		}
+
+		return function(input, field, values) {
+			if (!angular.isArray(input) || angular.isUndefined(field) || angular.isUndefined(values) || values.length === 0) {
+				return input;
+			}
+
+			var comparator = new Comparator(field, values);
+
+			return $filter('filter')(input, comparator.compare);
+		}
+	}]);
 'use strict';
 
 /**
@@ -1726,12 +1764,22 @@ angular.module('ldAdminTools')
 			return filter(input, fromIndex);
 		}
 
+		function _or(input, ors) {
+			if (angular.isUndefined(ors)) {
+				return input;
+			}
+
+			var filter = $filter('ldOr');
+			return filter(input, ors.field, ors.values);
+		}
+
 		return function (input, options) {
 			if (!angular.isArray(input) || angular.isUndefined(options)) {
 				return input;
 			}
 
 			var copy = where(input, options.where);
+			copy = _or(copy, options.or);
 			copy = order(copy, options.order);
 			copy = from(copy, options.from);
 			copy = limit(copy, options.limit);
@@ -1953,6 +2001,11 @@ angular.module('ldAdminTools')
 					// merge order condition (just overwrite in this case)
 					if (angular.isDefined(source.order)) {
 						combined.order = source.order;
+					}
+
+					// merge the or condition (just overwrite in this case)
+					if (angular.isDefined(source.or)) {
+						combined.or = source.or;
 					}
 				}
 

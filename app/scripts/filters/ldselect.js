@@ -123,12 +123,22 @@ angular.module('ldAdminTools')
 			return filter(input, fromIndex);
 		}
 
+		function _or(input, ors) {
+			if (angular.isUndefined(ors)) {
+				return input;
+			}
+
+			var filter = $filter('ldOr');
+			return filter(input, ors.field, ors.values);
+		}
+
 		return function (input, options) {
 			if (!angular.isArray(input) || angular.isUndefined(options)) {
 				return input;
 			}
 
 			var copy = where(input, options.where);
+			copy = _or(copy, options.or);
 			copy = order(copy, options.order);
 			copy = from(copy, options.from);
 			copy = limit(copy, options.limit);
