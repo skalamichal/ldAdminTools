@@ -48,7 +48,7 @@ angular.module('ldAdminTools')
  * This directive is supposed to be used on tr elements and will enhance the enclosed
  * td elements with an ng-click directive. This is useful if you do not want to make
  * all columns clickable for some reason. Currently, it skips the columns containing
- * an input (checkbox, etc). Example usage: ld-clickable-rows="rowClicked(item)"
+ * an input (checkbox, etc) or a link. Example usage: ld-clickable-rows="rowClicked(item)"
  * - this will result in ng-click="rowClicked(item)" being added to individual td
  * elements. It also adds ld-clickable css class to the TDs. By default, this class
  * sets the mouse cursor to "pointer".
@@ -65,7 +65,7 @@ angular.module('ldAdminTools')
 				// avoid columns with input elements (such as checkboxes)
 				// update all the others with a custom css class and an ng-click
 				var tdElement = angular.element(value);
-				if(tdElement.find('input').length === 0) {
+				if(tdElement.find('input').length === 0 || tdElement.find('a').length === 0) {
 					tdElement.addClass('ld-clickable').attr('ng-click', attrs.ldClickableRows);
 
 					if(angular.isDefined(attrs.ldClickableRowsActive)) {
