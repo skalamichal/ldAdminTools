@@ -25,7 +25,7 @@ angular.module('ldAdminTools')
 				// avoid columns with input elements (such as checkboxes)
 				// update all the others with a custom css class and an ng-click
 				var tdElement = angular.element(value);
-				if(tdElement.find('input').length === 0 || tdElement.find('a').length === 0) {
+				if(tdElement.find('input').length === 0 && tdElement.find('a').length === 0) {
 					tdElement.addClass('ld-clickable').attr('ng-click', attrs.ldClickableRows);
 
 					if(angular.isDefined(attrs.ldClickableRowsActive)) {

@@ -23,7 +23,7 @@ angular.module('ldAdminTools')
 				console.log(value[field], (values.indexOf(value[field]) !== -1));
 
 				return values.indexOf(value[field]) !== -1  ;
-			}
+			};
 		}
 
 		return function(input, field, values) {
@@ -34,5 +34,5 @@ angular.module('ldAdminTools')
 			var comparator = new Comparator(field, values);
 
 			return $filter('filter')(input, comparator.compare);
-		}
+		};
 	}]);
