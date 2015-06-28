@@ -724,6 +724,7 @@ angular.module('ldAdminTools')
 		}
 
 		function updateTableSource(src) {
+			console.log('update table source')
 			dataCopy = makeCopy(src);
 			ctrl.filterUpdated();
 		}
@@ -752,9 +753,7 @@ angular.module('ldAdminTools')
 			$scope.$watch(function () {
 				return sourceGetter($scope);
 			}, function (newData, oldData) {
-				if (newData !== oldData) {
 					updateTableSource(newData);
-				}
 			}, true);
 		}
 		// if no source is defined, watch changes in display data
@@ -774,7 +773,7 @@ angular.module('ldAdminTools')
 		$scope.$on(filterService.FILTER_UPDATED, angular.bind(this, function (event, filterId) {
 			// call apply if the updated filter is the same as ours
 			if (filterId === filter) {
-				this.filterUpdated();
+				ctrl.filterUpdated();
 			}
 		}));
 
@@ -1552,31 +1551,6 @@ angular.module('ldAdminTools')
 			}
 		};
 	}]);
-'use strict';
-
-/**
- * @ngdoc filter
- * @name ldAdminTools.filter:lfFrom
- * @function
- * @description
- * # lfFrom
- * Filter in the ldAdminTools.
- *
- * Returns data from index.
- */
-angular.module('ldAdminTools')
-	.filter('ldFrom', function () {
-		return function (input, fromIndex) {
-			if (!angular.isArray(input)) {
-				return input;
-			}
-
-			var fromIdx = fromIndex || 0;
-
-			return input.slice(fromIdx);
-		};
-	});
-
 /**
  * Created by Michal Skala on 20. 4. 2015.
  */
@@ -1615,6 +1589,31 @@ angular.module('ldAdminTools')
 			return $filter('filter')(input, comparator.compare);
 		};
 	}]);
+'use strict';
+
+/**
+ * @ngdoc filter
+ * @name ldAdminTools.filter:lfFrom
+ * @function
+ * @description
+ * # lfFrom
+ * Filter in the ldAdminTools.
+ *
+ * Returns data from index.
+ */
+angular.module('ldAdminTools')
+	.filter('ldFrom', function () {
+		return function (input, fromIndex) {
+			if (!angular.isArray(input)) {
+				return input;
+			}
+
+			var fromIdx = fromIndex || 0;
+
+			return input.slice(fromIdx);
+		};
+	});
+
 'use strict';
 
 /**
