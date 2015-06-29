@@ -48,7 +48,7 @@ angular.module('ldAdminTools')
  * This directive is supposed to be used on tr elements and will enhance the enclosed
  * td elements with an ng-click directive. This is useful if you do not want to make
  * all columns clickable for some reason. Currently, it skips the columns containing
- * an input (checkbox, etc). Example usage: ld-clickable-rows="rowClicked(item)"
+ * an input (checkbox, etc) or a link. Example usage: ld-clickable-rows="rowClicked(item)"
  * - this will result in ng-click="rowClicked(item)" being added to individual td
  * elements. It also adds ld-clickable css class to the TDs. By default, this class
  * sets the mouse cursor to "pointer".
@@ -65,7 +65,7 @@ angular.module('ldAdminTools')
 				// avoid columns with input elements (such as checkboxes)
 				// update all the others with a custom css class and an ng-click
 				var tdElement = angular.element(value);
-				if(tdElement.find('input').length === 0) {
+				if(tdElement.find('input').length === 0 && tdElement.find('a').length === 0) {
 					tdElement.addClass('ld-clickable').attr('ng-click', attrs.ldClickableRows);
 
 					if(angular.isDefined(attrs.ldClickableRowsActive)) {
@@ -749,13 +749,11 @@ angular.module('ldAdminTools')
 			displaySetter($scope, dataCopy);
 			filterService.forceUpdate(filter);
 
-			$scope.$watch(function () {
+			$scope.$watchCollection(function () {
 				return sourceGetter($scope);
-			}, function (newData, oldData) {
-				if (newData !== oldData) {
+			}, function (newData) {
 					updateTableSource(newData);
-				}
-			}, true);
+			});
 		}
 		// if no source is defined, watch changes in display data
 		else {
@@ -774,7 +772,7 @@ angular.module('ldAdminTools')
 		$scope.$on(filterService.FILTER_UPDATED, angular.bind(this, function (event, filterId) {
 			// call apply if the updated filter is the same as ours
 			if (filterId === filter) {
-				this.filterUpdated();
+				ctrl.filterUpdated();
 			}
 		}));
 
@@ -909,6 +907,10 @@ angular.module('ldAdminTools')
 
 			if (totalPages > 1) {
 				display = pagingFilter(display, currentPage, rowsPerPage);
+			}
+
+			if (display.length > 50) {
+				display = display.splice(0, 50);
 			}
 
 			displaySetter($scope, display);
@@ -1577,6 +1579,44 @@ angular.module('ldAdminTools')
 		};
 	});
 
+/**
+ * Created by Michal Skala on 20. 4. 2015.
+ */
+
+/*jslint node:true */
+'use strict';
+
+angular.module('ldAdminTools')
+	.filter('ldOr', ['$filter', function ($filter) {
+
+		var values;
+		var field;
+
+		function Comparator(_field, _values) {
+			values = _values;
+			field = _field;
+
+			this.compare = function (value) {
+				if (angular.isUndefined(value[field])) {
+					return false;
+				}
+
+				console.log(value[field], (values.indexOf(value[field]) !== -1));
+
+				return values.indexOf(value[field]) !== -1  ;
+			};
+		}
+
+		return function(input, field, values) {
+			if (!angular.isArray(input) || angular.isUndefined(field) || angular.isUndefined(values) || values.length === 0) {
+				return input;
+			}
+
+			var comparator = new Comparator(field, values);
+
+			return $filter('filter')(input, comparator.compare);
+		};
+	}]);
 'use strict';
 
 /**
@@ -1726,12 +1766,22 @@ angular.module('ldAdminTools')
 			return filter(input, fromIndex);
 		}
 
+		function _or(input, ors) {
+			if (angular.isUndefined(ors)) {
+				return input;
+			}
+
+			var filter = $filter('ldOr');
+			return filter(input, ors.field, ors.values);
+		}
+
 		return function (input, options) {
 			if (!angular.isArray(input) || angular.isUndefined(options)) {
 				return input;
 			}
 
 			var copy = where(input, options.where);
+			copy = _or(copy, options.or);
 			copy = order(copy, options.order);
 			copy = from(copy, options.from);
 			copy = limit(copy, options.limit);
@@ -1953,6 +2003,11 @@ angular.module('ldAdminTools')
 					// merge order condition (just overwrite in this case)
 					if (angular.isDefined(source.order)) {
 						combined.order = source.order;
+					}
+
+					// merge the or condition (just overwrite in this case)
+					if (angular.isDefined(source.or)) {
+						combined.or = source.or;
 					}
 				}
 

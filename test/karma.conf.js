@@ -16,6 +16,17 @@ module.exports = function (config) {
 		// testing framework to use (jasmine/mocha/qunit/...)
 		frameworks: ['jasmine', 'jasmine-matchers'],
 
+		reporters: ['progress', 'coverage'],
+
+		preprocessors: {
+			'dist/ldAdminTools.js': ['coverage']
+		},
+
+		coverageReporter: {
+			type: 'html',
+			dir: 'coverage/'
+		},
+
 		// list of files / patterns to load in the browser
 		files: [
 			'bower_components/angular/angular.js',
@@ -56,7 +67,8 @@ module.exports = function (config) {
 			'karma-phantomjs-launcher',
 			//'karma-chrome-launcher',
 			'karma-jasmine',
-			'karma-jasmine-matchers'
+			'karma-jasmine-matchers',
+			'karma-coverage'
 		],
 
 		// Continuous Integration mode

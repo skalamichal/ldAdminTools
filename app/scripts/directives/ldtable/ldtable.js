@@ -16,6 +16,7 @@ angular.module('ldAdminTools')
 		var property = $attrs.ldTable;
 		var displayGetter = $parse(property);
 		var displaySetter = displayGetter.assign;
+		var filterLimit = $filter('limitTo');
 
 		// define filter ID
 		var filter = angular.isDefined($attrs.ldFilter) ? $attrs.ldFilter : ('ld-' + Math.round(Math.random() * 150000));
@@ -31,6 +32,8 @@ angular.module('ldAdminTools')
 
 		// the number of records in filtered collection, can be used for pagination
 		var filteredRows;
+
+		var applyLimit = angular.isDefined($attrs.ldTableApplyLimit) ? !!$parse($attrs.ldTableApplyLimit) : true;
 
 		var ctrl = this;
 
@@ -48,7 +51,6 @@ angular.module('ldAdminTools')
 		}
 
 		function updateTableSource(src) {
-			console.log('update table source')
 			dataCopy = makeCopy(src);
 			ctrl.filterUpdated();
 		}
@@ -74,11 +76,11 @@ angular.module('ldAdminTools')
 			displaySetter($scope, dataCopy);
 			filterService.forceUpdate(filter);
 
-			$scope.$watch(function () {
+			$scope.$watchCollection(function () {
 				return sourceGetter($scope);
-			}, function (newData, oldData) {
+			}, function (newData) {
 					updateTableSource(newData);
-			}, true);
+			});
 		}
 		// if no source is defined, watch changes in display data
 		else {
@@ -232,6 +234,10 @@ angular.module('ldAdminTools')
 
 			if (totalPages > 1) {
 				display = pagingFilter(display, currentPage, rowsPerPage);
+			}
+
+			if (applyLimit && display.length > 50) {
+				display = filterLimit(display, 50);
 			}
 
 			displaySetter($scope, display);
