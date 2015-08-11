@@ -123,7 +123,6 @@ angular.module('ldAdminTools')
 					}
 				}
 
-				logFilter(combined);
 				filter.combined = combined;
 			}
 
@@ -237,7 +236,6 @@ angular.module('ldAdminTools')
 					var presets = filter.presets;
 					for (var i = 0; i < presets.length; i++) {
 						if (presets[i].default) {
-							console.log(presets[i]);
 							filter.preset = presets[i];
 							filter.dirty = true;
 							break;
