@@ -41,7 +41,7 @@ describe('Directive: ldTablePagination', function () {
 			expect($scope.itemsPerPage).toBe(10);
 			expect($scope.isVisible).toBeTruthy();
 			expect($scope.maxSize).toBeNull();
-			expect($scope.currentPage).toBeUndefined();
+			expect($scope.currentPage).toBe(3);
 
 			$scope.$apply(function(){
 				$scope.currentPage = 2;

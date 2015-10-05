@@ -692,6 +692,7 @@ angular.module('ldAdminTools')
 		var property = $attrs.ldTable;
 		var displayGetter = $parse(property);
 		var displaySetter = displayGetter.assign;
+		var filterLimit = $filter('limitTo');
 
 		// define filter ID
 		var filter = angular.isDefined($attrs.ldFilter) ? $attrs.ldFilter : ('ld-' + Math.round(Math.random() * 150000));
@@ -707,6 +708,8 @@ angular.module('ldAdminTools')
 
 		// the number of records in filtered collection, can be used for pagination
 		var filteredRows;
+
+		var applyLimit = angular.isDefined($attrs.ldTableApplyLimit) ? !!$parse($attrs.ldTableApplyLimit) : true;
 
 		var ctrl = this;
 
@@ -752,7 +755,7 @@ angular.module('ldAdminTools')
 			$scope.$watchCollection(function () {
 				return sourceGetter($scope);
 			}, function (newData) {
-					updateTableSource(newData);
+				updateTableSource(newData);
 			});
 		}
 		// if no source is defined, watch changes in display data
@@ -909,8 +912,8 @@ angular.module('ldAdminTools')
 				display = pagingFilter(display, currentPage, rowsPerPage);
 			}
 
-			if (display.length > 50) {
-				display = display.splice(0, 50);
+			if (applyLimit && display.length > 50) {
+				display = filterLimit(display, 50);
 			}
 
 			displaySetter($scope, display);
@@ -1003,13 +1006,15 @@ angular.module('ldAdminTools')
  * items in the table as selected or not selected.
  */
 angular.module('ldAdminTools')
-	.directive('ldTableCheckbox', function () {
+	.directive('ldTableCheckbox', ['ldAdminToolsEvents', '$rootScope', function (ldAdminToolsEvents, $rootScope) {
 		return {
 			template: '<ld-checkbox onchanged="updateSelection" indeterminate="isIndeterminate" checked="isChecked"></ld-checkbox>',
 			require: '^ldTable',
 			scope: true,
 			restrict: 'E',
 			link: function postLink(scope, element, attrs, tableController) {
+
+				var watchRows = [];
 
 				function getSelectedItemsCount(data) {
 					var count = 0;
@@ -1031,26 +1036,44 @@ angular.module('ldAdminTools')
 				};
 
 				function selectAll() {
+					watchRows = [];
 					angular.forEach(tableController.getRows(), function (row) {
 						row.selected = true;
+						watchRows.push(row);
 					});
-				};
+				}
 
-				function selectNone () {
+				function selectNone() {
+					watchRows = [];
 					angular.forEach(tableController.getRows(), function (row) {
 						row.selected = false;
 					});
-				};
+				}
 
-				scope.$on(tableController.TABLE_UPDATED, function() {
+				function tableUpdated() {
 					var dataRows = tableController.getRows();
 					var selectedItems = getSelectedItemsCount(dataRows);
+					watchRows = [].concat(dataRows);
 					scope.isIndeterminate = (selectedItems > 0 && selectedItems < dataRows.length);
 					scope.isChecked = (dataRows.length > 0 && selectedItems === dataRows.length);
+					$rootScope.$broadcast(ldAdminToolsEvents.TABLE_ROW_SELECTION_CHANGED, selectedItems);
+				}
+
+				scope.$watch(function () {
+						return watchRows;
+					}, function () {
+						tableUpdated();
+					},
+					true);
+
+				scope.$on(tableController.TABLE_UPDATED, function () {
+					tableUpdated();
 				});
 			}
-		};
-	});
+		}
+			;
+	}])
+;
 
 'use strict';
 
@@ -1791,6 +1814,17 @@ angular.module('ldAdminTools')
 		};
 	}]);
 
+/**
+ * Created by Michal Skala on 23. 9. 2015.
+ */
+
+'use strict';
+
+angular.module('ldAdminTools')
+	.constant('ldAdminToolsEvents', {
+		TABLE_UPDATED: 'TABLE_UPDATED',
+		TABLE_ROW_SELECTION_CHANGED: 'TABLE_ROW_SELECTION_CHANGED'
+	});
 'use strict';
 
 /**
@@ -2011,7 +2045,6 @@ angular.module('ldAdminTools')
 					}
 				}
 
-				logFilter(combined);
 				filter.combined = combined;
 			}
 
@@ -2125,7 +2158,6 @@ angular.module('ldAdminTools')
 					var presets = filter.presets;
 					for (var i = 0; i < presets.length; i++) {
 						if (presets[i].default) {
-							console.log(presets[i]);
 							filter.preset = presets[i];
 							filter.dirty = true;
 							break;

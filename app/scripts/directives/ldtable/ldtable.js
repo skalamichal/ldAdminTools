@@ -79,7 +79,7 @@ angular.module('ldAdminTools')
 			$scope.$watchCollection(function () {
 				return sourceGetter($scope);
 			}, function (newData) {
-					updateTableSource(newData);
+				updateTableSource(newData);
 			});
 		}
 		// if no source is defined, watch changes in display data
