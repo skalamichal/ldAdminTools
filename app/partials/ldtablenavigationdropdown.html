@@ -1,7 +1,7 @@
-<div class="ld-table-navigation-dropdown" dropdown>
-	<a href="" dropdown-toggle style="cursor:pointer;" role="button">{{ descriptionText }} <i
+<div class="ld-table-navigation-dropdown" uib-dropdown>
+	<a href="" uib-dropdown-toggle style="cursor:pointer;" role="button">{{ descriptionText }} <i
 			class="fa fa-fw fa-caret-down"></i></a>
-	<ul class="dropdown-menu dropdown-menu-right">
+	<ul class="dropdown-menu-right" uib-dropdown-menu>
 		<li ng-class="firstPageClass"><a href="" ng-click="gotoPage(1)"><i
 				class="fa fa-fw fa-angle-double-left fa-lg"></i>{{ firstPage }}</a></li>
 		<li ng-class="previousPageClass"><a href="" ng-click="gotoPage(currentPage - 1)"><i
