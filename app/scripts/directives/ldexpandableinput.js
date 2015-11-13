@@ -34,7 +34,7 @@ angular.module('ldAdminTools')
 			},
 			link: function postLink(scope, element) {
 
-				$animate.enabled(false, element);
+				$animate.enabled(element, false);
 
 				function setIconLeft() {
 					if (scope.opened) {

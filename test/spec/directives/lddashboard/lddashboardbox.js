@@ -12,7 +12,7 @@ describe('Directive: ldDashboardBox', function () {
 		config;
 
 	beforeEach(inject(function (_$rootScope_, _$compile_, _ldDashboardBoxConfig_) {
-		$rootScope = _$rootScope_;
+		$rootScope = _$rootScope_.$new();
 		$compile = _$compile_;
 		config = _ldDashboardBoxConfig_;
 
@@ -45,16 +45,14 @@ describe('Directive: ldDashboardBox', function () {
 		});
 
 		it('should toggle visibility, but not call method on the scope', function() {
-			$scope.$apply(function() {
-				$scope.toggle();
-			});
+			expect($scope.ldOnToggle).toBeUndefined();
+
+			$scope.toggle();
 
 			expect($scope.isBoxOpen).toBeFalsy();
 			expect($rootScope.onToggle).not.toHaveBeenCalled();
 
-			$scope.$apply(function() {
-				$scope.toggle();
-			});
+			$scope.toggle();
 
 			expect($scope.isBoxOpen).toBeTruthy();
 			expect($rootScope.onToggle).not.toHaveBeenCalled();

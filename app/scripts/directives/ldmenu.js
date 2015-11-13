@@ -73,14 +73,14 @@ angular.module('ldAdminTools')
  */
 	.directive('ldSidebarMenu', [function () {
 		return {
-			restrict: 'E',
+			restrict: 'EA',
 			scope: {
 				'data': '=',
 				'options': '=?ldMenuOptions',
 				'level': '=?level',
 				'opened': '=?'
 			},
-			replace: true,
+			//replace: true,
 			// expose the sidebar menu controller API
 			controller: 'ldSidebarMenuController',
 			templateUrl: 'partials/ldmenu-wrap.html',
@@ -101,7 +101,7 @@ angular.module('ldAdminTools')
  */
 	.directive('ldMenu', ['RecursionHelper', function (recursionHelper) {
 		return {
-			restrict: 'E',
+			restrict: 'EA',
 			scope: {
 				'data': '=',
 				'level': '='
@@ -152,7 +152,7 @@ angular.module('ldAdminTools')
  */
 	.directive('ldSubmenuItem', [function () {
 		return {
-			restrict: 'E',
+			restrict: 'EA',
 			scope: {
 				item: '=data',
 				level: '='

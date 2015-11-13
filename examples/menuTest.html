@@ -13,8 +13,6 @@
 			left: 0px;
 		}
 
-		@media all and (max-width: 768px) {
-
 			.ld-sidebar-menu-slide.ng-enter, .ld-sidebar-menu-slide.ng-leave {
 				-webkit-transition: left 0.35s ease;
 				-moz-transition: left 0.35s ease;
@@ -22,20 +20,17 @@
 				transition: left 0.35s ease;
 			}
 
-			.ld-sidebar-menu-slide.ng-enter {
+			.ld-sidebar-menu-slide.ng-enter,
+			.ld-sidebar-menu-slide.ng-leave.ng-leave-active{
 				display: block;
 				left: -250px;
 			}
 
-			.ld-sidebar-menu-slide.ng-enter.ng-enter-active, .ld-sidebar-menu-slide.ng-leave {
+			.ld-sidebar-menu-slide.ng-leave,
+			.ld-sidebar-menu-slide.ng-enter.ng-enter-active {
 				left: 0px;
 				display: block;
 			}
-
-			.ld-sidebar-menu-slide.ng-leave.ng-leave-active {
-				left: -250px;
-			}
-		}
 	</style>
 
 </head>
@@ -67,7 +62,7 @@
 
 <script type="text/javascript">
 
-	var app = angular.module('demo', ['ui.bootstrap', 'LocalStorageModule', 'ldAdminTools']);
+	var app = angular.module('demo', ['ui.bootstrap', 'LocalStorageModule', 'ldAdminTools', 'ngAnimate']);
 	app.controller('demoCtrl', function ($scope) {
 		console.log('demoCtrl ' + $scope.$id);
 

@@ -16,7 +16,7 @@ module.exports = function (config) {
 		// testing framework to use (jasmine/mocha/qunit/...)
 		frameworks: ['jasmine', 'jasmine-matchers'],
 
-		reporters: ['progress', 'coverage'],
+		reporters: ['progress', 'coverage', 'spec'],
 
 		preprocessors: {
 			'dist/ldAdminTools.js': ['coverage']
@@ -25,6 +25,14 @@ module.exports = function (config) {
 		coverageReporter: {
 			type: 'html',
 			dir: 'coverage/'
+		},
+
+		specReporter: {
+			maxLogLines: 5,         // limit number of lines logged per test
+			suppressErrorSummary: true,  // do not print error summary
+			suppressFailed: false,  // do not print information about failed tests
+			suppressPassed: false,  // do not print information about passed tests
+			suppressSkipped: true  // do not print information about skipped tests
 		},
 
 		// list of files / patterns to load in the browser
@@ -68,7 +76,8 @@ module.exports = function (config) {
 			//'karma-chrome-launcher',
 			'karma-jasmine',
 			'karma-jasmine-matchers',
-			'karma-coverage'
+			'karma-coverage',
+		    'karma-spec-reporter'
 		],
 
 		// Continuous Integration mode

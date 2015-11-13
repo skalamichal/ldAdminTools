@@ -99,7 +99,7 @@ describe('Directive: ldExpandableInput', function () {
 
 	it('should change when opened is set to true and back to false', inject(function ($compile) {
 		$scope.opened = false;
-		var element = angular.element('<ld-expandable-input ng-model="value" opened="opened"></ld-expandable-input>');
+		var element = angular.element('<ld-expandable-input ng-model="value" opened="opened" on-open="onOpen" on-clear="onClear" on-close="onClose"></ld-expandable-input>');
 		$element = $compile(element)($scope);
 		$scope.$digest();
 
@@ -133,7 +133,7 @@ describe('Directive: ldExpandableInput', function () {
 
 	it('should update clear icon when input field has any text', inject(function ($compile) {
 		$scope.opened = false;
-		var element = angular.element('<ld-expandable-input ng-model="value" opened="opened"></ld-expandable-input>');
+		var element = angular.element('<ld-expandable-input ng-model="value" opened="opened" on-open="onOpen" on-clear="onClear"></ld-expandable-input>');
 		$element = $compile(element)($scope);
 		$scope.$digest();
 
@@ -196,7 +196,7 @@ describe('Directive: ldExpandableInput', function () {
 		$scope.openIcon = 'open-icon';
 		$scope.closeIcon = 'close-icon';
 		$scope.clearIcon = 'clear-icon';
-		var element = angular.element('<ld-expandable-input ng-model="value" placeholder="{{placeholder}}" close-text="{{closeText}}" open-icon="{{openIcon}}" close-icon="{{closeIcon}}" clear-icon="{{clearIcon}}"></ld-expandable-input>');
+		var element = angular.element('<ld-expandable-input ng-model="value" placeholder="{{placeholder}}" close-text="{{closeText}}" open-icon="{{openIcon}}" close-icon="{{closeIcon}}" clear-icon="{{clearIcon}}" on-open="onOpen"></ld-expandable-input>');
 		$element = $compile(element)($scope);
 		$scope.$digest();
 

@@ -116,12 +116,12 @@ angular.module('ldAdminTools')
 				ldOnClose: '&?',
 				ldOnToggle: '&?'
 			},
-			link: function postLink(scope, element) {
+			link: function postLink(scope, element, attrs) {
 				scope.panelType = scope.ldType || config.panelTypeDefault;
 				scope.isBoxOpen = angular.isDefined(scope.ldIsOpen) ? !!scope.ldIsOpen : true;
 
 				scope.close = function() {
-					if (angular.isDefined(scope.ldOnClose())) {
+					if (angular.isDefined(scope.ldOnClose) && angular.isDefined(scope.ldOnClose())) {
 						scope.ldOnClose()();
 					}
 
@@ -131,7 +131,7 @@ angular.module('ldAdminTools')
 				scope.toggle = function() {
 					scope.ldIsOpen = scope.isBoxOpen = !scope.isBoxOpen;
 
-					if (angular.isDefined(scope.ldOnToggle())) {
+					if (angular.isDefined(scope.ldOnToggle) && angular.isDefined(scope.ldOnToggle())) {
 						scope.ldOnToggle()(scope.ldIsOpen);
 					}
 				};
@@ -297,7 +297,7 @@ angular.module('ldAdminTools')
 			},
 			link: function postLink(scope, element) {
 
-				$animate.enabled(false, element);
+				$animate.enabled(element, false);
 
 				function setIconLeft() {
 					if (scope.opened) {
@@ -462,14 +462,14 @@ angular.module('ldAdminTools')
  */
 	.directive('ldSidebarMenu', [function () {
 		return {
-			restrict: 'E',
+			restrict: 'EA',
 			scope: {
 				'data': '=',
 				'options': '=?ldMenuOptions',
 				'level': '=?level',
 				'opened': '=?'
 			},
-			replace: true,
+			//replace: true,
 			// expose the sidebar menu controller API
 			controller: 'ldSidebarMenuController',
 			templateUrl: 'partials/ldmenu-wrap.html',
@@ -490,7 +490,7 @@ angular.module('ldAdminTools')
  */
 	.directive('ldMenu', ['RecursionHelper', function (recursionHelper) {
 		return {
-			restrict: 'E',
+			restrict: 'EA',
 			scope: {
 				'data': '=',
 				'level': '='
@@ -541,7 +541,7 @@ angular.module('ldAdminTools')
  */
 	.directive('ldSubmenuItem', [function () {
 		return {
-			restrict: 'E',
+			restrict: 'EA',
 			scope: {
 				item: '=data',
 				level: '='
