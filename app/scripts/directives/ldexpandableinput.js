@@ -69,7 +69,7 @@ angular.module('ldAdminTools')
 					scope.model = '';
 					scope.isFocus = true;
 
-					if (angular.isFunction(scope.onClear())) {
+					if (angular.isDefined(scope.onClear) && angular.isFunction(scope.onClear())) {
 						scope.onClear()();
 					}
 				};
@@ -77,7 +77,7 @@ angular.module('ldAdminTools')
 				scope.open = function () {
 					scope.opened = true;
 
-					if (angular.isFunction(scope.onOpen())) {
+					if (angular.isDefined(scope.onOpen) && angular.isFunction(scope.onOpen())) {
 						scope.onOpen()();
 					}
 				};
@@ -87,7 +87,7 @@ angular.module('ldAdminTools')
 
 					scope.clear();
 
-					if (angular.isFunction(scope.onClose())) {
+					if (angular.isDefined(scope.onClose) && angular.isFunction(scope.onClose())) {
 						scope.onClose()();
 					}
 				};
