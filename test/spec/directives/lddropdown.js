@@ -23,10 +23,12 @@ describe('Directive: ldDropdown', function () {
 	}
 
 	var $element,
-		$scope;
+		$scope,
+		$document;
 
-	beforeEach(inject(function ($rootScope) {
+	beforeEach(inject(function ($rootScope, _$document_) {
 		$scope = $rootScope.$new();
+		$document = _$document_;
 	}));
 
 	it('should work in the default state', inject(function ($compile) {
