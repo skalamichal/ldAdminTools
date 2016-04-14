@@ -12,26 +12,30 @@
  * When item is selected, the onchanged function is called and the selected variable is updated.
  */
 angular.module('ldAdminTools')
-	.directive('ldDropdown', [function () {
+	.directive('ldDropdown', ['$filter', function ($filter) {
 		return {
 			restrict: 'EA',
 			scope: {
-				selected: '=?',
+				selectedItem: '=?',
 				list: '=',
 				onchanged: '&?'
 			},
 			templateUrl: 'partials/lddropdown.html',
 			link: function (scope) {
+				console.log('ldDropdown', scope.selectedItem);
 				scope.select = function (item) {
-					scope.selected = item;
+					if (!item) {
+						return;
+					}
 
 					if (angular.isDefined(scope.onchanged) && angular.isDefined(scope.onchanged())) {
 						scope.onchanged()(item);
 					}
 				};
 
-				if (angular.isUndefined(scope.selected) && angular.isDefined(scope.list) && scope.list.length > 0) {
-					scope.select(scope.list[0]);
+				if (angular.isUndefined(scope.selectedItem) && angular.isDefined(scope.list) && scope.list.length > 0) {
+					var selectedItem = $filter('filter')(scope.list, {id: scope.selectedItem.id});
+					scope.select(selectedItem ? selectedItem[0] : scope.list[0]);
 				}
 			}
 		};

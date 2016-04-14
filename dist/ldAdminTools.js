@@ -235,26 +235,30 @@ angular.module('ldAdminTools')
  * When item is selected, the onchanged function is called and the selected variable is updated.
  */
 angular.module('ldAdminTools')
-	.directive('ldDropdown', [function () {
+	.directive('ldDropdown', ['$filter', function ($filter) {
 		return {
 			restrict: 'EA',
 			scope: {
-				selected: '=?',
+				selectedItem: '=?',
 				list: '=',
 				onchanged: '&?'
 			},
 			templateUrl: 'partials/lddropdown.html',
 			link: function (scope) {
+				console.log('ldDropdown', scope.selectedItem);
 				scope.select = function (item) {
-					scope.selected = item;
+					if (!item) {
+						return;
+					}
 
 					if (angular.isDefined(scope.onchanged) && angular.isDefined(scope.onchanged())) {
 						scope.onchanged()(item);
 					}
 				};
 
-				if (angular.isUndefined(scope.selected) && angular.isDefined(scope.list) && scope.list.length > 0) {
-					scope.select(scope.list[0]);
+				if (angular.isUndefined(scope.selectedItem) && angular.isDefined(scope.list) && scope.list.length > 0) {
+					var selectedItem = $filter('filter')(scope.list, {id: scope.selectedItem.id});
+					scope.select(selectedItem ? selectedItem[0] : scope.list[0]);
 				}
 			}
 		};
@@ -2091,18 +2095,18 @@ angular.module('ldAdminTools')
 				 */
 				registerPresets: function (filterId, list) {
 					var filter = this.getFilter(filterId);
-					filter.presets = list;
+					filter.presets = angular.merge(filter.presets, list);
 				},
 
 				/**
-				 * Set filter from registered list
+				 * Set filter from registered list, if no presets are defined, store this one as preset and return it
 				 * @param filterId
 				 * @param presetId
 				 */
 				setPreset: function (filterId, presetId) {
 					var filter = this.getFilter(filterId);
 					if (angular.isUndefined(filter.presets)) {
-						return null;
+						filter.presets = [filter];
 					}
 
 					var preset = getPreset(filter.presets, presetId);
@@ -2124,7 +2128,6 @@ angular.module('ldAdminTools')
 				 */
 				getPreset: function (filterId) {
 					var filter = this.getFilter(filterId);
-
 					return filter.preset;
 				},
 
@@ -2386,6 +2389,18 @@ angular.module('ldAdminTools')
 					}
 				},
 
+				/**
+				 * Return all registered filters
+				 * @return filters
+				 */
+				getFilters: function() {
+					return filters;
+				},
+
+				/**
+				 * Output filter definition
+				 * @param filterId
+				 */
 				toString: function (filterId) {
 					var filter = this.getFilter(filterId);
 					if (angular.isUndefined(filter)) {
@@ -2464,7 +2479,7 @@ angular.module('ldAdminTools').run(['$templateCache', function($templateCache) {
 
 
   $templateCache.put('partials/lddropdown.html',
-    "<div class=ld-dropdown uib-dropdown dropdown-append-to-body><a style=cursor:pointer uib-dropdown-toggle role=button>{{ selected.name }} <i class=\"fa fa-caret-down\"></i></a><ul uib-dropdown-menu><li ng-repeat=\"item in list\" ng-class=\"{'divider' : item.divider}\"><a ng-if=!item.divider ng-click=select(item);>{{ item.name }}</a></li></ul></div>"
+    "<div class=ld-dropdown uib-dropdown dropdown-append-to-body><a style=cursor:pointer uib-dropdown-toggle role=button>{{ selectedItem.name }} <i class=\"fa fa-caret-down\"></i></a><ul uib-dropdown-menu><li ng-repeat=\"item in list\" ng-class=\"{'divider' : item.divider}\"><a ng-if=!item.divider ng-click=select(item);>{{ item.name }}</a></li></ul></div>"
   );
 
 

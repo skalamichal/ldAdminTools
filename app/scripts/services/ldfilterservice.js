@@ -169,18 +169,18 @@ angular.module('ldAdminTools')
 				 */
 				registerPresets: function (filterId, list) {
 					var filter = this.getFilter(filterId);
-					filter.presets = list;
+					filter.presets = angular.merge(filter.presets, list);
 				},
 
 				/**
-				 * Set filter from registered list
+				 * Set filter from registered list, if no presets are defined, store this one as preset and return it
 				 * @param filterId
 				 * @param presetId
 				 */
 				setPreset: function (filterId, presetId) {
 					var filter = this.getFilter(filterId);
 					if (angular.isUndefined(filter.presets)) {
-						return null;
+						filter.presets = [filter];
 					}
 
 					var preset = getPreset(filter.presets, presetId);
@@ -202,7 +202,6 @@ angular.module('ldAdminTools')
 				 */
 				getPreset: function (filterId) {
 					var filter = this.getFilter(filterId);
-
 					return filter.preset;
 				},
 
@@ -464,6 +463,18 @@ angular.module('ldAdminTools')
 					}
 				},
 
+				/**
+				 * Return all registered filters
+				 * @return filters
+				 */
+				getFilters: function() {
+					return filters;
+				},
+
+				/**
+				 * Output filter definition
+				 * @param filterId
+				 */
 				toString: function (filterId) {
 					var filter = this.getFilter(filterId);
 					if (angular.isUndefined(filter)) {
