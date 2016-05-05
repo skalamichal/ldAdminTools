@@ -22,7 +22,6 @@ angular.module('ldAdminTools')
 			},
 			templateUrl: 'partials/lddropdown.html',
 			link: function (scope) {
-				console.log('ldDropdown', scope.selectedItem);
 				scope.select = function (item) {
 					if (!item) {
 						return;

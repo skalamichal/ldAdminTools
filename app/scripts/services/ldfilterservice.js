@@ -168,8 +168,19 @@ angular.module('ldAdminTools')
 				 * @param list
 				 */
 				registerPresets: function (filterId, list) {
-					var filter = this.getFilter(filterId);
-					filter.presets = angular.merge(filter.presets, list);
+					var filter = this.getFilter(filterId),
+						def;
+
+					angular.forEach(list, function(filterDef) {
+						def = $filter('filter')(filter.presets, {id: filterDef.id});
+						if (def.length > 0) {
+							def = angular.merge(def, filterDef);
+						}
+						else {
+							filter.presets.push(filterDef);
+						}
+					});
+					//filter.presets = angular.merge(filter.presets, list);
 				},
 
 				/**

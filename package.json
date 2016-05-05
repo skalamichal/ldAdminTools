@@ -1,6 +1,6 @@
 {
   "name": "ldadmintools",
-  "version": "0.0.39-SNAPSHOT",
+  "version": "0.0.39",
   "dependencies": {},
   "devDependencies": {
     "grunt": "^0.4.5",
