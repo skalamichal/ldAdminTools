@@ -1,6 +1,8 @@
 ldAdminTools
 ============
 
+**Note: This project is not maintained!!!**
+
 A collection of angular tools for admin sites.
 
 Components
